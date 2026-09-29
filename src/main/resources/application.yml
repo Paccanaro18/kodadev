@@ -1,10 +1,10 @@
 spring:
   application:
-    name: v1
+    name: koda
   datasource:
-    url: jdbc:postgresql://localhost:5433/devforge
+    url: jdbc:postgresql://localhost:5433/koda
     username: koda
-    password: koda
+    password: kodaadmin
   jpa:
     hibernate:
       ddl-auto: validate
