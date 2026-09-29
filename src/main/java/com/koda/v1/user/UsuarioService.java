@@ -24,4 +24,13 @@ public class UsuarioService {
 
         return UsuarioResposta.de(usuario);
     }
+
+    @Transactional(readOnly = true)
+    public UsuarioResposta buscarPorGithubId(Long githubId) {
+        return usuarioRepository.findByGithubId(githubId)
+                .map(UsuarioResposta::de)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Usuário não encontrado para o github_id " + githubId));
+    }
+
 }
