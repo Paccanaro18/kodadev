@@ -24,3 +24,5 @@ spring:
 koda:
   seguranca:
     chave-criptografia: ${TOKEN_ENCRYPTION_KEY}
+  github:
+    api-url: https://api.github.com
