@@ -1,5 +1,5 @@
 CREATE TABLE usuarios (
-                          id             BIGSERIAL PRIMARY KEY,
+                          id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                           github_id      BIGINT       NOT NULL UNIQUE,
                           login          VARCHAR(100) NOT NULL,
                           nome           VARCHAR(255),
