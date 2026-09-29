@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme{
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --color-koda: #665cff;
+  --color-koda-dark: #5449f0;
+  --color-koda-soft: #ebe9ff;
+  --color-cream: #fdfbf8;
+  --color-ink: #11152d;
+  --color-ink-2: #5b6078;
+  --color-navy: #12163a;
+  --shadow-soft: 0 10px 40px rgb(102 92 255 / 0.07);
+  --shadow-lift: 0 14px 44px rgb(102 92 255 / 0.16);
+}
+
+@layer base {
+  body { @apply bg-cream font-sans text-ink antialiased; }
+  a { color: var(--color-koda); }
+  a:hover { color: var(--color-koda-dark); }
+}

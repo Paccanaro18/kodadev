@@ -21,8 +21,17 @@ spring:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
             scope: read:user
+
+server:
+  servlet:
+    session:
+      cookie:
+        name: KODA_SESSAO
+
 koda:
   seguranca:
     chave-criptografia: ${TOKEN_ENCRYPTION_KEY}
   github:
     api-url: https://api.github.com
+  frontend:
+      url: http://localhost:3000

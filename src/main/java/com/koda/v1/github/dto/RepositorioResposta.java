@@ -7,7 +7,8 @@ public record RepositorioResposta(
         String descricao,
         String linguagem,
         String url,
-        String branchPadrao
+        String branchPadrao,
+        String atualizadoEm
 ) {
 
     public static RepositorioResposta de(RepositorioGithub repositorio) {
@@ -18,6 +19,7 @@ public record RepositorioResposta(
                 repositorio.descricao(),
                 repositorio.linguagem(),
                 repositorio.url(),
-                repositorio.branchPadrao());
+                repositorio.branchPadrao(),
+                repositorio.atualizadoEm());
     }
 }

@@ -35,7 +35,8 @@ class GithubClientTest {
         String json = """
                 [{"id": 1, "name": "koda", "full_name": "artur/koda", "description": null,
                   "language": "Java", "html_url": "https://github.com/artur/koda",
-                  "default_branch": "main", "private": false, "campo_novo": "ignorado"}]
+                  "updated_at": "2026-09-20T10:00:00Z","default_branch": "main", "private": false,
+                   "campo_novo": "ignorado"}]
                 """;
 
         servidor.expect(requestTo(startsWith("https://api.github.com/user/repos")))
@@ -47,6 +48,7 @@ class GithubClientTest {
         assertThat(repositorios).hasSize(1);
         assertThat(repositorios.get(0).nomeCompleto()).isEqualTo("artur/koda");
         assertThat(repositorios.get(0).branchPadrao()).isEqualTo("main");
+        assertThat(repositorios.get(0).atualizadoEm()).isEqualTo("2026-09-20T10:00:00Z");
         servidor.verify();
     }
 

@@ -12,6 +12,7 @@ public record RepositorioGithub(
         @JsonProperty("language") String linguagem,
         @JsonProperty("html_url") String url,
         @JsonProperty("default_branch") String branchPadrao,
-        @JsonProperty("private") boolean privado
+        @JsonProperty("private") boolean privado,
+        @JsonProperty("updated_at") String atualizadoEm
 ) {
 }
