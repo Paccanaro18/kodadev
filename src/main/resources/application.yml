@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: v1
+  datasource:
+    url: jdbc:postgresql://localhost:5433/devforge
+    username: koda
+    password: koda
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
