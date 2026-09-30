@@ -23,6 +23,10 @@ public interface DesafioRepository extends JpaRepository<Desafio, UUID> {
 
     List<Desafio> findByUsuarioIdAndAnaliseIdOrderByNumeroDesc(UUID usuarioId, UUID analiseId);
 
+    List<Desafio> findTop10ByUsuarioIdOrderByCriadoEmDesc(UUID usuarioId);
+
+    long countByUsuarioIdAndStatusGeracao(UUID usuarioId, StatusGeracao status);
+
     List<Desafio> findAllByStatusGeracaoIn(Collection<StatusGeracao> status);
 
     long countByUsuarioIdAndStatusGeracaoInAndCriadoEmAfter(

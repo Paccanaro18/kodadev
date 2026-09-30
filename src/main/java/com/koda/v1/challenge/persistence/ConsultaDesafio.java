@@ -91,6 +91,20 @@ public class ConsultaDesafio {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<DesafioRecente> recentesDoUsuario(UUID usuarioId) {
+        return repository.findTop10ByUsuarioIdOrderByCriadoEmDesc(usuarioId).stream()
+                .map(desafio -> new DesafioRecente(
+                        desafio.getId(), desafio.getAnaliseId(), desafio.getNumero(), desafio.getTipo(),
+                        desafio.getStatusGeracao(), desafio.getTitulo(), desafio.getConteudo(), desafio.getCriadoEm()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public long contarGerados(UUID usuarioId) {
+        return repository.countByUsuarioIdAndStatusGeracao(usuarioId, StatusGeracao.PRONTO);
+    }
+
     private List<Desafio> prontosRecentes(UUID usuarioId, int limite) {
         return repository.findTop50ByUsuarioIdAndStatusGeracaoOrderByCriadoEmDesc(usuarioId, StatusGeracao.PRONTO)
                 .stream()

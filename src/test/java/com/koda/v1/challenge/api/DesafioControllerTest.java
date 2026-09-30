@@ -103,6 +103,7 @@ class DesafioControllerTest {
     void deveDevolver401NasConsultasSemSessaoEBloquearOPostSemSessao() throws Exception {
         mockMvc.perform(get("/api/desafios/" + UUID.randomUUID())).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/analises/" + analiseId + "/desafios")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/desafios")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/analises/" + analiseId + "/desafios")
                         .contentType(MediaType.APPLICATION_JSON).content(CORPO_FEATURE))
                 .andExpect(status().isForbidden());
@@ -250,6 +251,44 @@ class DesafioControllerTest {
                 .andExpect(jsonPath("$.conteudo.criteriosDeAceite.length()").value(2))
                 .andExpect(jsonPath("$.modelo").doesNotExist())
                 .andExpect(jsonPath("$.conteudoJson").doesNotExist());
+    }
+
+    @Test
+    void deveListarOsRecentesDoUsuarioComHabilidadesETotalSemMostrarOsDeOutraPessoa() throws Exception {
+        criarPronto(analiseId, "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", "Adicionar paginação");
+        registro.registrarNovo(usuarioId, analiseId, TipoDesafio.BUG, "BUG_NULO_EM_CAMPO_OPCIONAL", "x", "perspectiva");
+        entityManager.flush();
+        long outroGithubId = githubIdDoUsuario == Long.MAX_VALUE ? 1 : githubIdDoUsuario + 1;
+        UUID outroUsuario = criarUsuario(outroGithubId, "outra");
+        UUID outraAnalise = criarAnalise(outroUsuario, contextoRico(), "CONCLUIDA");
+        UUID outroDesafio = registro.registrarNovo(
+                outroUsuario, outraAnalise, TipoDesafio.FEATURE, "FEATURE_PAGINACAO", "y", "perspectiva");
+        entityManager.flush();
+
+        String corpo = mockMvc.perform(get("/api/desafios").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalGerados").value(1))
+                .andExpect(jsonPath("$.recentes.length()").value(2))
+                .andReturn().getResponse().getContentAsString();
+
+        var recentes = leitor.readTree(corpo).get("recentes");
+        var ids = new java.util.ArrayList<String>();
+        var habilidades = new java.util.ArrayList<String>();
+        for (var recente : recentes) {
+            ids.add(recente.get("id").asString());
+            assertThat(recente.has("conteudoJson")).isFalse();
+            recente.get("habilidades").forEach(h -> habilidades.add(h.asString()));
+        }
+        assertThat(ids).doesNotContain(outroDesafio.toString());
+        assertThat(habilidades).containsExactly("H1");
+    }
+
+    @Test
+    void deveDevolverListaVaziaQuandoOUsuarioAindaNaoGerouNada() throws Exception {
+        mockMvc.perform(get("/api/desafios").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalGerados").value(0))
+                .andExpect(jsonPath("$.recentes.length()").value(0));
     }
 
     @Test

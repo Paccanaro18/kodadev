@@ -26,14 +26,14 @@ public class ProvedorIaFalso implements ProvedorIa {
         Map<String, Object> conteudo = new LinkedHashMap<>();
         conteudo.put("titulo", cortar("[Simulado] " + angulo + " em " + alvo));
         conteudo.put("contexto", "Este ticket foi simulado, sem IA de verdade, para testar o fluxo de " + angulo + ".");
-        conteudo.put("cenarioAtual", "Hoje, em " + alvo + ", o comportamento ainda não atende ao que o ângulo "
+        conteudo.put("cenarioAtual", "Hoje, em " + alvo + ", o comportamento apresenta um problema em relação ao que o ângulo "
                 + angulo + " descreve.");
         conteudo.put("objetivo", "Praticar " + angulo + " tendo como alvo " + alvo + ".");
         conteudo.put("regrasDeNegocio", List.of(
                 "Respeitar o comportamento atual de " + alvo + ".",
                 "Manter a tarefa pequena e delimitada, no nível júnior."));
         conteudo.put("requisitosTecnicos", List.of(
-                "Reaproveitar as classes que já existem ao redor de " + alvo + ".",
+                "Reaproveitar as classes que já existem ao redor de " + alvo + " e cobrir o resultado com testes automatizados.",
                 "Seguir o padrão de nomes e de camadas do projeto."));
         conteudo.put("criteriosDeAceite", List.of(
                 "O resultado de " + angulo + " pode ser verificado em " + alvo + ".",

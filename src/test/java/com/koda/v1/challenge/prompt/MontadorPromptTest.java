@@ -11,6 +11,7 @@ import com.koda.v1.challenge.catalogo.AlvoDesafio;
 import com.koda.v1.challenge.catalogo.CatalogoAngulos;
 import com.koda.v1.challenge.catalogo.EscopoAlvo;
 import com.koda.v1.challenge.selecao.SelecaoDeDesafio;
+import com.koda.v1.challenge.validacao.MotivoReprovacao;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,6 +27,19 @@ class MontadorPromptTest {
     private final Perspectivas perspectivas = new Perspectivas();
     private final MontadorPrompt montador = new MontadorPrompt(perspectivas);
     private final String perspectiva = perspectivas.todas().get(0);
+
+    @Test
+    void deveAcrescentarSoOTextoFixoDasCorrecoesQuandoHaReprovacao() {
+        SelecaoDeDesafio selecao = selecao("BUG_NAO_ENCONTRADO_RETORNA_500",
+                new AlvoDesafio(EscopoAlvo.ENDPOINT, "GET /pedidos/{id}", "PedidoController"));
+
+        String sem = montador.montar(selecao, contexto(), perspectiva, List.of()).usuario();
+        String com = montador.montar(selecao, contexto(), perspectiva, List.of(),
+                List.of(MotivoReprovacao.ESCOPO_GRANDE)).usuario();
+
+        assertThat(sem).doesNotContain("foi recusado");
+        assertThat(com).contains("foi recusado").contains(MotivoReprovacao.ESCOPO_GRANDE.orientacao());
+    }
 
     @Test
     void deveMontarOPedidoComAnguloAlvoPerspectivaEContexto() {

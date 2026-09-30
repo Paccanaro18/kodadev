@@ -1,5 +1,3 @@
-export type Status = "Concluído" | "Em andamento" | "Não iniciado";
-
 export const analysisSteps = [
   "Lendo estrutura de pastas",
   "Identificando a stack",

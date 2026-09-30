@@ -50,6 +50,13 @@ public class DesafioController {
         return desafioService.listar(usuario.id(), analiseId);
     }
 
+    @GetMapping("/desafios")
+    public DesafiosRecentesResposta recentes(@AuthenticationPrincipal OAuth2User principal) {
+        UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
+
+        return desafioService.recentes(usuario.id());
+    }
+
     @GetMapping("/desafios/{id}")
     public DesafioDetalheResposta consultar(@AuthenticationPrincipal OAuth2User principal,
                                             @PathVariable UUID id) {

@@ -25,6 +25,8 @@ import com.koda.v1.challenge.prompt.Perspectivas;
 import com.koda.v1.challenge.prompt.PromptDesafio;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.similaridade.DetectorSimilaridade;
+import com.koda.v1.challenge.validacao.MotivoReprovacao;
+import com.koda.v1.challenge.validacao.ValidadorDesafio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -58,6 +60,7 @@ class GeradorDesafioTest {
     private ConsultaDesafio consulta;
     private CarregadorContexto carregador;
     private ProvedorIa provedor;
+    private ValidadorDesafio validador;
     private GeradorDesafio gerador;
 
     private DadosGeracao dados;
@@ -68,6 +71,7 @@ class GeradorDesafioTest {
         consulta = mock(ConsultaDesafio.class);
         carregador = mock(CarregadorContexto.class);
         provedor = mock(ProvedorIa.class);
+        validador = mock(ValidadorDesafio.class);
         dados = new DadosGeracao(desafioId, usuarioId, analiseId, TipoDesafio.FEATURE,
                 "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", perspectivas.todas().get(0));
 
@@ -144,9 +148,8 @@ class GeradorDesafioTest {
     }
 
     @Test
-    void naoDeveTentarDeNovoQuandoOProvedorEstaIndisponivelSemLimiteOuSemCredencial() {
-        for (MotivoFalhaIa motivo : List.of(
-                MotivoFalhaIa.LIMITE_ATINGIDO, MotivoFalhaIa.NAO_AUTORIZADO, MotivoFalhaIa.INDISPONIVEL)) {
+    void naoDeveTentarDeNovoQuandoOProvedorAtingiuOLimiteOuRecusouACredencial() {
+        for (MotivoFalhaIa motivo : List.of(MotivoFalhaIa.LIMITE_ATINGIDO, MotivoFalhaIa.NAO_AUTORIZADO)) {
             registro = mock(RegistroDesafio.class);
             provedor = mock(ProvedorIa.class);
             when(registro.iniciar(desafioId)).thenReturn(dados);
@@ -159,6 +162,61 @@ class GeradorDesafioTest {
             verify(registro).falhar(desafioId, motivo.mensagem());
             verify(registro, never()).concluir(any(), anyString(), anyString(), anyInt(), any());
         }
+    }
+
+    @Test
+    void deveTentarDeNovoQuandoOProvedorNaoRespondeNaPrimeiraChamada() {
+        when(provedor.gerar(any()))
+                .thenThrow(new ProvedorIaException(MotivoFalhaIa.INDISPONIVEL))
+                .thenReturn(resposta("ticket novo", "m"));
+
+        gerador.gerar(desafioId);
+
+        verify(provedor, times(2)).gerar(any());
+        verify(registro).concluir(eq(desafioId), anyString(), anyString(), anyInt(), eq("m"));
+        verify(registro, never()).falhar(any(), anyString());
+    }
+
+    @Test
+    void deveFalharComAMensagemDoProvedorQuandoEleNaoRespondeNasDuasChamadas() {
+        when(provedor.gerar(any())).thenThrow(new ProvedorIaException(MotivoFalhaIa.INDISPONIVEL));
+
+        gerador.gerar(desafioId);
+
+        verify(provedor, times(2)).gerar(any());
+        verify(registro).falhar(desafioId, MotivoFalhaIa.INDISPONIVEL.mensagem());
+    }
+
+    @Test
+    void deveTentarDeNovoComAsCorrecoesQuandoOValidadorReprovaOPrimeiroTicket() {
+        when(validador.validar(any(), any(), any()))
+                .thenReturn(List.of(MotivoReprovacao.SOLUCAO_ENTREGUE, MotivoReprovacao.CRITERIO_VAGO))
+                .thenReturn(List.of());
+        when(provedor.gerar(any())).thenReturn(resposta("primeiro", "m"), resposta("segundo", "m"));
+
+        gerador.gerar(desafioId);
+
+        ArgumentCaptor<PromptDesafio> prompts = ArgumentCaptor.forClass(PromptDesafio.class);
+        verify(provedor, times(2)).gerar(prompts.capture());
+        assertThat(prompts.getAllValues().get(0).usuario()).doesNotContain("foi recusado");
+        assertThat(prompts.getAllValues().get(1).usuario())
+                .contains("foi recusado")
+                .contains(MotivoReprovacao.SOLUCAO_ENTREGUE.orientacao())
+                .contains(MotivoReprovacao.CRITERIO_VAGO.orientacao());
+        verify(registro).concluir(eq(desafioId), eq(tituloDe("segundo")), anyString(), anyInt(), eq("m"));
+        verify(registro, never()).reselecionar(any(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void deveFalharComMensagemFixaQuandoOValidadorReprovaAsDuasTentativas() {
+        when(validador.validar(any(), any(), any())).thenReturn(List.of(MotivoReprovacao.FORA_DO_ALVO));
+        when(provedor.gerar(any())).thenReturn(resposta("um", "m"), resposta("dois", "m"));
+
+        gerador.gerar(desafioId);
+
+        verify(provedor, times(2)).gerar(any());
+        verify(registro).falhar(desafioId, GeradorDesafio.MENSAGEM_NAO_VALIDADO);
+        verify(registro, never()).concluir(any(), anyString(), anyString(), anyInt(), any());
     }
 
     @Test
@@ -294,7 +352,7 @@ class GeradorDesafioTest {
         return new GeradorDesafio(
                 registro, consulta, carregador, catalogo, new SeletorDeDesafio(catalogo), perspectivas,
                 new MontadorPrompt(perspectivas), provedor, new VerificadorConteudo(),
-                new DetectorSimilaridade(0.70), serializador, prazo);
+                new DetectorSimilaridade(0.70), validador, serializador, prazo);
     }
 
     private String tituloDe(String tema) {
