@@ -93,7 +93,9 @@ Pronto:
 - Regras do analisador: sem código Java, sem `pom.xml` na raiz ou sem Spring Boot gera `FALHOU` com mensagem fixa. Arquivo isolado ilegível ou grande demais é pulado e o resultado sai `parcial`. Erro inesperado grava só uma mensagem genérica, nunca `getMessage()`. Prazo máximo de 2 minutos por análise (`koda.analise.prazo-maximo`).
 - Hardening: detectores sem regex quadrática (`RemovedorComentarios`), blob com teto de 512 KB de resposta e 256 KB de arquivo (`ArquivoGrandeDemaisException`, 413), `AnaliseProjeto` valida a ordem das transições.
 
-Depois: 4.4c (nada cria a linha em `repositorios` ainda: o endpoint que inicia a análise precisa criá-la; endpoints para iniciar e consultar status, só o dono vê, 404 se não for dele, `IniciadorAnalise.disparar` devolve 429 se a fila estiver cheia, uma análise ativa por repositório) e 4.5 (front com dados reais).
+- 4.4c: `POST /api/analises` (corpo `{dono, nome}`, devolve 202 com `Location` e `{id, status: PENDENTE}`) e `GET /api/analises/{id}`. O usuário vem da sessão. O repositório é conferido no GitHub: precisa ser público e da conta do usuário (dono vem do `full_name` do GitHub, não do corpo). `RegistroAnalise.registrarNovaAnalise` cria ou atualiza a linha em `repositorios` e a análise `PENDENTE`. Erros: 404 (análise inexistente ou de outro usuário, mesma resposta), 409 (já há análise em aberto, garantido por índice único parcial da V5), 422 (repositório privado ou de outra conta), 429 (fila cheia, a análise vira `FALHOU`), 400 (corpo inválido).
+
+Depois: 4.5 (front com dados reais). O front ainda não tem como listar as análises de um repositório nem pegar a mais recente: falta um endpoint para isso.
 
 ## Limitações conhecidas dos detectores
 
@@ -126,4 +128,5 @@ Depois: 4.4c (nada cria a linha em `repositorios` ainda: o endpoint que inicia a
 - Remover o Lombok do `pom.xml` (não é usado) e alinhar `java.version` (21) com o Java 26 do ambiente.
 - Postgres do compose publicado em todas as interfaces (`5433:5432`): restringir a `127.0.0.1`.
 - Cookie de sessão sem `Secure` e `SameSite` explícitos; sessão em memória.
-- Validar `dono`, `repositorio` e `sha` das rotas com regex.
+- Validar `dono`, `repositorio` e `sha` das rotas `/api/repositorios` com regex (o `POST /api/analises` já valida o corpo).
+- POST sem sessão devolve 403 (o CSRF recusa antes da autenticação), não 401 como diz a regra de segurança. Decidir se vale um `AccessDeniedHandler` que devolva 401 quando não há usuário.
