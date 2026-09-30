@@ -81,6 +81,16 @@ public class Desafio {
     @Column(name = "concluido_em")
     private Instant concluidoEm;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_progresso", nullable = false)
+    private StatusProgresso statusProgresso;
+
+    @Column(name = "iniciado_em")
+    private Instant iniciadoEm;
+
+    @Column(name = "finalizado_em")
+    private Instant finalizadoEm;
+
     protected Desafio() {
     }
 
@@ -92,6 +102,7 @@ public class Desafio {
         this.tipo = tipo;
         this.nivel = NivelDesafio.JUNIOR;
         this.statusGeracao = StatusGeracao.PENDENTE;
+        this.statusProgresso = StatusProgresso.NAO_INICIADO;
         this.anguloId = anguloId;
         this.alvoChave = alvoChave;
         this.perspectiva = perspectiva;
@@ -145,6 +156,33 @@ public class Desafio {
         this.statusGeracao = StatusGeracao.FALHOU;
         this.mensagemErro = mensagemErro;
         this.concluidoEm = Instant.now();
+    }
+
+    public void comecar() {
+        exigirProntoEProgresso(StatusProgresso.EM_ANDAMENTO, StatusProgresso.NAO_INICIADO);
+        this.statusProgresso = StatusProgresso.EM_ANDAMENTO;
+        this.iniciadoEm = Instant.now();
+    }
+
+    public void finalizar() {
+        exigirProntoEProgresso(StatusProgresso.CONCLUIDO, StatusProgresso.EM_ANDAMENTO);
+        this.statusProgresso = StatusProgresso.CONCLUIDO;
+        this.finalizadoEm = Instant.now();
+    }
+
+    public void reabrir() {
+        exigirProntoEProgresso(StatusProgresso.EM_ANDAMENTO, StatusProgresso.CONCLUIDO);
+        this.statusProgresso = StatusProgresso.EM_ANDAMENTO;
+        this.finalizadoEm = null;
+    }
+
+    private void exigirProntoEProgresso(StatusProgresso desejado, StatusProgresso permitido) {
+        if (this.statusGeracao != StatusGeracao.PRONTO) {
+            throw new TransicaoProgressoInvalidaException(this.statusGeracao);
+        }
+        if (this.statusProgresso != permitido) {
+            throw new TransicaoProgressoInvalidaException(this.statusProgresso, desejado);
+        }
     }
 
     private void exigirStatus(StatusGeracao desejado, StatusGeracao... permitidos) {
@@ -235,5 +273,17 @@ public class Desafio {
 
     public Instant getConcluidoEm() {
         return concluidoEm;
+    }
+
+    public StatusProgresso getStatusProgresso() {
+        return statusProgresso;
+    }
+
+    public Instant getIniciadoEm() {
+        return iniciadoEm;
+    }
+
+    public Instant getFinalizadoEm() {
+        return finalizadoEm;
     }
 }
