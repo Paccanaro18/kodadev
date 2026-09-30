@@ -12,6 +12,7 @@ public class ProvedorIaFalso implements ProvedorIa {
 
     static final String MODELO = "simulado";
 
+    private static final String MARCA_DE_DICA = "<dicas_anteriores>";
     private static final String PREFIXO_ANGULO = "Ângulo: ";
     private static final String PREFIXO_ALVO = "Alvo: ";
     private static final String PREFIXO_HABILIDADES = "Habilidades que o ticket pode praticar: ";
@@ -20,6 +21,9 @@ public class ProvedorIaFalso implements ProvedorIa {
 
     @Override
     public RespostaIa gerar(PromptDesafio prompt) {
+        if (prompt.usuario().contains(MARCA_DE_DICA)) {
+            return dica(prompt.usuario());
+        }
         String angulo = valorDaLinha(prompt.usuario(), PREFIXO_ANGULO, "ângulo não informado");
         String alvo = valorDaLinha(prompt.usuario(), PREFIXO_ALVO, "alvo não informado");
 
@@ -43,6 +47,14 @@ public class ProvedorIaFalso implements ProvedorIa {
         conteudo.put("habilidades", habilidades(prompt.usuario()));
 
         return new RespostaIa(MAPEADOR.writeValueAsString(conteudo), MODELO);
+    }
+
+    private RespostaIa dica(String usuario) {
+        String nivel = usuario.startsWith("Nível ") && usuario.length() > 6 ? usuario.substring(6, 7) : "1";
+        String texto = "[Simulado] Dica " + nivel + ": releia o objetivo e os critérios de aceite do ticket, "
+                + "e descubra em que parte do sistema o comportamento atual difere do esperado.";
+
+        return new RespostaIa(MAPEADOR.writeValueAsString(Map.of("dica", texto)), MODELO);
     }
 
     private List<String> habilidades(String usuario) {
