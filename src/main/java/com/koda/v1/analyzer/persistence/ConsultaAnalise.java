@@ -51,6 +51,7 @@ public class ConsultaAnalise {
                 repositorio.getDono(),
                 repositorio.getNome(),
                 analise.getResultado(),
+                analise.getContexto(),
                 analise.getMensagemErro(),
                 analise.getCriadoEm(),
                 analise.getConcluidaEm());
