@@ -89,14 +89,11 @@ Pronto:
 - 4.1 a 4.3: detectores (`DetectorPom`, `DetectorDockerCompose`, `DetectorEndpoints`, `DetectorEntidade`), `AnalisadorEstrutura`, tabelas `repositorios` e `analises_projeto`, entidades e repositories.
 - 4.4a: `ResultadoAnalise` e `MontadorResultado`, com 6 testes verdes.
 
-Em andamento: 4.4b, `AnalisadorRepositorio`.
-- `SelecaoArquivos`: lógica pura que decide quais arquivos abrir, com tetos (ideia: cerca de 30 controllers e 30 candidatas a entidade).
-- `AnalisadorRepositorio`: pega a árvore no GitHub, recusa cedo se não há código Java, abre os arquivos escolhidos, roda os detectores, monta o resultado e grava na análise (`concluir(json)` ou `falhar(msg)`).
-- Execução em segundo plano: o endpoint devolve na hora um `analiseId` com status `PENDENTE`. A execução em segundo plano não tem sessão de usuário.
-- Decisões em aberto: tratar árvore truncada do GitHub (marcar resultado como parcial); recusar ou aceitar repositório Java sem Spring Boot (proposta: recusar, gravando `FALHOU` com mensagem clara).
-- Antes de escrever a serialização para JSON, conferir qual Jackson está no classpath (Spring Boot 4 usa geração nova, com pacote diferente).
+- 4.4b: `SelecaoArquivos` (tetos de 30 controllers e 30 candidatas a entidade, `pom.xml` e compose só na raiz, arquivos até 256 KB), `SerializadorResultado` (Jackson 3), `RegistroAnalise` (transições em transações curtas), `AnalisadorRepositorio`, `FilaAnalises` (2 threads, fila de 10, cheia vira `FilaDeAnaliseCheiaException`), `IniciadorAnalise` e `RecuperadorAnalises` (marca `FALHOU` o que ficou em aberto ao subir). `ResultadoAnalise` tem o campo `parcial`.
+- Regras do analisador: sem código Java, sem `pom.xml` na raiz ou sem Spring Boot gera `FALHOU` com mensagem fixa. Arquivo isolado ilegível ou grande demais é pulado e o resultado sai `parcial`. Erro inesperado grava só uma mensagem genérica, nunca `getMessage()`. Prazo máximo de 2 minutos por análise (`koda.analise.prazo-maximo`).
+- Hardening: detectores sem regex quadrática (`RemovedorComentarios`), blob com teto de 512 KB de resposta e 256 KB de arquivo (`ArquivoGrandeDemaisException`, 413), `AnaliseProjeto` valida a ordem das transições.
 
-Depois: 4.4c (endpoints para iniciar análise e consultar status, só o dono vê) e 4.5 (front com dados reais).
+Depois: 4.4c (nada cria a linha em `repositorios` ainda: o endpoint que inicia a análise precisa criá-la; endpoints para iniciar e consultar status, só o dono vê, 404 se não for dele, `IniciadorAnalise.disparar` devolve 429 se a fila estiver cheia, uma análise ativa por repositório) e 4.5 (front com dados reais).
 
 ## Limitações conhecidas dos detectores
 
@@ -104,7 +101,12 @@ Depois: 4.4c (endpoints para iniciar análise e consultar status, só o dono vê
 - Compose: `image: ${VARIAVEL}` não é resolvida.
 - Endpoints por regex: não pega constantes no caminho, vários caminhos em `{}`, anotação na mesma linha do `class`, nem mapeamento em interface. Se incomodar, trocar por JavaParser.
 
+- Candidatas a entidade vêm só da convenção de pastas (`entity`, `model`, `domain`): projeto organizado por feature (`user/Usuario.java`) fica sem entidades. Melhorar preenchendo as vagas com outras classes de `src/main`.
+
 ## Armadilhas já encontradas
+
+- Jackson 3: `tools.jackson.databind.json.JsonMapper` e `tools.jackson.core.JacksonException` (não checked). As annotations continuam em `com.fasterxml.jackson.annotation`.
+- O `java` do PATH é o 1.8. Para rodar os testes: `JAVA_HOME=C:/Users/pacsss/.jdks/openjdk-26.0.2 ./mvnw test`.
 
 - Spring Boot 4: `RestClient.Builder` não vem auto-configurado. Usar `RestClient.builder()`.
 - Tailwind 4: estilos base em `@layer base`. Erros "Unknown at-rule" no `globals.css` são só do IntelliJ.
@@ -119,4 +121,9 @@ Depois: 4.4c (endpoints para iniciar análise e consultar status, só o dono vê
 - Menu do front sem destino (Progresso, Comunidade, Configurações).
 - `ON DELETE` das chaves estrangeiras (decidir quando existir "excluir conta").
 - Coluna `branch_padrao`: remover numa V5 se o `GithubService` não precisar.
-- Validar a ordem das transições de `AnaliseProjeto`.
+- `listarRepositorios` e `buscarArvore` leem a resposta do GitHub inteira, sem teto de bytes.
+- Recuperação de análises em aberto no startup assume uma única instância do servidor.
+- Remover o Lombok do `pom.xml` (não é usado) e alinhar `java.version` (21) com o Java 26 do ambiente.
+- Postgres do compose publicado em todas as interfaces (`5433:5432`): restringir a `127.0.0.1`.
+- Cookie de sessão sem `Secure` e `SameSite` explícitos; sessão em memória.
+- Validar `dono`, `repositorio` e `sha` das rotas com regex.
