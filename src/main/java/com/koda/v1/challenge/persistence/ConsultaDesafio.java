@@ -6,6 +6,7 @@ import com.koda.v1.challenge.selecao.UsoAnterior;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,9 @@ import java.util.UUID;
 
 @Service
 public class ConsultaDesafio {
+
+    private static final List<StatusGeracao> STATUS_QUE_GASTAM_COTA =
+            List.of(StatusGeracao.PENDENTE, StatusGeracao.EM_ANDAMENTO, StatusGeracao.PRONTO);
 
     private final DesafioRepository repository;
     private final SerializadorConteudo serializador;
@@ -41,6 +45,12 @@ public class ConsultaDesafio {
             }
         }
         return historico;
+    }
+
+    @Transactional(readOnly = true)
+    public long contarQueGastaramCotaDesde(UUID usuarioId, Instant desde) {
+        return repository.countByUsuarioIdAndStatusGeracaoInAndCriadoEmAfter(
+                usuarioId, STATUS_QUE_GASTAM_COTA, desde);
     }
 
     @Transactional(readOnly = true)
