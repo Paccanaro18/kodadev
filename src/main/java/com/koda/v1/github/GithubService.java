@@ -33,6 +33,12 @@ public class GithubService {
                 .toList();
     }
 
+    public RepositorioResposta buscarRepositorio(UUID usuarioId, String dono, String repositorio) {
+        String token = conexaoGithubService.obterToken(usuarioId);
+
+        return RepositorioResposta.de(githubClient.buscarRepositorio(token, dono, repositorio));
+    }
+
     public ArvoreResposta buscarArvore(UUID usuarioId, String dono, String repositorio) {
         String token = conexaoGithubService.obterToken(usuarioId);
 
