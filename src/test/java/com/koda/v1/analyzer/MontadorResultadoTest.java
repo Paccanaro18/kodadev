@@ -36,7 +36,7 @@ class MontadorResultadoTest {
                 List.of("src/test/java/UsuarioServiceTest.java"));
         List<Endpoint> endpoints = List.of(new Endpoint("GET", "/usuarios", "UsuarioController"));
 
-        ResultadoAnalise resultado = montador.montar(pom, compose, estrutura, endpoints);
+        ResultadoAnalise resultado = montador.montar(pom, compose, estrutura, endpoints, false);
 
         assertThat(resultado.temCodigoJava()).isTrue();
         assertThat(resultado.springBoot()).isTrue();
@@ -54,7 +54,7 @@ class MontadorResultadoTest {
         ResultadoCompose compose = new ResultadoCompose(
                 List.of("postgres"), Set.of(Tecnologia.POSTGRESQL));
 
-        ResultadoAnalise resultado = montador.montar(pom, compose, estruturaVazia(), List.of());
+        ResultadoAnalise resultado = montador.montar(pom, compose, estruturaVazia(), List.of(), false);
 
         assertThat(resultado.tecnologias())
                 .containsExactly(Tecnologia.POSTGRESQL, Tecnologia.REDIS);
@@ -62,7 +62,7 @@ class MontadorResultadoTest {
 
     @Test
     void aguentaRepositorioSemPom() {
-        ResultadoAnalise resultado = montador.montar(null, null, estruturaVazia(), null);
+        ResultadoAnalise resultado = montador.montar(null, null, estruturaVazia(), null, false);
 
         assertThat(resultado.springBoot()).isFalse();
         assertThat(resultado.versaoJava()).isNull();
@@ -77,7 +77,7 @@ class MontadorResultadoTest {
         ResultadoPom pom = new ResultadoPom(
                 "17", null, List.of(), Set.of(Tecnologia.POSTGRESQL));
 
-        ResultadoAnalise resultado = montador.montar(pom, null, estruturaVazia(), List.of());
+        ResultadoAnalise resultado = montador.montar(pom, null, estruturaVazia(), List.of(), false);
 
         assertThat(resultado.imagensDocker()).isEmpty();
         assertThat(resultado.tecnologias()).containsExactly(Tecnologia.POSTGRESQL);
@@ -88,14 +88,23 @@ class MontadorResultadoTest {
         ResultadoPom pom = new ResultadoPom(
                 null, null, List.of("org.springframework.boot:spring-boot-starter-web"), Set.of());
 
-        ResultadoAnalise resultado = montador.montar(pom, null, estruturaVazia(), List.of());
+        ResultadoAnalise resultado = montador.montar(pom, null, estruturaVazia(), List.of(), false);
 
         assertThat(resultado.springBoot()).isTrue();
     }
 
     @Test
+    void repassaAIndicacaoDeResultadoParcial() {
+        ResultadoAnalise parcial = montador.montar(null, null, estruturaVazia(), List.of(), true);
+        ResultadoAnalise completo = montador.montar(null, null, estruturaVazia(), List.of(), false);
+
+        assertThat(parcial.parcial()).isTrue();
+        assertThat(completo.parcial()).isFalse();
+    }
+
+    @Test
     void recusaMontarSemEstrutura() {
-        assertThatThrownBy(() -> montador.montar(null, null, null, List.of()))
+        assertThatThrownBy(() -> montador.montar(null, null, null, List.of(), false))
                 .isInstanceOf(NullPointerException.class);
     }
 

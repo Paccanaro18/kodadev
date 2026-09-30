@@ -30,7 +30,8 @@ class SerializadorResultadoTest {
                 List.of("src/main/java/a/PedidoRepository.java"),
                 List.of("src/main/java/a/model/Pedido.java"),
                 List.of("src/test/java/a/PedidoServiceTest.java"),
-                List.of(new Endpoint("GET", "/pedidos/{id}", "PedidoController")));
+                List.of(new Endpoint("GET", "/pedidos/{id}", "PedidoController")),
+                true);
 
         String json = serializador.paraJson(original);
         ResultadoAnalise lido = leitor.readValue(json, ResultadoAnalise.class);
@@ -43,7 +44,8 @@ class SerializadorResultadoTest {
         ResultadoAnalise resultado = new ResultadoAnalise(
                 true, true, "21", null, List.of(), List.of(Tecnologia.RABBITMQ), List.of(),
                 List.of(), List.of(), List.of(), List.of(), List.of(),
-                List.of(new Endpoint("POST", "/contas", "ContaController")));
+                List.of(new Endpoint("POST", "/contas", "ContaController")),
+                false);
 
         JsonNode json = leitor.readTree(serializador.paraJson(resultado));
 
@@ -53,13 +55,14 @@ class SerializadorResultadoTest {
         assertThat(json.get("tecnologias").get(0).asString()).isEqualTo("RABBITMQ");
         assertThat(json.get("endpoints").get(0).get("metodoHttp").asString()).isEqualTo("POST");
         assertThat(json.get("controllers").isArray()).isTrue();
+        assertThat(json.get("parcial").asBoolean()).isFalse();
     }
 
     @Test
     void deveSerializarResultadoVazio() {
         ResultadoAnalise vazio = new ResultadoAnalise(
                 false, false, null, null, List.of(), List.of(), List.of(),
-                List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false);
 
         ResultadoAnalise lido = leitor.readValue(serializador.paraJson(vazio), ResultadoAnalise.class);
 
