@@ -13,16 +13,12 @@ public class DetectorEndpoints {
     private static final String NOME_ARQUIVO = "controller";
     private static final String METODO_NAO_INFORMADO = "QUALQUER";
 
-    private static final Pattern COMENTARIO_DE_BLOCO =
-            Pattern.compile("(?ms)^\\s*/\\*.*?\\*/");
-    private static final Pattern COMENTARIO_DE_LINHA =
-            Pattern.compile("(?m)^\\s*//.*$");
     private static final Pattern DECLARACAO_CLASSE =
-            Pattern.compile("(?m)^\\s*(?:(?:public|abstract|final)\\s+)*class\\s+(\\w+)");
+            Pattern.compile("(?m)^[ \\t]*(?:(?:public|abstract|final)[ \\t]+)*class\\s+(\\w+)");
     private static final Pattern MAPEAMENTO_DE_CLASSE =
-            Pattern.compile("@RequestMapping\\s*\\(([^)]*)\\)");
+            Pattern.compile("@RequestMapping\\s{0,20}\\(([^)]{0,500})\\)");
     private static final Pattern MAPEAMENTO_DE_METODO =
-            Pattern.compile("@(Get|Post|Put|Delete|Patch|Request)Mapping\\b(?:\\s*\\(([^)]*)\\))?");
+            Pattern.compile("@(Get|Post|Put|Delete|Patch|Request)Mapping\\b(?:\\s{0,20}\\(([^)]{0,500})\\))?");
     private static final Pattern CAMINHO_NOMEADO =
             Pattern.compile("\\b(?:value|path)\\s*=\\s*\\{?\\s*\"([^\"]*)\"");
     private static final Pattern PRIMEIRA_STRING =
@@ -33,7 +29,7 @@ public class DetectorEndpoints {
     public List<Endpoint> detectar(String conteudo) {
         LimitesAnalise.validarTamanho(conteudo, NOME_ARQUIVO);
 
-        String codigo = removerComentarios(conteudo);
+        String codigo = RemovedorComentarios.remover(conteudo);
         if (!codigo.contains("@RestController") && !codigo.contains("@Controller")) {
             return List.of();
         }
@@ -62,11 +58,6 @@ public class DetectorEndpoints {
             endpoints.add(new Endpoint(metodoHttp, caminho, nomeController));
         }
         return endpoints;
-    }
-
-    private String removerComentarios(String conteudo) {
-        String semBloco = COMENTARIO_DE_BLOCO.matcher(conteudo).replaceAll("");
-        return COMENTARIO_DE_LINHA.matcher(semBloco).replaceAll("");
     }
 
     private String extrairCaminhoDaClasse(String cabecalho) {
