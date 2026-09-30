@@ -127,7 +127,9 @@ class AnalisePersistenciaTest {
     void deveBuscarAAnaliseMaisRecenteDoRepositorio() {
         UUID repositorioId = criarRepositorio();
 
-        AnaliseProjeto antiga = analiseRepository.saveAndFlush(new AnaliseProjeto(repositorioId));
+        AnaliseProjeto antigaPendente = new AnaliseProjeto(repositorioId);
+        antigaPendente.falhar("análise antiga");
+        AnaliseProjeto antiga = analiseRepository.saveAndFlush(antigaPendente);
         jdbcTemplate.update(
                 "UPDATE analises_projeto SET criado_em = now() - interval '1 hour' WHERE id = ?",
                 antiga.getId());
