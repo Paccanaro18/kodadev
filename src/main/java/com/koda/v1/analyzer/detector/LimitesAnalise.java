@@ -1,8 +1,8 @@
 package com.koda.v1.analyzer.detector;
 
-final class LimitesAnalise {
+public final class LimitesAnalise {
 
-    static final int MAXIMO_CARACTERES_ARQUIVO = 256 * 1024;
+    public static final int MAXIMO_CARACTERES_ARQUIVO = 256 * 1024;
 
     private LimitesAnalise() {
     }

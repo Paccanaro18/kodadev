@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriBuilder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.function.Function;
 
 @Component
 public class GithubClient {
+
+    private static final JsonMapper LEITOR_JSON = JsonMapper.builder().build();
 
     private final RestClient restClient;
 
@@ -49,9 +53,28 @@ public class GithubClient {
     }
 
     public BlobGithub buscarBlob(String token, String dono, String repositorio, String sha) {
-        return requisitar(token, uri -> uri.path("/repos/{dono}/{repo}/git/blobs/{sha}")
-                .build(dono, repositorio, sha))
-                .body(BlobGithub.class);
+        byte[] resposta = restClient.get()
+                .uri(uri -> uri.path("/repos/{dono}/{repo}/git/blobs/{sha}")
+                        .build(dono, repositorio, sha))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .exchange((requisicao, retorno) -> {
+                    if (retorno.getStatusCode().isError()) {
+                        throw traduzirErro(retorno.getStatusCode(),
+                                retorno.getHeaders().getFirst("X-RateLimit-Remaining"));
+                    }
+                    byte[] corpo = retorno.getBody()
+                            .readNBytes(LimitesGithub.TAMANHO_MAXIMO_RESPOSTA_BLOB_BYTES + 1);
+                    if (corpo.length > LimitesGithub.TAMANHO_MAXIMO_RESPOSTA_BLOB_BYTES) {
+                        throw new ArquivoGrandeDemaisException();
+                    }
+                    return corpo;
+                });
+
+        try {
+            return LEITOR_JSON.readValue(resposta, BlobGithub.class);
+        } catch (JacksonException e) {
+            throw new GithubApiException(HttpStatus.BAD_GATEWAY, "Resposta inválida do GitHub.");
+        }
     }
 
     private RestClient.ResponseSpec requisitar(String token, Function<UriBuilder, URI> uri) {

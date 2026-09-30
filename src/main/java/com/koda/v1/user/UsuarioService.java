@@ -1,6 +1,7 @@
 package com.koda.v1.user;
 
 import com.koda.v1.user.repository.UsuarioRepository;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,11 @@ public class UsuarioService {
                         new Usuario(dados.githubId(), dados.login(), dados.nome(), dados.avatarUrl())));
 
         return UsuarioResposta.de(usuario);
+    }
+
+    public UsuarioResposta buscarDaSessao(OAuth2User principal) {
+        Number githubId = principal.getAttribute("id");
+        return buscarPorGithubId(githubId.longValue());
     }
 
     @Transactional(readOnly = true)

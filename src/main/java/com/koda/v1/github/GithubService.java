@@ -33,6 +33,12 @@ public class GithubService {
                 .toList();
     }
 
+    public RepositorioResposta buscarRepositorio(UUID usuarioId, String dono, String repositorio) {
+        String token = conexaoGithubService.obterToken(usuarioId);
+
+        return RepositorioResposta.de(githubClient.buscarRepositorio(token, dono, repositorio));
+    }
+
     public ArvoreResposta buscarArvore(UUID usuarioId, String dono, String repositorio) {
         String token = conexaoGithubService.obterToken(usuarioId);
 
@@ -50,6 +56,9 @@ public class GithubService {
         String token = conexaoGithubService.obterToken(usuarioId);
 
         BlobGithub blob = githubClient.buscarBlob(token, dono, repositorio, sha);
+        if (blob.tamanho() > LimitesGithub.TAMANHO_MAXIMO_ARQUIVO_BYTES) {
+            throw new ArquivoGrandeDemaisException();
+        }
         String texto = decodificar(blob);
 
         return new ArquivoResposta(blob.sha(), blob.tamanho(), texto);

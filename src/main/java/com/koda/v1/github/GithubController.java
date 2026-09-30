@@ -47,7 +47,6 @@ public class GithubController {
     }
 
     private UUID usuarioIdDe(OAuth2User principal) {
-        Number githubId = principal.getAttribute("id");
-        return usuarioService.buscarPorGithubId(githubId.longValue()).id();
+        return usuarioService.buscarDaSessao(principal).id();
     }
 }
