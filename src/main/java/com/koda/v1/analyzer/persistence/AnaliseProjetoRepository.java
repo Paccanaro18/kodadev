@@ -12,4 +12,6 @@ public interface AnaliseProjetoRepository extends JpaRepository<AnaliseProjeto, 
     Optional<AnaliseProjeto> findFirstByRepositorioIdOrderByCriadoEmDesc(UUID repositorioId);
 
     List<AnaliseProjeto> findAllByStatusIn(Collection<StatusAnalise> status);
+
+    boolean existsByRepositorioIdAndStatusIn(UUID repositorioId, Collection<StatusAnalise> status);
 }

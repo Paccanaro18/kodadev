@@ -22,6 +22,25 @@ public class RegistroAnalise {
     }
 
     @Transactional
+    public UUID registrarNovaAnalise(UUID usuarioId, Long githubIdRepositorio,
+                                     String dono, String nome, String branchPadrao) {
+        RepositorioGithub repositorio = repositorioRepository
+                .findByUsuarioIdAndGithubIdRepositorio(usuarioId, githubIdRepositorio)
+                .map(existente -> {
+                    existente.atualizarDados(dono, nome, branchPadrao);
+                    return existente;
+                })
+                .orElseGet(() -> repositorioRepository.saveAndFlush(
+                        new RepositorioGithub(usuarioId, githubIdRepositorio, dono, nome, branchPadrao)));
+
+        if (analiseRepository.existsByRepositorioIdAndStatusIn(repositorio.getId(), STATUS_EM_ABERTO)) {
+            throw new AnaliseEmAndamentoException();
+        }
+
+        return analiseRepository.saveAndFlush(new AnaliseProjeto(repositorio.getId())).getId();
+    }
+
+    @Transactional
     public DadosExecucao iniciar(UUID analiseId) {
         AnaliseProjeto analise = buscar(analiseId);
         RepositorioGithub repositorio = repositorioRepository.findById(analise.getRepositorioId())
