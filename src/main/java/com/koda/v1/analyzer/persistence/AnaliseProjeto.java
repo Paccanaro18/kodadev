@@ -57,10 +57,12 @@ public class AnaliseProjeto {
     }
 
     public void iniciar() {
+        exigirStatus(StatusAnalise.EM_ANDAMENTO, StatusAnalise.PENDENTE);
         this.status = StatusAnalise.EM_ANDAMENTO;
     }
 
     public void concluir(String resultadoJson) {
+        exigirStatus(StatusAnalise.CONCLUIDA, StatusAnalise.EM_ANDAMENTO);
         this.status = StatusAnalise.CONCLUIDA;
         this.resultado = resultadoJson;
         this.mensagemErro = null;
@@ -68,9 +70,19 @@ public class AnaliseProjeto {
     }
 
     public void falhar(String mensagemErro) {
+        exigirStatus(StatusAnalise.FALHOU, StatusAnalise.PENDENTE, StatusAnalise.EM_ANDAMENTO);
         this.status = StatusAnalise.FALHOU;
         this.mensagemErro = mensagemErro;
         this.concluidaEm = Instant.now();
+    }
+
+    private void exigirStatus(StatusAnalise desejado, StatusAnalise... permitidos) {
+        for (StatusAnalise permitido : permitidos) {
+            if (this.status == permitido) {
+                return;
+            }
+        }
+        throw new TransicaoInvalidaException(this.status, desejado);
     }
 
     @PreUpdate
