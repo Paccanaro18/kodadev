@@ -132,6 +132,21 @@ public class DesafioService {
                 .toList();
     }
 
+    public DesafiosRecentesResposta recentes(UUID usuarioId) {
+        List<DesafioRecenteResposta> recentes = consulta.recentesDoUsuario(usuarioId).stream()
+                .map(recente -> new DesafioRecenteResposta(
+                        recente.id(), recente.analiseId(), recente.numero(), codigoDe(recente.numero()),
+                        recente.tipo(), recente.statusGeracao(), recente.titulo(),
+                        habilidadesDe(recente.conteudoJson()), recente.criadoEm()))
+                .toList();
+
+        return new DesafiosRecentesResposta(consulta.contarGerados(usuarioId), recentes);
+    }
+
+    private List<String> habilidadesDe(String conteudoJson) {
+        return conteudoJson == null ? List.of() : serializadorConteudo.deJson(conteudoJson).habilidades();
+    }
+
     private ContextoProjeto carregarContextoPronto(UUID usuarioId, UUID analiseId) {
         AnaliseDetalhe analise = consultaAnalise.buscarDoUsuario(usuarioId, analiseId);
         if (analise.status() != StatusAnalise.CONCLUIDA || analise.contextoJson() == null) {
