@@ -15,6 +15,58 @@ export type Repositorio = {
   atualizadoEm: string | null;
 };
 
+export type StatusAnalise = "PENDENTE" | "EM_ANDAMENTO" | "CONCLUIDA" | "FALHOU";
+
+export type Tecnologia = "POSTGRESQL" | "RABBITMQ" | "REDIS";
+
+export type EndpointDetectado = {
+  metodoHttp: string;
+  caminho: string;
+  controller: string;
+};
+
+export type ResultadoAnalise = {
+  temCodigoJava: boolean;
+  springBoot: boolean;
+  versaoJava: string | null;
+  versaoSpringBoot: string | null;
+  dependencias: string[];
+  tecnologias: Tecnologia[];
+  imagensDocker: string[];
+  controllers: string[];
+  services: string[];
+  repositories: string[];
+  entidades: string[];
+  testes: string[];
+  endpoints: EndpointDetectado[];
+  parcial: boolean;
+};
+
+export type AnaliseResumo = {
+  id: string;
+  status: StatusAnalise;
+  dono: string;
+  nome: string;
+  springBoot: boolean;
+  versaoJava: string | null;
+  tecnologias: Tecnologia[];
+  parcial: boolean;
+  mensagemErro: string | null;
+  criadoEm: string;
+  concluidaEm: string | null;
+};
+
+export type AnaliseDetalhe = {
+  id: string;
+  status: StatusAnalise;
+  dono: string;
+  nome: string;
+  resultado: ResultadoAnalise | null;
+  mensagemErro: string | null;
+  criadoEm: string;
+  concluidaEm: string | null;
+};
+
 export class ErroApi extends Error {
   constructor(
     public readonly status: number,
@@ -42,6 +94,18 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
   return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
+async function enviar<T>(caminho: string, corpo?: unknown): Promise<T> {
+  const csrf = await requisitar<{ cabecalho: string; token: string }>("/api/csrf");
+  const headers: Record<string, string> = { [csrf.cabecalho]: csrf.token };
+  if (corpo !== undefined) headers["Content-Type"] = "application/json";
+
+  return requisitar<T>(caminho, {
+    method: "POST",
+    headers,
+    body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  });
+}
+
 /** Devolve o perfil do usuário logado, ou null se não houver sessão. */
 export async function buscarPerfil(): Promise<Perfil | null> {
   try {
@@ -56,12 +120,18 @@ export function listarRepositorios(): Promise<Repositorio[]> {
   return requisitar<Repositorio[]>("/api/repositorios");
 }
 
+export function iniciarAnalise(dono: string, nome: string): Promise<{ id: string; status: StatusAnalise }> {
+  return enviar("/api/analises", { dono, nome });
+}
+
+export function buscarAnalise(id: string): Promise<AnaliseDetalhe> {
+  return requisitar<AnaliseDetalhe>(`/api/analises/${encodeURIComponent(id)}`);
+}
+
+export function listarAnalises(): Promise<AnaliseResumo[]> {
+  return requisitar<AnaliseResumo[]>("/api/analises");
+}
+
 export async function sair(): Promise<void> {
-  const csrf = await requisitar<{ cabecalho: string; token: string }>(
-    "/api/csrf",
-  );
-  await requisitar<void>("/api/logout", {
-    method: "POST",
-    headers: { [csrf.cabecalho]: csrf.token },
-  });
+  await enviar<void>("/api/logout");
 }
