@@ -99,7 +99,7 @@ Pronto:
 - API: `POST /api/analises/{id}/desafios` (corpo `{tipo: FEATURE|BUG|TESTING|ALEATORIO}`, 202 + `Location`), `GET /api/analises/{id}/desafios`, `GET /api/desafios/{id}`. Erros: 404 (dono errado), 409 (análise não concluída ou geração em aberto), 422 (sem combinação disponível), 429 (cota ou fila cheia). Sem dica nem status de progresso no ticket (Etapa 8).
 - Provedor de IA plugável (`koda.ia.provedor`): `falso` (padrão, títulos com prefixo "[Simulado]") ou `openai` (compatível com OpenAI, como o FreeLLMAPI; `KODA_IA_URL`, `KODA_IA_CHAVE`, `KODA_IA_MODELO` por variável de ambiente, veja `.env.example`). URL só https, ou http em localhost; sem redirects; resposta até 256 KB; prompts e chave nunca vão para log.
 - Front: `/desafio/novo?analise=<id>` (escolha do tipo), `/desafio/gerando?desafio=<id>` (polling 1,5 s), `/desafio/<id>` (ticket real) e lista de desafios reais na tela do projeto. Os dados de exemplo dos desafios foram removidos; o dashboard ainda tem trechos de exemplo (Etapa 8).
-- Pendente da Etapa 6: medição com IA real (calibrar limite de similaridade e temperatura com o FreeLLMAPI instalado fora do repositório, só em 127.0.0.1).
+- Medição com IA real (FreeLLMAPI, 13 gerações): os 9 tickets reais tiveram ângulos e títulos distintos, similaridade máxima 0,24 (mediana 0,06) contra o limite de 0,70, que foi mantido. 3 falharam por o provedor não responder em 60 s (modelos lentos escolhidos pelo `auto`); por isso `GeradorDesafio` tenta uma segunda vez quando o provedor não responde e registra no log só o motivo da tentativa descartada. Sugestão de uso: `KODA_IA_MODELO=auto:fast`. A segunda bateria foi dispensada.
 
 ## Dívidas conhecidas
 
