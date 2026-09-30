@@ -80,6 +80,20 @@ public class ValidadorDesafio {
         return List.copyOf(motivos);
     }
 
+    /** Uma dica não pode entregar a solução nem citar classe ou endpoint que não existe. */
+    public List<MotivoReprovacao> validarDica(String dica, ContextoProjeto contexto) {
+        Set<MotivoReprovacao> motivos = EnumSet.noneOf(MotivoReprovacao.class);
+        List<String> textos = List.of(dica);
+
+        if (entregaASolucao(textos)) {
+            motivos.add(MotivoReprovacao.SOLUCAO_ENTREGUE);
+        }
+        if (citaAlgoInexistente(textos, contexto)) {
+            motivos.add(MotivoReprovacao.REFERENCIA_INEXISTENTE);
+        }
+        return List.copyOf(motivos);
+    }
+
     private List<String> textosDoTicket(ConteudoDesafio c) {
         List<String> textos = new ArrayList<>();
         textos.add(c.titulo());

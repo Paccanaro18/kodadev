@@ -47,6 +47,17 @@ public class VerificadorConteudo {
                 lista(raiz, "habilidades", 1, 6, TAMANHO_MAXIMO_HABILIDADE));
     }
 
+    /** Lê um objeto JSON com um único campo de texto, com as mesmas defesas do ticket. Usado nas dicas. */
+    public String verificarTexto(String respostaBruta, String campo, int tamanhoMaximo) {
+        if (respostaBruta == null || respostaBruta.isBlank()) {
+            throw new ConteudoInvalidoException("A resposta da IA veio vazia.");
+        }
+        if (respostaBruta.length() > TAMANHO_MAXIMO_RESPOSTA) {
+            throw new ConteudoInvalidoException("A resposta da IA passou do tamanho permitido.");
+        }
+        return texto(lerObjeto(respostaBruta), campo, tamanhoMaximo);
+    }
+
     private JsonNode lerObjeto(String respostaBruta) {
         int inicio = respostaBruta.indexOf('{');
         int fim = respostaBruta.lastIndexOf('}');

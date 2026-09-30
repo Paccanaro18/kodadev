@@ -150,6 +150,23 @@ class ValidadorDesafioTest {
                 .contains(MotivoReprovacao.ESCOPO_GRANDE);
     }
 
+    @Test
+    void deveAprovarUmaDicaQueSoApontaOCaminho() {
+        assertThat(validador.validarDica(
+                "Releia o objetivo e descubra em que parte do PagamentoService o comportamento atual difere do esperado.",
+                contexto)).isEmpty();
+    }
+
+    @Test
+    void deveReprovarDicaQueEntregaASolucaoOuCitaAlgoInexistente() {
+        assertThat(validador.validarDica("Chame buscarPorStatus() no repositório.", contexto))
+                .contains(MotivoReprovacao.SOLUCAO_ENTREGUE);
+        assertThat(validador.validarDica("Basta trocar o retorno por uma lista.", contexto))
+                .contains(MotivoReprovacao.SOLUCAO_ENTREGUE);
+        assertThat(validador.validarDica("Olhe o PedidoService que já calcula isso.", contexto))
+                .contains(MotivoReprovacao.REFERENCIA_INEXISTENTE);
+    }
+
     private ConteudoDesafio ticket() {
         return new ConteudoDesafio(
                 "Adicionar paginação na listagem de pagamentos",

@@ -220,4 +220,39 @@ class VerificadorConteudoTest {
 
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> verificador.verificar(resposta));
     }
+
+    @Test
+    void deveLerUmCampoDeTextoComTextoAntesEDepoisDoJson() {
+        String texto = verificador.verificarTexto(
+                "Claro!\n{\"dica\": \"  Releia   o objetivo.  \"}\nEspero ajudar.", "dica", 100);
+
+        assertThat(texto).isEqualTo("Releia o objetivo.");
+    }
+
+    @Test
+    void deveCortarOTextoNoTamanhoMaximoEPedirCampoPresenteEDoTipoCerto() {
+        String longo = "palavra ".repeat(100);
+
+        assertThat(verificador.verificarTexto("{\"dica\": \"" + longo + "\"}", "dica", 50).length())
+                .isLessThanOrEqualTo(50);
+        assertThatThrownBy(() -> verificador.verificarTexto("{\"outra\": \"x\"}", "dica", 50))
+                .isInstanceOf(ConteudoInvalidoException.class);
+        assertThatThrownBy(() -> verificador.verificarTexto("{\"dica\": [\"x\"]}", "dica", 50))
+                .isInstanceOf(ConteudoInvalidoException.class);
+        assertThatThrownBy(() -> verificador.verificarTexto("{\"dica\": \"   \"}", "dica", 50))
+                .isInstanceOf(ConteudoInvalidoException.class);
+        assertThatThrownBy(() -> verificador.verificarTexto(null, "dica", 50))
+                .isInstanceOf(ConteudoInvalidoException.class);
+        assertThatThrownBy(() -> verificador.verificarTexto("sem json", "dica", 50))
+                .isInstanceOf(ConteudoInvalidoException.class);
+    }
+
+    @Test
+    void deveRecusarBlocoDeCodigoEEliminarCaracteresInvisiveisNoCampoDeTexto() {
+        assertThatThrownBy(() -> verificador.verificarTexto("{\"dica\": \"use ```java x```\"}", "dica", 100))
+                .isInstanceOf(ConteudoInvalidoException.class);
+
+        String comInvisivel = "{\"dica\": \"abc\\u200Bdef\\u0000ghi\"}";
+        assertThat(verificador.verificarTexto(comInvisivel, "dica", 100)).isEqualTo("abcdefghi");
+    }
 }
