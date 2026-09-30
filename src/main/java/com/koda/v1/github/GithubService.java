@@ -50,6 +50,9 @@ public class GithubService {
         String token = conexaoGithubService.obterToken(usuarioId);
 
         BlobGithub blob = githubClient.buscarBlob(token, dono, repositorio, sha);
+        if (blob.tamanho() > LimitesGithub.TAMANHO_MAXIMO_ARQUIVO_BYTES) {
+            throw new ArquivoGrandeDemaisException();
+        }
         String texto = decodificar(blob);
 
         return new ArquivoResposta(blob.sha(), blob.tamanho(), texto);
