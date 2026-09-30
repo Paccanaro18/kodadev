@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -39,6 +40,13 @@ public class AnaliseController {
         return ResponseEntity.accepted()
                 .location(URI.create("/api/analises/" + resposta.id()))
                 .body(resposta);
+    }
+
+    @GetMapping
+    public List<AnaliseResumoResposta> listar(@AuthenticationPrincipal OAuth2User principal) {
+        UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
+
+        return analiseService.listar(usuario.id());
     }
 
     @GetMapping("/{id}")

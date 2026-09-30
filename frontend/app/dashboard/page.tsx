@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock, Flame, GitBranch, Play, Star, Users, SquareCheck, FolderGit2 } from "lucide-react";
+import { ArrowRight, Check, Clock, Flame, GitBranch, Play, Star, Users, SquareCheck } from "lucide-react";
 import AppShell from "@/components/AppShell";
 import { AvisoExemplo, Mascot } from "@/components/ui";
+import RepositoriosConectados from "@/components/RepositoriosConectados";
 import { Saudacao } from "@/components/Saudacao";
 import { home } from "@/lib/home";
 
@@ -12,7 +13,7 @@ const seeAll = "rounded-[10px] border border-[#e5e2f2] px-3 py-1.5 text-xs font-
 export default function Dashboard() {
   return (
     <AppShell>
-      <AvisoExemplo>Só a saudação e o menu lateral são reais. O restante chega com as etapas de análise e desafios.</AvisoExemplo>
+      <AvisoExemplo>Só a saudação, o menu lateral e os repositórios conectados são reais. O restante chega com a Etapa 8 (progresso e histórico) e com os desafios.</AvisoExemplo>
       <div className="flex flex-wrap gap-5">
         <div className="grid min-w-0 flex-[1_1_560px] content-start gap-5">
           <section className="flex flex-wrap items-center justify-between gap-2 px-2 pt-3">
@@ -45,23 +46,7 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className={card + " p-6"}>
-            <div className="mb-4 flex items-center justify-between"><h2 className="text-[17px] font-bold">Repositórios conectados</h2><Link href="/repositorios/adicionar" className={seeAll}>Ver todos →</Link></div>
-            <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-              {home.repos.map((r) => (
-                <Link key={r.name} href="/projeto" className="grid gap-2.5 rounded-[18px] border border-[#efecf7] p-4 text-ink transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift active:translate-y-0">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-9.5 place-items-center rounded-xl bg-koda-soft text-koda"><FolderGit2 className="size-5" /></div>
-                    <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{r.name}</div><div className="truncate text-[11px] text-[#8a8fa5]">{r.path}</div></div>
-                    {r.main && <span className="rounded-lg bg-koda-soft px-2 py-0.5 text-[11px] text-koda">Principal</span>}
-                  </div>
-                  <p className="text-[13px] leading-snug text-ink-2">{r.desc}</p>
-                  <div className="flex flex-wrap gap-1.5">{r.tags.map((t) => <span key={t} className="rounded-full border border-[#ece9f5] px-2.5 py-0.5 text-[11px]">{t}</span>)}</div>
-                  <div className="flex items-center gap-2 text-xs text-[#3b4058]"><i className="size-2 rounded-full bg-[#2fbf71]" />{r.when}</div>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RepositoriosConectados />
 
           <div className="grid gap-5 md:grid-cols-2">
             <section className={card + " p-6"}>

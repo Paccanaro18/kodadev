@@ -1,6 +1,7 @@
 package com.koda.v1.analyzer;
 
 import com.koda.v1.analyzer.detector.Endpoint;
+import com.koda.v1.analyzer.detector.Tecnologia;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
 import com.koda.v1.analyzer.persistence.AnaliseEmAndamentoException;
 import com.koda.v1.analyzer.persistence.AnaliseNaoEncontradaException;
@@ -142,6 +143,31 @@ class AnaliseServiceTest {
 
         assertThat(resposta.resultado()).isNull();
         assertThat(resposta.concluidaEm()).isNull();
+    }
+
+    @Test
+    void deveListarResumosComOsDadosDoResultadoQuandoHouver() {
+        ResultadoAnalise resultado = new ResultadoAnalise(
+                true, true, "21", "4.1.1", List.of(), List.of(Tecnologia.POSTGRESQL), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), true);
+        Instant agora = Instant.now();
+        when(consulta.listarUltimasDoUsuario(usuarioId)).thenReturn(List.of(
+                new AnaliseDetalhe(analiseId, StatusAnalise.CONCLUIDA, "artur", "koda",
+                        new SerializadorResultado().paraJson(resultado), null, agora, agora),
+                new AnaliseDetalhe(UUID.randomUUID(), StatusAnalise.FALHOU, "artur", "outro",
+                        null, "O repositório não é um projeto Spring Boot.", agora, agora)));
+
+        List<AnaliseResumoResposta> resumos = service.listar(usuarioId);
+
+        assertThat(resumos).hasSize(2);
+        assertThat(resumos.get(0).springBoot()).isTrue();
+        assertThat(resumos.get(0).versaoJava()).isEqualTo("21");
+        assertThat(resumos.get(0).tecnologias()).containsExactly(Tecnologia.POSTGRESQL);
+        assertThat(resumos.get(0).parcial()).isTrue();
+        assertThat(resumos.get(1).springBoot()).isFalse();
+        assertThat(resumos.get(1).versaoJava()).isNull();
+        assertThat(resumos.get(1).tecnologias()).isEmpty();
+        assertThat(resumos.get(1).mensagemErro()).isEqualTo("O repositório não é um projeto Spring Boot.");
     }
 
     @Test

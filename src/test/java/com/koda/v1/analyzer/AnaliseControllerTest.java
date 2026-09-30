@@ -92,6 +92,8 @@ class AnaliseControllerTest {
     void deveDevolver401NaConsultaSemSessaoEBloquearOPostSemSessao() throws Exception {
         mockMvc.perform(get("/api/analises/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/analises"))
+                .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/analises").contentType(MediaType.APPLICATION_JSON).content(CORPO_VALIDO))
                 .andExpect(status().isForbidden());
 
@@ -202,6 +204,22 @@ class AnaliseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDENTE"))
                 .andExpect(jsonPath("$.resultado").doesNotExist());
+    }
+
+    @Test
+    void deveListarSoAsAnalisesDoProprioUsuario() throws Exception {
+        UUID minha = registro.registrarNovaAnalise(usuarioId, 42L, "artur", "koda", "main");
+        long outroGithubId = githubIdDoUsuario == Long.MAX_VALUE ? 1 : githubIdDoUsuario + 1;
+        UUID outroUsuario = criarUsuario(outroGithubId, "outro");
+        registro.registrarNovaAnalise(outroUsuario, 99L, "outro", "segredo", "main");
+
+        mockMvc.perform(get("/api/analises").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(minha.toString()))
+                .andExpect(jsonPath("$[0].nome").value("koda"))
+                .andExpect(jsonPath("$[0].status").value("PENDENTE"))
+                .andExpect(jsonPath("$[0].tecnologias").isEmpty());
     }
 
     @Test

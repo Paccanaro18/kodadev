@@ -10,6 +10,7 @@ import com.koda.v1.github.dto.RepositorioResposta;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -48,6 +49,12 @@ public class AnaliseService {
         return new AnaliseResposta(analiseId, StatusAnalise.PENDENTE);
     }
 
+    public List<AnaliseResumoResposta> listar(UUID usuarioId) {
+        return consulta.listarUltimasDoUsuario(usuarioId).stream()
+                .map(this::resumir)
+                .toList();
+    }
+
     public AnaliseDetalheResposta consultar(UUID usuarioId, UUID analiseId) {
         AnaliseDetalhe detalhe = consulta.buscarDoUsuario(usuarioId, analiseId);
 
@@ -61,6 +68,25 @@ public class AnaliseService {
                 detalhe.dono(),
                 detalhe.nome(),
                 resultado,
+                detalhe.mensagemErro(),
+                detalhe.criadoEm(),
+                detalhe.concluidaEm());
+    }
+
+    private AnaliseResumoResposta resumir(AnaliseDetalhe detalhe) {
+        ResultadoAnalise resultado = detalhe.resultadoJson() == null
+                ? null
+                : serializador.deJson(detalhe.resultadoJson());
+
+        return new AnaliseResumoResposta(
+                detalhe.id(),
+                detalhe.status(),
+                detalhe.dono(),
+                detalhe.nome(),
+                resultado != null && resultado.springBoot(),
+                resultado == null ? null : resultado.versaoJava(),
+                resultado == null ? List.of() : resultado.tecnologias(),
+                resultado != null && resultado.parcial(),
                 detalhe.mensagemErro(),
                 detalhe.criadoEm(),
                 detalhe.concluidaEm());
