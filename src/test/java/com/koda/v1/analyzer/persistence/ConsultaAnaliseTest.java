@@ -49,6 +49,22 @@ class ConsultaAnaliseTest {
     }
 
     @Test
+    void deveDevolverOContextoGravadoNaConclusao() {
+        UUID dono = criarUsuario();
+        UUID analiseId = criarAnalise(dono);
+        AnaliseProjeto analise = analiseRepository.findById(analiseId).orElseThrow();
+        analise.iniciar();
+        analise.concluir("{\"a\":1}", "{\"versaoEsquema\":1}", 1);
+        analiseRepository.saveAndFlush(analise);
+        entityManager.clear();
+
+        AnaliseDetalhe detalhe = consulta.buscarDoUsuario(dono, analiseId);
+
+        assertThat(detalhe.contextoJson()).contains("versaoEsquema");
+        assertThat(detalhe.resultadoJson()).contains("\"a\"");
+    }
+
+    @Test
     void naoDeveDevolverAAnaliseDeOutroUsuarioComoSeNaoExistisse() {
         UUID dono = criarUsuario();
         UUID outro = criarUsuario();

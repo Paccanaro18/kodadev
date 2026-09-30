@@ -124,7 +124,7 @@ class AnaliseServiceTest {
         String json = new SerializadorResultado().paraJson(resultado);
         Instant agora = Instant.now();
         when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
-                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", json, null, agora, agora));
+                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", json, null, null, agora, agora));
 
         AnaliseDetalheResposta resposta = service.consultar(usuarioId, analiseId);
 
@@ -137,7 +137,7 @@ class AnaliseServiceTest {
     void deveConsultarAnaliseSemResultadoAinda() {
         Instant agora = Instant.now();
         when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
-                analiseId, StatusAnalise.PENDENTE, "artur", "koda", null, null, agora, null));
+                analiseId, StatusAnalise.PENDENTE, "artur", "koda", null, null, null, agora, null));
 
         AnaliseDetalheResposta resposta = service.consultar(usuarioId, analiseId);
 
@@ -153,9 +153,9 @@ class AnaliseServiceTest {
         Instant agora = Instant.now();
         when(consulta.listarUltimasDoUsuario(usuarioId)).thenReturn(List.of(
                 new AnaliseDetalhe(analiseId, StatusAnalise.CONCLUIDA, "artur", "koda",
-                        new SerializadorResultado().paraJson(resultado), null, agora, agora),
+                        new SerializadorResultado().paraJson(resultado), null, null, agora, agora),
                 new AnaliseDetalhe(UUID.randomUUID(), StatusAnalise.FALHOU, "artur", "outro",
-                        null, "O repositório não é um projeto Spring Boot.", agora, agora)));
+                        null, null, "O repositório não é um projeto Spring Boot.", agora, agora)));
 
         List<AnaliseResumoResposta> resumos = service.listar(usuarioId);
 
