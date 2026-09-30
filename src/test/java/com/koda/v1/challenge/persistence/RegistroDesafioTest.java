@@ -126,6 +126,25 @@ class RegistroDesafioTest {
     }
 
     @Test
+    void deveReselecionarGravandoOsNovosValoresNoBanco() {
+        UUID usuario = DadosDeTeste.usuario(jdbc);
+        UUID id = registro.registrarNovo(usuario, DadosDeTeste.analise(jdbc, usuario),
+                TipoDesafio.FEATURE, "FEATURE_A", "CLASSE:A", "perspectiva antiga");
+        registro.iniciar(id);
+
+        registro.reselecionar(id, "FEATURE_B", "CLASSE:B", "perspectiva nova");
+        entityManager.flush();
+        entityManager.clear();
+
+        Desafio lido = repository.findById(id).orElseThrow();
+        assertThat(lido.getAnguloId()).isEqualTo("FEATURE_B");
+        assertThat(lido.getAlvoChave()).isEqualTo("CLASSE:B");
+        assertThat(lido.getPerspectiva()).isEqualTo("perspectiva nova");
+        assertThatThrownBy(() -> registro.reselecionar(UUID.randomUUID(), "A", "B", "C"))
+                .isInstanceOf(DesafioNaoEncontradoException.class);
+    }
+
+    @Test
     void deveContarTentativasSoEmAndamento() {
         UUID usuario = DadosDeTeste.usuario(jdbc);
         UUID id = registro.registrarNovo(usuario, DadosDeTeste.analise(jdbc, usuario),

@@ -85,6 +85,35 @@ class DesafioTest {
     }
 
     @Test
+    void deveReselecionarAnguloAlvoEPerspectivaSoEmAndamento() {
+        Desafio desafio = novo();
+
+        assertThatThrownBy(() -> desafio.reselecionar("OUTRO", "CLASSE:B", "outra"))
+                .isInstanceOf(TransicaoDesafioInvalidaException.class);
+
+        desafio.iniciar();
+        desafio.reselecionar("OUTRO", "CLASSE:B", "outra");
+
+        assertThat(desafio.getAnguloId()).isEqualTo("OUTRO");
+        assertThat(desafio.getAlvoChave()).isEqualTo("CLASSE:B");
+        assertThat(desafio.getPerspectiva()).isEqualTo("outra");
+        desafio.concluir("T", "{}", 1, null);
+        assertThatThrownBy(() -> desafio.reselecionar("X", "Y", "Z")).isInstanceOf(TransicaoDesafioInvalidaException.class);
+    }
+
+    @Test
+    void naoDeveReselecionarComValoresVaziosENemAlterarONada() {
+        Desafio desafio = novo();
+        desafio.iniciar();
+
+        assertThatThrownBy(() -> desafio.reselecionar(null, "CLASSE:B", "p")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> desafio.reselecionar("A", " ", "p")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> desafio.reselecionar("A", "CLASSE:B", "")).isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(desafio.getAnguloId()).isEqualTo("FEATURE_PAGINACAO");
+    }
+
+    @Test
     void naoDeveConcluirComTituloConteudoOuVersaoInvalidosENemMudarOEstado() {
         Desafio desafio = novo();
         desafio.iniciar();
