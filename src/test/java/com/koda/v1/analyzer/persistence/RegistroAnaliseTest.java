@@ -171,6 +171,30 @@ class RegistroAnaliseTest {
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    void deveConcluirGravandoResultadoContextoEVersaoDoEsquema() {
+        UUID analiseId = criarAnalise(criarUsuario());
+        registro.iniciar(analiseId);
+
+        registro.concluir(analiseId, "{\"versaoJava\":\"21\"}", "{\"versaoEsquema\":1}", 1);
+        entityManager.flush();
+        entityManager.clear();
+
+        AnaliseProjeto lida = analiseRepository.findById(analiseId).orElseThrow();
+        assertThat(lida.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
+        assertThat(lida.getResultado()).contains("versaoJava");
+        assertThat(lida.getContexto()).contains("versaoEsquema");
+        assertThat(lida.getVersaoEsquemaContexto()).isEqualTo(1);
+    }
+
+    @Test
+    void naoDeveConcluirComContextoUmaAnalisePendente() {
+        UUID analiseId = criarAnalise(criarUsuario());
+
+        assertThatThrownBy(() -> registro.concluir(analiseId, "{}", "{}", 1))
+                .isInstanceOf(TransicaoInvalidaException.class);
+    }
+
     private StatusAnalise statusDe(UUID analiseId) {
         entityManager.flush();
         entityManager.clear();
