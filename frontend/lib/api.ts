@@ -100,6 +100,51 @@ export type AnaliseDetalhe = {
   concluidaEm: string | null;
 };
 
+export type TipoDesafio = "FEATURE" | "BUG" | "TESTING";
+
+export type TipoPedido = TipoDesafio | "ALEATORIO";
+
+export type StatusGeracao = "PENDENTE" | "EM_ANDAMENTO" | "PRONTO" | "FALHOU";
+
+export type ConteudoDesafio = {
+  titulo: string;
+  contexto: string;
+  cenarioAtual: string;
+  objetivo: string;
+  regrasDeNegocio: string[];
+  requisitosTecnicos: string[];
+  criteriosDeAceite: string[];
+  testesEsperados: string[];
+  restricoes: string[];
+  habilidades: string[];
+};
+
+export type DesafioDetalhe = {
+  id: string;
+  analiseId: string;
+  numero: number;
+  codigo: string;
+  tipo: TipoDesafio;
+  nivel: "JUNIOR";
+  statusGeracao: StatusGeracao;
+  titulo: string | null;
+  conteudo: ConteudoDesafio | null;
+  mensagemErro: string | null;
+  criadoEm: string;
+  concluidoEm: string | null;
+};
+
+export type DesafioResumo = {
+  id: string;
+  numero: number;
+  codigo: string;
+  tipo: TipoDesafio;
+  statusGeracao: StatusGeracao;
+  titulo: string | null;
+  mensagemErro: string | null;
+  criadoEm: string;
+};
+
 export class ErroApi extends Error {
   constructor(
     public readonly status: number,
@@ -163,6 +208,21 @@ export function buscarAnalise(id: string): Promise<AnaliseDetalhe> {
 
 export function listarAnalises(): Promise<AnaliseResumo[]> {
   return requisitar<AnaliseResumo[]>("/api/analises");
+}
+
+export function iniciarDesafio(
+  analiseId: string,
+  tipo: TipoPedido,
+): Promise<{ id: string; statusGeracao: StatusGeracao }> {
+  return enviar(`/api/analises/${encodeURIComponent(analiseId)}/desafios`, { tipo });
+}
+
+export function buscarDesafio(id: string): Promise<DesafioDetalhe> {
+  return requisitar<DesafioDetalhe>(`/api/desafios/${encodeURIComponent(id)}`);
+}
+
+export function listarDesafios(analiseId: string): Promise<DesafioResumo[]> {
+  return requisitar<DesafioResumo[]>(`/api/analises/${encodeURIComponent(analiseId)}/desafios`);
 }
 
 export async function sair(): Promise<void> {

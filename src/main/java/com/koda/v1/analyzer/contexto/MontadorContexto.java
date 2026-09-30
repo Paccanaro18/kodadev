@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Component
@@ -27,7 +26,6 @@ public class MontadorContexto {
     private static final String FERRAMENTA_DE_BUILD = "maven";
     private static final String PREFIXO_MAIN = "src/main/java/";
     private static final String EXTENSAO_JAVA = ".java";
-    private static final Pattern VERSAO_DA_API = Pattern.compile("v\\d+", Pattern.CASE_INSENSITIVE);
 
     private static final List<String> SUFIXOS_DE_DOMINIO =
             List.of("ServiceImpl", "Service", "Controller", "Repository");
@@ -175,20 +173,10 @@ public class MontadorContexto {
     private List<String> features(List<EndpointContexto> endpoints, Balanco balanco) {
         Set<String> recursos = new LinkedHashSet<>();
         for (EndpointContexto endpoint : endpoints) {
-            primeiroRecurso(endpoint.caminho()).ifPresent(recursos::add);
+            RecursoDoCaminho.de(endpoint.caminho()).ifPresent(recursos::add);
         }
         balanco.truncado |= recursos.size() > MAXIMO_FEATURES;
         return recursos.stream().limit(MAXIMO_FEATURES).toList();
-    }
-
-    private Optional<String> primeiroRecurso(String caminho) {
-        for (String segmento : caminho.split("/")) {
-            if (segmento.isBlank() || segmento.equalsIgnoreCase("api") || VERSAO_DA_API.matcher(segmento).matches()) {
-                continue;
-            }
-            return segmento.startsWith("{") ? Optional.empty() : Optional.of(segmento);
-        }
-        return Optional.empty();
     }
 
     private ComponentesContexto componentes(ResultadoAnalise resultado, List<String> arquivosDeMain, Balanco balanco) {
