@@ -159,6 +159,8 @@ export type DesafioRecente = {
 
 export type DesafiosRecentes = {
   totalGerados: number;
+  cotaUsada: number;
+  cotaLimite: number;
   recentes: DesafioRecente[];
 };
 

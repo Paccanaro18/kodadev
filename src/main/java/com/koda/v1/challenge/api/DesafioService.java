@@ -140,7 +140,9 @@ public class DesafioService {
                         habilidadesDe(recente.conteudoJson()), recente.criadoEm()))
                 .toList();
 
-        return new DesafiosRecentesResposta(consulta.contarGerados(usuarioId), recentes);
+        long cotaUsada = consulta.contarQueGastaramCotaDesde(usuarioId, relogio.instant().minus(JANELA_DA_COTA));
+
+        return new DesafiosRecentesResposta(consulta.contarGerados(usuarioId), cotaUsada, limiteDiario, recentes);
     }
 
     private List<String> habilidadesDe(String conteudoJson) {

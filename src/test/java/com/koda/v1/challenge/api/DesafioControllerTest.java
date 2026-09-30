@@ -268,6 +268,8 @@ class DesafioControllerTest {
         String corpo = mockMvc.perform(get("/api/desafios").session(sessao))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalGerados").value(1))
+                .andExpect(jsonPath("$.cotaLimite").value(3))
+                .andExpect(jsonPath("$.cotaUsada").value(2))
                 .andExpect(jsonPath("$.recentes.length()").value(2))
                 .andReturn().getResponse().getContentAsString();
 
@@ -288,6 +290,7 @@ class DesafioControllerTest {
         mockMvc.perform(get("/api/desafios").session(sessao))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalGerados").value(0))
+                .andExpect(jsonPath("$.cotaUsada").value(0))
                 .andExpect(jsonPath("$.recentes.length()").value(0));
     }
 
