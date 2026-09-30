@@ -51,7 +51,7 @@ class RegistroAnaliseTest {
         UUID analiseId = criarAnalise(criarUsuario());
         registro.iniciar(analiseId);
 
-        registro.concluir(analiseId, "{\"versaoJava\":\"21\"}");
+        registro.concluir(analiseId, "{\"versaoJava\":\"21\"}", "{}", 1);
         entityManager.flush();
         entityManager.clear();
 
@@ -90,7 +90,7 @@ class RegistroAnaliseTest {
 
         assertThatThrownBy(() -> registro.iniciar(inexistente))
                 .isInstanceOf(AnaliseNaoEncontradaException.class);
-        assertThatThrownBy(() -> registro.concluir(inexistente, "{}"))
+        assertThatThrownBy(() -> registro.concluir(inexistente, "{}", "{}", 1))
                 .isInstanceOf(AnaliseNaoEncontradaException.class);
         assertThatThrownBy(() -> registro.falhar(inexistente, "x"))
                 .isInstanceOf(AnaliseNaoEncontradaException.class);
@@ -104,7 +104,7 @@ class RegistroAnaliseTest {
         UUID concluida = criarAnalise(usuarioId);
         registro.iniciar(emAndamento);
         registro.iniciar(concluida);
-        registro.concluir(concluida, "{}");
+        registro.concluir(concluida, "{}", "{}", 1);
 
         int total = registro.falharAnalisesEmAberto("interrompida");
         entityManager.flush();
@@ -146,7 +146,7 @@ class RegistroAnaliseTest {
         UUID usuarioId = criarUsuario();
         UUID primeira = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "nome-antigo", "main");
         registro.iniciar(primeira);
-        registro.concluir(primeira, "{}");
+        registro.concluir(primeira, "{}", "{}", 1);
 
         UUID segunda = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "nome-novo", "develop");
         entityManager.flush();

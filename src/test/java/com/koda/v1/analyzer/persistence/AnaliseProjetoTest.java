@@ -18,7 +18,7 @@ class AnaliseProjetoTest {
         AnaliseProjeto analise = nova();
 
         analise.iniciar();
-        analise.concluir("{}");
+        analise.concluir("{}", "{}", 1);
 
         assertThat(analise.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
         assertThat(analise.getConcluidaEm()).isNotNull();
@@ -49,20 +49,20 @@ class AnaliseProjetoTest {
 
     @Test
     void naoDeveConcluirAnalisePendente() {
-        assertThatThrownBy(() -> nova().concluir("{}")).isInstanceOf(TransicaoInvalidaException.class);
+        assertThatThrownBy(() -> nova().concluir("{}", "{}", 1)).isInstanceOf(TransicaoInvalidaException.class);
     }
 
     @Test
     void naoDeveMudarDepoisDeConcluidaOuFalhada() {
         AnaliseProjeto concluida = nova();
         concluida.iniciar();
-        concluida.concluir("{}");
+        concluida.concluir("{}", "{}", 1);
         AnaliseProjeto falhada = nova();
         falhada.falhar("erro");
 
         assertThatThrownBy(() -> concluida.falhar("x")).isInstanceOf(TransicaoInvalidaException.class);
         assertThatThrownBy(concluida::iniciar).isInstanceOf(TransicaoInvalidaException.class);
-        assertThatThrownBy(() -> falhada.concluir("{}")).isInstanceOf(TransicaoInvalidaException.class);
+        assertThatThrownBy(() -> falhada.concluir("{}", "{}", 1)).isInstanceOf(TransicaoInvalidaException.class);
         assertThatThrownBy(falhada::iniciar).isInstanceOf(TransicaoInvalidaException.class);
     }
 
@@ -77,17 +77,6 @@ class AnaliseProjetoTest {
         assertThat(analise.getResultado()).isEqualTo("{\"a\":1}");
         assertThat(analise.getContexto()).isEqualTo("{\"versaoEsquema\":1}");
         assertThat(analise.getVersaoEsquemaContexto()).isEqualTo(1);
-    }
-
-    @Test
-    void deveDeixarOContextoVazioQuandoConcluidaPeloCaminhoAntigo() {
-        AnaliseProjeto analise = nova();
-        analise.iniciar();
-
-        analise.concluir("{}");
-
-        assertThat(analise.getContexto()).isNull();
-        assertThat(analise.getVersaoEsquemaContexto()).isNull();
     }
 
     @Test

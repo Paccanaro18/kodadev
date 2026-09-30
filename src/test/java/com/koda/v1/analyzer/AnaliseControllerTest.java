@@ -184,7 +184,7 @@ class AnaliseControllerTest {
         ResultadoAnalise resultado = new ResultadoAnalise(
                 true, true, "21", "4.1.1", List.of(), List.of(), List.of(),
                 List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), true);
-        registro.concluir(analiseId, new SerializadorResultado().paraJson(resultado));
+        registro.concluir(analiseId, new SerializadorResultado().paraJson(resultado), "{}", 1);
 
         mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
                 .andExpect(status().isOk())

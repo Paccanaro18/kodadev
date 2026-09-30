@@ -85,7 +85,7 @@ class AnalisePersistenciaTest {
         assertThat(analise.getStatus()).isEqualTo(StatusAnalise.PENDENTE);
 
         analise.iniciar();
-        analise.concluir("{\"versaoJava\":\"21\",\"dependencias\":[\"a\",\"b\"]}");
+        analise.concluir("{\"versaoJava\":\"21\",\"dependencias\":[\"a\",\"b\"]}", "{}", 1);
         analiseRepository.saveAndFlush(analise);
         entityManager.clear();
 
@@ -166,15 +166,16 @@ class AnalisePersistenciaTest {
     }
 
     @Test
-    void deveLerComoNulaUmaAnaliseConcluidaSemContexto() {
-        AnaliseProjeto analise = new AnaliseProjeto(criarRepositorio());
-        analise.iniciar();
-        analise.concluir("{}");
-        analiseRepository.saveAndFlush(analise);
-        entityManager.clear();
+    void deveLerComoNulaUmaAnaliseAntigaConcluidaSemContexto() {
+        UUID repositorioId = criarRepositorio();
+        UUID analiseId = jdbcTemplate.queryForObject(
+                "INSERT INTO analises_projeto (repositorio_id, status, resultado) "
+                        + "VALUES (?, 'CONCLUIDA', '{}'::jsonb) RETURNING id",
+                UUID.class, repositorioId);
 
-        AnaliseProjeto lida = analiseRepository.findById(analise.getId()).orElseThrow();
+        AnaliseProjeto lida = analiseRepository.findById(analiseId).orElseThrow();
 
+        assertThat(lida.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
         assertThat(lida.getContexto()).isNull();
         assertThat(lida.getVersaoEsquemaContexto()).isNull();
     }
