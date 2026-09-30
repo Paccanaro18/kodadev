@@ -68,14 +68,6 @@ public class AnaliseProjeto {
         this.status = StatusAnalise.EM_ANDAMENTO;
     }
 
-    public void concluir(String resultadoJson) {
-        exigirStatus(StatusAnalise.CONCLUIDA, StatusAnalise.EM_ANDAMENTO);
-        this.status = StatusAnalise.CONCLUIDA;
-        this.resultado = resultadoJson;
-        this.mensagemErro = null;
-        this.concluidaEm = Instant.now();
-    }
-
     public void concluir(String resultadoJson, String contextoJson, int versaoEsquemaContexto) {
         if (contextoJson == null || contextoJson.isBlank()) {
             throw new IllegalArgumentException("O contexto do projeto é obrigatório");
@@ -83,9 +75,13 @@ public class AnaliseProjeto {
         if (versaoEsquemaContexto <= 0) {
             throw new IllegalArgumentException("A versão do esquema do contexto deve ser positiva");
         }
-        concluir(resultadoJson);
+        exigirStatus(StatusAnalise.CONCLUIDA, StatusAnalise.EM_ANDAMENTO);
+        this.status = StatusAnalise.CONCLUIDA;
+        this.resultado = resultadoJson;
         this.contexto = contextoJson;
         this.versaoEsquemaContexto = versaoEsquemaContexto;
+        this.mensagemErro = null;
+        this.concluidaEm = Instant.now();
     }
 
     public void falhar(String mensagemErro) {
