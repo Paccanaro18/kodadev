@@ -42,6 +42,38 @@ export type ResultadoAnalise = {
   parcial: boolean;
 };
 
+export type Arquitetura = "EM_CAMADAS" | "POR_FEATURE" | "HEXAGONAL" | "INDEFINIDA";
+
+export type ContextoProjeto = {
+  versaoEsquema: number;
+  versaoJava: string | null;
+  versaoSpringBoot: string | null;
+  ferramentaDeBuild: string;
+  arquitetura: Arquitetura;
+  dominios: string[];
+  tecnologias: Tecnologia[];
+  features: string[];
+  endpoints: EndpointDetectado[];
+  componentes: {
+    controllers: string[];
+    services: string[];
+    repositories: string[];
+    entidades: string[];
+    dtos: string[];
+    excecoes: string[];
+    temTratadorDeErros: boolean;
+  };
+  testes: {
+    total: number;
+    servicesSemTeste: string[];
+    controllersSemTeste: string[];
+  };
+  infra: { temDockerfile: boolean; temCompose: boolean };
+  parcial: boolean;
+  truncado: boolean;
+  itensDescartados: number;
+};
+
 export type AnaliseResumo = {
   id: string;
   status: StatusAnalise;
@@ -62,6 +94,7 @@ export type AnaliseDetalhe = {
   dono: string;
   nome: string;
   resultado: ResultadoAnalise | null;
+  contexto: ContextoProjeto | null;
   mensagemErro: string | null;
   criadoEm: string;
   concluidaEm: string | null;
