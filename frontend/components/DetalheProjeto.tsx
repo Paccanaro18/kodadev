@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import AppShell from "./AppShell";
 import CartaoContexto, { AvisoSemContexto } from "./CartaoContexto";
-import { AvisoExemplo, BackLink, btnPrimary, Card, Chip, Eyebrow, Mascot, PageHeader, StatusBadge } from "./ui";
+import ListaDesafios from "./ListaDesafios";
+import { BackLink, btnPrimary, Card, Chip, Eyebrow, Mascot, PageHeader } from "./ui";
 import { listarAnalises, type ResultadoAnalise } from "@/lib/api";
-import { project } from "@/lib/data";
 import { camadasDe, dependenciasDe, stackDe } from "@/lib/projeto";
 import { useAnalise } from "@/lib/useAnalise";
 
@@ -92,7 +92,7 @@ function ProjetoAnalisado({ id }: { id: string }) {
         mascot="laptop"
         title={analise.nome}
         subtitle="Análise concluída. A Koda entendeu o seu projeto."
-        action={<Link href="/desafio/novo" className={btnPrimary + " hover:text-white"}><Plus className="size-4" /> Novo desafio</Link>}
+        action={<Link href={`/desafio/novo?analise=${encodeURIComponent(id)}`} className={btnPrimary + " hover:text-white"}><Plus className="size-4" /> Novo desafio</Link>}
       >
         <BackLink href="/dashboard">← Repositórios</BackLink>
       </PageHeader>
@@ -134,22 +134,7 @@ function ProjetoAnalisado({ id }: { id: string }) {
 
       {contexto ? <CartaoContexto contexto={contexto} /> : <AvisoSemContexto />}
 
-      <Card className="mt-6">
-        <Eyebrow>Desafios</Eyebrow>
-        <AvisoExemplo>Os desafios reais chegam com o Challenge Engine (Etapa 6).</AvisoExemplo>
-        <ul>
-          {project.tickets.map((t) => (
-            <li key={t.id} className="border-b border-[#f4f1fa] last:border-0">
-              <Link href="/desafio/DEV-034" className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-ink transition duration-200 hover:translate-x-2 hover:bg-[#faf9ff] hover:text-ink active:translate-x-1">
-                <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">{t.id}</span>
-                <span className="min-w-[200px] flex-1 font-semibold">{t.title}</span>
-                <span className="text-xs text-ink-2">{t.type} · Júnior</span>
-                <StatusBadge status={t.status} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      <ListaDesafios analiseId={id} />
     </AppShell>
   );
 }

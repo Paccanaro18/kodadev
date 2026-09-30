@@ -41,7 +41,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="grid flex-[0_0_170px] gap-2.5 rounded-[20px] bg-[#faf9ff] p-3.5">
-              <Link href="/desafio/DEV-034" className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-koda font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-koda-dark hover:text-white hover:shadow-[0_12px_28px_rgb(102_92_255/0.4)] active:scale-[.97]">Ver desafio <ArrowRight className="size-4" /></Link>
+              <Link href="/desafio/novo" className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-koda font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-koda-dark hover:text-white hover:shadow-[0_12px_28px_rgb(102_92_255/0.4)] active:scale-[.97]">Ver desafio <ArrowRight className="size-4" /></Link>
               <Link href="/projeto" className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[#ddd9ff] bg-white text-sm font-semibold text-koda transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95">Mais detalhes</Link>
             </div>
           </section>
@@ -64,7 +64,7 @@ export default function Dashboard() {
               <h2 className="mb-3.5 font-bold">Seus próximos passos</h2>
               <ol className="grid gap-3">
                 {home.next.map((n, i) => (
-                  <li key={n.t}><Link href="/desafio/DEV-034" className="flex items-center gap-3 text-[13px] text-ink hover:text-ink">
+                  <li key={n.t}><Link href="/desafio/novo" className="flex items-center gap-3 text-[13px] text-ink hover:text-ink">
                     <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{i + 1}</span>
                     <span className="flex-1">{n.t}</span><span className="rounded-lg bg-koda-soft px-2.5 py-0.5 text-[11px] text-koda">{n.tag}</span>
                   </Link></li>
