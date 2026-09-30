@@ -66,7 +66,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 
 ## Git
 
-- Uma branch por etapa, um PR por etapa. Nunca commitar direto na `main`.
+- A partir de 2026-09-30 os commits vão direto na `main` (decisão do dono do projeto; antes era uma branch e um PR por etapa). Commits pequenos continuam. O push para a `main` só com autorização explícita.
 - Commits pequenos e separados, em Conventional Commits em português (`feat(analyzer): ...`, `test(analyzer): ...`, `build: ...`, `fix: ...`).
 - Usar `git add` com arquivo ou pasta específica, nunca `git add .`.
 - Não fazer commit nem push sem o Artur pedir. Mostrar o que mudou e propor a mensagem.
@@ -82,7 +82,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 
 ## Estado atual
 
-Branch: `feat/challenge-engine` (Etapa 6; a Etapa 5 já foi para a `main`). A Etapa 4 do backend já está na `main` (PR #6). A 4.5 (front das análises, branch `feat/front-analises`) ainda não foi mergeada na `main`: esta branch a contém por merge, então o PR da Etapa 5 leva os commits dela junto, a menos que a 4.5 entre antes.
+Branch: `main`. As Etapas 4 a 7 já foram mergeadas (PRs #6 a #9). A Etapa 8 (status, dicas e histórico) é a próxima.
 
 Pronto:
 - Etapas 0 a 3: projeto, login GitHub, token criptografado, `GithubClient`/`GithubService`, endpoints de repositórios, árvore e blob.
