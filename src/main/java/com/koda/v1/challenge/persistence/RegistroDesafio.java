@@ -14,9 +14,11 @@ public class RegistroDesafio {
             List.of(StatusGeracao.PENDENTE, StatusGeracao.EM_ANDAMENTO);
 
     private final DesafioRepository repository;
+    private final EventoDesafioRepository eventos;
 
-    public RegistroDesafio(DesafioRepository repository) {
+    public RegistroDesafio(DesafioRepository repository, EventoDesafioRepository eventos) {
         this.repository = repository;
+        this.eventos = eventos;
     }
 
     @Transactional
@@ -53,18 +55,25 @@ public class RegistroDesafio {
 
     @Transactional
     public void concluir(UUID desafioId, String titulo, String conteudoJson, int versaoEsquemaConteudo, String modelo) {
-        buscar(desafioId).concluir(titulo, conteudoJson, versaoEsquemaConteudo, modelo);
+        Desafio desafio = buscar(desafioId);
+        desafio.concluir(titulo, conteudoJson, versaoEsquemaConteudo, modelo);
+        eventos.save(new EventoDesafio(desafio.getUsuarioId(), desafio.getId(), TipoEvento.DESAFIO_PRONTO));
     }
 
     @Transactional
     public void falhar(UUID desafioId, String mensagemErro) {
-        buscar(desafioId).falhar(mensagemErro);
+        Desafio desafio = buscar(desafioId);
+        desafio.falhar(mensagemErro);
+        eventos.save(new EventoDesafio(desafio.getUsuarioId(), desafio.getId(), TipoEvento.DESAFIO_FALHOU));
     }
 
     @Transactional
     public int falharGeracoesEmAberto(String mensagemErro) {
         List<Desafio> emAberto = repository.findAllByStatusGeracaoIn(STATUS_EM_ABERTO);
-        emAberto.forEach(desafio -> desafio.falhar(mensagemErro));
+        emAberto.forEach(desafio -> {
+            desafio.falhar(mensagemErro);
+            eventos.save(new EventoDesafio(desafio.getUsuarioId(), desafio.getId(), TipoEvento.DESAFIO_FALHOU));
+        });
         return emAberto.size();
     }
 
