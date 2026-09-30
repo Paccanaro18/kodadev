@@ -24,6 +24,8 @@ import com.koda.v1.challenge.selecao.SelecaoDeDesafio;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.selecao.UsoAnterior;
 import com.koda.v1.challenge.similaridade.DetectorSimilaridade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,8 @@ import java.util.UUID;
 
 @Component
 public class GeradorDesafio {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GeradorDesafio.class);
 
     static final int MAXIMO_DE_CHAMADAS = 2;
     static final int MAXIMO_DE_CONTEUDOS_COMPARADOS = 20;
@@ -138,8 +142,11 @@ public class GeradorDesafio {
             ultimaFalha = resultado.falha();
         }
 
-        throw new GeracaoRecusadaException(
-                ultimaFalha == Falha.MUITO_PARECIDO ? MENSAGEM_REPETIDO : MENSAGEM_FORA_DO_FORMATO);
+        throw new GeracaoRecusadaException(switch (ultimaFalha) {
+            case MUITO_PARECIDO -> MENSAGEM_REPETIDO;
+            case PROVEDOR_INDISPONIVEL -> MotivoFalhaIa.INDISPONIVEL.mensagem();
+            case CONTEUDO_INVALIDO -> MENSAGEM_FORA_DO_FORMATO;
+        });
     }
 
     private Resultado tentar(PromptDesafio prompt, List<ConteudoDesafio> anteriores) {
@@ -147,8 +154,13 @@ public class GeradorDesafio {
         try {
             resposta = provedor.gerar(prompt);
         } catch (ProvedorIaException e) {
+            if (e.getMotivo() == MotivoFalhaIa.INDISPONIVEL) {
+                LOG.info("Desafio: tentativa descartada, motivo={}", e.getMotivo());
+                return Resultado.falha(Falha.PROVEDOR_INDISPONIVEL);
+            }
             if (e.getMotivo() == MotivoFalhaIa.RESPOSTA_INVALIDA
                     || e.getMotivo() == MotivoFalhaIa.RESPOSTA_GRANDE_DEMAIS) {
+                LOG.info("Desafio: tentativa descartada, motivo={}", e.getMotivo());
                 return Resultado.falha(Falha.CONTEUDO_INVALIDO);
             }
             throw new GeracaoRecusadaException(e.getMessage());
@@ -158,10 +170,14 @@ public class GeradorDesafio {
         try {
             conteudo = verificador.verificar(resposta.texto());
         } catch (ConteudoInvalidoException e) {
+            LOG.info("Desafio: tentativa descartada, conteudo invalido: {}", e.getMessage());
             return Resultado.falha(Falha.CONTEUDO_INVALIDO);
         }
 
-        if (detector.buscarParecido(conteudo, anteriores).isPresent()) {
+        var parecido = detector.buscarParecido(conteudo, anteriores);
+        if (parecido.isPresent()) {
+            LOG.info("Desafio: tentativa descartada, parecido com um anterior, pontuacao={}",
+                    String.format("%.2f", parecido.get().pontuacao()));
             return Resultado.falha(Falha.MUITO_PARECIDO);
         }
         return new Resultado(conteudo, resposta.modelo(), null);
@@ -187,7 +203,8 @@ public class GeradorDesafio {
 
     private enum Falha {
         CONTEUDO_INVALIDO,
-        MUITO_PARECIDO
+        MUITO_PARECIDO,
+        PROVEDOR_INDISPONIVEL
     }
 
     private record Resultado(ConteudoDesafio conteudo, String modelo, Falha falha) {

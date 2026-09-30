@@ -144,9 +144,8 @@ class GeradorDesafioTest {
     }
 
     @Test
-    void naoDeveTentarDeNovoQuandoOProvedorEstaIndisponivelSemLimiteOuSemCredencial() {
-        for (MotivoFalhaIa motivo : List.of(
-                MotivoFalhaIa.LIMITE_ATINGIDO, MotivoFalhaIa.NAO_AUTORIZADO, MotivoFalhaIa.INDISPONIVEL)) {
+    void naoDeveTentarDeNovoQuandoOProvedorAtingiuOLimiteOuRecusouACredencial() {
+        for (MotivoFalhaIa motivo : List.of(MotivoFalhaIa.LIMITE_ATINGIDO, MotivoFalhaIa.NAO_AUTORIZADO)) {
             registro = mock(RegistroDesafio.class);
             provedor = mock(ProvedorIa.class);
             when(registro.iniciar(desafioId)).thenReturn(dados);
@@ -159,6 +158,29 @@ class GeradorDesafioTest {
             verify(registro).falhar(desafioId, motivo.mensagem());
             verify(registro, never()).concluir(any(), anyString(), anyString(), anyInt(), any());
         }
+    }
+
+    @Test
+    void deveTentarDeNovoQuandoOProvedorNaoRespondeNaPrimeiraChamada() {
+        when(provedor.gerar(any()))
+                .thenThrow(new ProvedorIaException(MotivoFalhaIa.INDISPONIVEL))
+                .thenReturn(resposta("ticket novo", "m"));
+
+        gerador.gerar(desafioId);
+
+        verify(provedor, times(2)).gerar(any());
+        verify(registro).concluir(eq(desafioId), anyString(), anyString(), anyInt(), eq("m"));
+        verify(registro, never()).falhar(any(), anyString());
+    }
+
+    @Test
+    void deveFalharComAMensagemDoProvedorQuandoEleNaoRespondeNasDuasChamadas() {
+        when(provedor.gerar(any())).thenThrow(new ProvedorIaException(MotivoFalhaIa.INDISPONIVEL));
+
+        gerador.gerar(desafioId);
+
+        verify(provedor, times(2)).gerar(any());
+        verify(registro).falhar(desafioId, MotivoFalhaIa.INDISPONIVEL.mensagem());
     }
 
     @Test
