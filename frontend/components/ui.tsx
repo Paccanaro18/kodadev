@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import type { Status } from "@/lib/data";
 
 export function Mascot({ name, className = "" }: { name: string; className?: string }) {
   return <Image src={`/koda/koda-${name}.png`} alt="Koda" width={600} height={600} className={`w-auto ${className}`} priority />;
@@ -32,15 +31,6 @@ export function Chip({ children, tone = "soft" }: { children: ReactNode; tone?: 
   );
 }
 
-const statusStyle: Record<Status, string> = {
-  "Concluído": "bg-[#dff5e6] text-[#1d7a3c]",
-  "Em andamento": "bg-[#fff4d6] text-[#8a5a00]",
-  "Não iniciado": "bg-[#f1eefb] text-ink-2",
-};
-export function StatusBadge({ status }: { status: Status }) {
-  return <span className={`rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap ${statusStyle[status]}`}>{status}</span>;
-}
-
 export const btnPrimary =
   "inline-flex h-13 items-center justify-center gap-2 rounded-[18px] bg-koda px-6 text-[15px] font-bold text-white shadow-[0_8px_20px_rgb(102_92_255/0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda-dark hover:shadow-[0_12px_28px_rgb(102_92_255/0.4)] active:translate-y-0 active:scale-[.97]";
 
@@ -60,15 +50,6 @@ export function PageHeader({ mascot, title, subtitle, action, children }: { masc
         </div>
       </div>
       {action}
-    </div>
-  );
-}
-
-/** Marca telas que ainda mostram dados fixos. Remover quando a etapa correspondente for integrada. */
-export function AvisoExemplo({ children }: { children: ReactNode }) {
-  return (
-    <div className="mb-4 rounded-2xl border border-[#f5d98a] bg-[#fff8e1] px-4 py-2.5 text-[13px] text-[#8a5a00]">
-      <b>Dados de exemplo.</b> {children}
     </div>
   );
 }

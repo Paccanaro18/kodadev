@@ -145,6 +145,23 @@ export type DesafioResumo = {
   criadoEm: string;
 };
 
+export type DesafioRecente = {
+  id: string;
+  analiseId: string;
+  numero: number;
+  codigo: string;
+  tipo: TipoDesafio;
+  statusGeracao: StatusGeracao;
+  titulo: string | null;
+  habilidades: string[];
+  criadoEm: string;
+};
+
+export type DesafiosRecentes = {
+  totalGerados: number;
+  recentes: DesafioRecente[];
+};
+
 export class ErroApi extends Error {
   constructor(
     public readonly status: number,
@@ -223,6 +240,10 @@ export function buscarDesafio(id: string): Promise<DesafioDetalhe> {
 
 export function listarDesafios(analiseId: string): Promise<DesafioResumo[]> {
   return requisitar<DesafioResumo[]>(`/api/analises/${encodeURIComponent(analiseId)}/desafios`);
+}
+
+export function listarDesafiosRecentes(): Promise<DesafiosRecentes> {
+  return requisitar<DesafiosRecentes>("/api/desafios");
 }
 
 export async function sair(): Promise<void> {
