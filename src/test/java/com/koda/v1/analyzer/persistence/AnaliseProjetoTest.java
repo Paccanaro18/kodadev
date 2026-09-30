@@ -18,7 +18,7 @@ class AnaliseProjetoTest {
         AnaliseProjeto analise = nova();
 
         analise.iniciar();
-        analise.concluir("{}");
+        analise.concluir("{}", "{}", 1);
 
         assertThat(analise.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
         assertThat(analise.getConcluidaEm()).isNotNull();
@@ -49,20 +49,57 @@ class AnaliseProjetoTest {
 
     @Test
     void naoDeveConcluirAnalisePendente() {
-        assertThatThrownBy(() -> nova().concluir("{}")).isInstanceOf(TransicaoInvalidaException.class);
+        assertThatThrownBy(() -> nova().concluir("{}", "{}", 1)).isInstanceOf(TransicaoInvalidaException.class);
     }
 
     @Test
     void naoDeveMudarDepoisDeConcluidaOuFalhada() {
         AnaliseProjeto concluida = nova();
         concluida.iniciar();
-        concluida.concluir("{}");
+        concluida.concluir("{}", "{}", 1);
         AnaliseProjeto falhada = nova();
         falhada.falhar("erro");
 
         assertThatThrownBy(() -> concluida.falhar("x")).isInstanceOf(TransicaoInvalidaException.class);
         assertThatThrownBy(concluida::iniciar).isInstanceOf(TransicaoInvalidaException.class);
-        assertThatThrownBy(() -> falhada.concluir("{}")).isInstanceOf(TransicaoInvalidaException.class);
+        assertThatThrownBy(() -> falhada.concluir("{}", "{}", 1)).isInstanceOf(TransicaoInvalidaException.class);
         assertThatThrownBy(falhada::iniciar).isInstanceOf(TransicaoInvalidaException.class);
+    }
+
+    @Test
+    void deveConcluirGuardandoOContextoEASuaVersao() {
+        AnaliseProjeto analise = nova();
+        analise.iniciar();
+
+        analise.concluir("{\"a\":1}", "{\"versaoEsquema\":1}", 1);
+
+        assertThat(analise.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
+        assertThat(analise.getResultado()).isEqualTo("{\"a\":1}");
+        assertThat(analise.getContexto()).isEqualTo("{\"versaoEsquema\":1}");
+        assertThat(analise.getVersaoEsquemaContexto()).isEqualTo(1);
+    }
+
+    @Test
+    void naoDeveConcluirComContextoOuVersaoInvalidosENemMudarOStatus() {
+        AnaliseProjeto analise = nova();
+        analise.iniciar();
+
+        assertThatThrownBy(() -> analise.concluir("{}", null, 1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> analise.concluir("{}", "  ", 1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> analise.concluir("{}", "{}", 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> analise.concluir("{}", "{}", -1)).isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(analise.getStatus()).isEqualTo(StatusAnalise.EM_ANDAMENTO);
+        assertThat(analise.getContexto()).isNull();
+    }
+
+    @Test
+    void naoDeveGuardarContextoQuandoATransicaoForInvalida() {
+        AnaliseProjeto pendente = nova();
+
+        assertThatThrownBy(() -> pendente.concluir("{}", "{}", 1)).isInstanceOf(TransicaoInvalidaException.class);
+
+        assertThat(pendente.getContexto()).isNull();
+        assertThat(pendente.getVersaoEsquemaContexto()).isNull();
     }
 }

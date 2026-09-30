@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import AppShell from "@/components/AppShell";
 import { BackLink, PageHeader } from "@/components/ui";
-import { ErroApi, listarRepositorios, type Repositorio } from "@/lib/api";
+import { ErroApi, iniciarAnalise, listarRepositorios, type Repositorio } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 
 export default function AddRepo() {
@@ -12,6 +12,8 @@ export default function AddRepo() {
   const [q, setQ] = useState("");
   const [repositorios, setRepositorios] = useState<Repositorio[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [conectando, setConectando] = useState<number | null>(null);
+  const [erroConexao, setErroConexao] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     setErro(null);
@@ -31,6 +33,23 @@ export default function AddRepo() {
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  async function conectar(r: Repositorio) {
+    setErroConexao(null);
+    setConectando(r.id);
+    try {
+      const dono = r.nomeCompleto.split("/")[0];
+      const analise = await iniciarAnalise(dono, r.nome);
+      router.push(`/analisando?analise=${encodeURIComponent(analise.id)}`);
+    } catch (e: unknown) {
+      if (e instanceof ErroApi && e.status === 401) {
+        router.replace("/");
+        return;
+      }
+      setErroConexao(e instanceof Error ? e.message : "Erro inesperado.");
+      setConectando(null);
+    }
+  }
 
   const termo = q.toLowerCase().trim();
   const lista = (repositorios ?? []).filter((r) => r.nome.toLowerCase().includes(termo));
@@ -57,6 +76,10 @@ export default function AddRepo() {
           </div>
         )}
 
+        {erroConexao && (
+          <div role="alert" className="rounded-[22px] bg-[#fdecee] px-6 py-4 text-sm text-[#b42335]">{erroConexao}</div>
+        )}
+
         {lista.map((r) => (
           <div key={r.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] bg-white px-6 py-5 shadow-soft">
             <div className="min-w-0 flex-1">
@@ -65,7 +88,7 @@ export default function AddRepo() {
                 {[r.descricao, r.linguagem, r.atualizadoEm && `atualizado ${tempoRelativo(r.atualizadoEm)}`].filter(Boolean).join(" · ")}
               </div>
             </div>
-            <button onClick={() => router.push(`/analisando?repo=${encodeURIComponent(r.nomeCompleto)}`)} className="h-10 rounded-[14px] border-[1.5px] border-koda px-5 text-sm font-bold text-koda transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95">Conectar</button>
+            <button onClick={() => conectar(r)} disabled={conectando !== null} className="h-10 rounded-[14px] border-[1.5px] border-koda px-5 text-sm font-bold text-koda transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-koda">{conectando === r.id ? "Conectando..." : "Conectar"}</button>
           </div>
         ))}
 

@@ -1,22 +1,11 @@
-import Wait from "@/components/Wait";
-import { analysisSteps, project } from "@/lib/data";
+import AcompanharAnalise from "@/components/AcompanharAnalise";
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ repo?: string }>;
+  searchParams: Promise<{ analise?: string }>;
 }) {
-  const { repo } = await searchParams;
-  const nome = repo?.split("/")[1] ?? project.name;
-  const proxima = repo ? `/projeto?repo=${encodeURIComponent(repo)}` : "/projeto";
+  const { analise } = await searchParams;
 
-  return (
-    <Wait
-      mascot="terminal"
-      title={"Analisando " + nome}
-      subtitle="A Koda está lendo seu código. Leva alguns segundos."
-      steps={analysisSteps}
-      next={proxima}
-    />
-  );
+  return <AcompanharAnalise id={analise ?? null} />;
 }

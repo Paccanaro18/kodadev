@@ -85,7 +85,7 @@ class AnalisePersistenciaTest {
         assertThat(analise.getStatus()).isEqualTo(StatusAnalise.PENDENTE);
 
         analise.iniciar();
-        analise.concluir("{\"versaoJava\":\"21\",\"dependencias\":[\"a\",\"b\"]}");
+        analise.concluir("{\"versaoJava\":\"21\",\"dependencias\":[\"a\",\"b\"]}", "{}", 1);
         analiseRepository.saveAndFlush(analise);
         entityManager.clear();
 
@@ -141,6 +141,71 @@ class AnalisePersistenciaTest {
                 .orElseThrow();
 
         assertThat(maisRecente.getId()).isEqualTo(nova.getId());
+    }
+
+    @Test
+    void deveGravarOContextoComoJsonDeVerdadeJuntoDaVersaoDoEsquema() {
+        AnaliseProjeto analise = new AnaliseProjeto(criarRepositorio());
+        analise.iniciar();
+        analise.concluir("{}", "{\"versaoEsquema\":1,\"arquitetura\":\"EM_CAMADAS\"}", 1);
+        analiseRepository.saveAndFlush(analise);
+        entityManager.clear();
+
+        AnaliseProjeto lida = analiseRepository.findById(analise.getId()).orElseThrow();
+        String tipo = jdbcTemplate.queryForObject(
+                "SELECT jsonb_typeof(contexto) FROM analises_projeto WHERE id = ?",
+                String.class, analise.getId());
+        String arquitetura = jdbcTemplate.queryForObject(
+                "SELECT contexto ->> 'arquitetura' FROM analises_projeto WHERE id = ?",
+                String.class, analise.getId());
+
+        assertThat(lida.getVersaoEsquemaContexto()).isEqualTo(1);
+        assertThat(lida.getContexto()).contains("EM_CAMADAS");
+        assertThat(tipo).isEqualTo("object");
+        assertThat(arquitetura).isEqualTo("EM_CAMADAS");
+    }
+
+    @Test
+    void deveLerComoNulaUmaAnaliseAntigaConcluidaSemContexto() {
+        UUID repositorioId = criarRepositorio();
+        UUID analiseId = jdbcTemplate.queryForObject(
+                "INSERT INTO analises_projeto (repositorio_id, status, resultado) "
+                        + "VALUES (?, 'CONCLUIDA', '{}'::jsonb) RETURNING id",
+                UUID.class, repositorioId);
+
+        AnaliseProjeto lida = analiseRepository.findById(analiseId).orElseThrow();
+
+        assertThat(lida.getStatus()).isEqualTo(StatusAnalise.CONCLUIDA);
+        assertThat(lida.getContexto()).isNull();
+        assertThat(lida.getVersaoEsquemaContexto()).isNull();
+    }
+
+    @Test
+    void naoDeveAceitarNoBancoContextoSemVersao() {
+        UUID analiseId = analiseRepository.saveAndFlush(new AnaliseProjeto(criarRepositorio())).getId();
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+                "UPDATE analises_projeto SET contexto = '{}'::jsonb WHERE id = ?", analiseId))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void naoDeveAceitarNoBancoVersaoSemContexto() {
+        UUID analiseId = analiseRepository.saveAndFlush(new AnaliseProjeto(criarRepositorio())).getId();
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+                "UPDATE analises_projeto SET versao_esquema_contexto = 1 WHERE id = ?", analiseId))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void naoDeveAceitarNoBancoVersaoDeContextoZero() {
+        UUID analiseId = analiseRepository.saveAndFlush(new AnaliseProjeto(criarRepositorio())).getId();
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+                "UPDATE analises_projeto SET contexto = '{}'::jsonb, versao_esquema_contexto = 0 WHERE id = ?",
+                analiseId))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     private UUID criarUsuario() {

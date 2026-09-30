@@ -1,6 +1,13 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.Arquitetura;
+import com.koda.v1.analyzer.contexto.ComponentesContexto;
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
+import com.koda.v1.analyzer.contexto.InfraContexto;
+import com.koda.v1.analyzer.contexto.SerializadorContexto;
+import com.koda.v1.analyzer.contexto.TestesContexto;
 import com.koda.v1.analyzer.detector.Endpoint;
+import com.koda.v1.analyzer.detector.Tecnologia;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
 import com.koda.v1.analyzer.persistence.AnaliseEmAndamentoException;
 import com.koda.v1.analyzer.persistence.AnaliseNaoEncontradaException;
@@ -45,7 +52,8 @@ class AnaliseServiceTest {
         registro = mock(RegistroAnalise.class);
         consulta = mock(ConsultaAnalise.class);
         iniciador = mock(IniciadorAnalise.class);
-        service = new AnaliseService(github, registro, consulta, iniciador, new SerializadorResultado());
+        service = new AnaliseService(
+                github, registro, consulta, iniciador, new SerializadorResultado(), new SerializadorContexto());
     }
 
     @Test
@@ -123,7 +131,7 @@ class AnaliseServiceTest {
         String json = new SerializadorResultado().paraJson(resultado);
         Instant agora = Instant.now();
         when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
-                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", json, null, agora, agora));
+                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", json, null, null, agora, agora));
 
         AnaliseDetalheResposta resposta = service.consultar(usuarioId, analiseId);
 
@@ -133,15 +141,63 @@ class AnaliseServiceTest {
     }
 
     @Test
+    void deveConsultarComOContextoInterpretadoEDeixarNuloNasAnalisesAntigas() {
+        ContextoProjeto contexto = new ContextoProjeto(
+                ContextoProjeto.VERSAO_ESQUEMA, "21", "4.1.1", "maven", Arquitetura.POR_FEATURE,
+                List.of("Pedido"), List.of(), List.of("pedidos"), List.of(),
+                new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
+                new TestesContexto(0, List.of(), List.of()),
+                new InfraContexto(false, false), false, false, 0);
+        String resultadoJson = new SerializadorResultado().paraJson(new ResultadoAnalise(
+                true, true, "21", null, List.of(), List.of(), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false));
+        Instant agora = Instant.now();
+        UUID antiga = UUID.randomUUID();
+        when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
+                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", resultadoJson,
+                new SerializadorContexto().paraJson(contexto), null, agora, agora));
+        when(consulta.buscarDoUsuario(usuarioId, antiga)).thenReturn(new AnaliseDetalhe(
+                antiga, StatusAnalise.CONCLUIDA, "artur", "velho", resultadoJson, null, null, agora, agora));
+
+        assertThat(service.consultar(usuarioId, analiseId).contexto()).isEqualTo(contexto);
+        assertThat(service.consultar(usuarioId, antiga).contexto()).isNull();
+    }
+
+    @Test
     void deveConsultarAnaliseSemResultadoAinda() {
         Instant agora = Instant.now();
         when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
-                analiseId, StatusAnalise.PENDENTE, "artur", "koda", null, null, agora, null));
+                analiseId, StatusAnalise.PENDENTE, "artur", "koda", null, null, null, agora, null));
 
         AnaliseDetalheResposta resposta = service.consultar(usuarioId, analiseId);
 
         assertThat(resposta.resultado()).isNull();
         assertThat(resposta.concluidaEm()).isNull();
+    }
+
+    @Test
+    void deveListarResumosComOsDadosDoResultadoQuandoHouver() {
+        ResultadoAnalise resultado = new ResultadoAnalise(
+                true, true, "21", "4.1.1", List.of(), List.of(Tecnologia.POSTGRESQL), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), true);
+        Instant agora = Instant.now();
+        when(consulta.listarUltimasDoUsuario(usuarioId)).thenReturn(List.of(
+                new AnaliseDetalhe(analiseId, StatusAnalise.CONCLUIDA, "artur", "koda",
+                        new SerializadorResultado().paraJson(resultado), null, null, agora, agora),
+                new AnaliseDetalhe(UUID.randomUUID(), StatusAnalise.FALHOU, "artur", "outro",
+                        null, null, "O repositório não é um projeto Spring Boot.", agora, agora)));
+
+        List<AnaliseResumoResposta> resumos = service.listar(usuarioId);
+
+        assertThat(resumos).hasSize(2);
+        assertThat(resumos.get(0).springBoot()).isTrue();
+        assertThat(resumos.get(0).versaoJava()).isEqualTo("21");
+        assertThat(resumos.get(0).tecnologias()).containsExactly(Tecnologia.POSTGRESQL);
+        assertThat(resumos.get(0).parcial()).isTrue();
+        assertThat(resumos.get(1).springBoot()).isFalse();
+        assertThat(resumos.get(1).versaoJava()).isNull();
+        assertThat(resumos.get(1).tecnologias()).isEmpty();
+        assertThat(resumos.get(1).mensagemErro()).isEqualTo("O repositório não é um projeto Spring Boot.");
     }
 
     @Test

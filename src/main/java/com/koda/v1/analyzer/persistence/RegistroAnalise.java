@@ -52,8 +52,8 @@ public class RegistroAnalise {
     }
 
     @Transactional
-    public void concluir(UUID analiseId, String resultadoJson) {
-        buscar(analiseId).concluir(resultadoJson);
+    public void concluir(UUID analiseId, String resultadoJson, String contextoJson, int versaoEsquemaContexto) {
+        buscar(analiseId).concluir(resultadoJson, contextoJson, versaoEsquemaContexto);
     }
 
     @Transactional

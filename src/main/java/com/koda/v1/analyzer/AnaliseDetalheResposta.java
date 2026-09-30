@@ -1,5 +1,6 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 
 import java.time.Instant;
@@ -11,6 +12,7 @@ public record AnaliseDetalheResposta(
         String dono,
         String nome,
         ResultadoAnalise resultado,
+        ContextoProjeto contexto,
         String mensagemErro,
         Instant criadoEm,
         Instant concluidaEm

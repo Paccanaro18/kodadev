@@ -9,6 +9,7 @@ public record AnaliseDetalhe(
         String dono,
         String nome,
         String resultadoJson,
+        String contextoJson,
         String mensagemErro,
         Instant criadoEm,
         Instant concluidaEm

@@ -82,20 +82,26 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 
 ## Estado atual
 
-Branch: `feat/analisador-repositorio` (o PR só sai quando a Etapa 4 fechar).
+Branch: `feat/project-context` (Etapa 5). A Etapa 4 do backend já está na `main` (PR #6). A 4.5 (front das análises, branch `feat/front-analises`) ainda não foi mergeada na `main`: esta branch a contém por merge, então o PR da Etapa 5 leva os commits dela junto, a menos que a 4.5 entre antes.
 
 Pronto:
 - Etapas 0 a 3: projeto, login GitHub, token criptografado, `GithubClient`/`GithubService`, endpoints de repositórios, árvore e blob.
 - 4.1 a 4.3: detectores (`DetectorPom`, `DetectorDockerCompose`, `DetectorEndpoints`, `DetectorEntidade`), `AnalisadorEstrutura`, tabelas `repositorios` e `analises_projeto`, entidades e repositories.
 - 4.4a: `ResultadoAnalise` e `MontadorResultado`, com 6 testes verdes.
-
 - 4.4b: `SelecaoArquivos` (tetos de 30 controllers e 30 candidatas a entidade, `pom.xml` e compose só na raiz, arquivos até 256 KB), `SerializadorResultado` (Jackson 3), `RegistroAnalise` (transições em transações curtas), `AnalisadorRepositorio`, `FilaAnalises` (2 threads, fila de 10, cheia vira `FilaDeAnaliseCheiaException`), `IniciadorAnalise` e `RecuperadorAnalises` (marca `FALHOU` o que ficou em aberto ao subir). `ResultadoAnalise` tem o campo `parcial`.
 - Regras do analisador: sem código Java, sem `pom.xml` na raiz ou sem Spring Boot gera `FALHOU` com mensagem fixa. Arquivo isolado ilegível ou grande demais é pulado e o resultado sai `parcial`. Erro inesperado grava só uma mensagem genérica, nunca `getMessage()`. Prazo máximo de 2 minutos por análise (`koda.analise.prazo-maximo`).
 - Hardening: detectores sem regex quadrática (`RemovedorComentarios`), blob com teto de 512 KB de resposta e 256 KB de arquivo (`ArquivoGrandeDemaisException`, 413), `AnaliseProjeto` valida a ordem das transições.
-
 - 4.4c: `POST /api/analises` (corpo `{dono, nome}`, devolve 202 com `Location` e `{id, status: PENDENTE}`) e `GET /api/analises/{id}`. O usuário vem da sessão. O repositório é conferido no GitHub: precisa ser público e da conta do usuário (dono vem do `full_name` do GitHub, não do corpo). `RegistroAnalise.registrarNovaAnalise` cria ou atualiza a linha em `repositorios` e a análise `PENDENTE`. Erros: 404 (análise inexistente ou de outro usuário, mesma resposta), 409 (já há análise em aberto, garantido por índice único parcial da V5), 422 (repositório privado ou de outra conta), 429 (fila cheia, a análise vira `FALHOU`), 400 (corpo inválido).
+- 4.5: `GET /api/analises` devolve a análise mais recente de cada repositório do usuário (até 20, resumo sem endpoints). No front, "Conectar" chama `POST /api/analises`; `/analisando?analise=<id>` acompanha por polling a cada 1,5 s (limite de 3 min) e mostra a mensagem de erro se falhar; `/projeto?analise=<id>` mostra stack, estrutura, dependências, domínios (nomes dos controllers e entidades) e endpoints reais, e sem o parâmetro abre a última análise concluída; o dashboard lista "Repositórios conectados" reais. Os desafios da tela do projeto e o restante do dashboard continuam de exemplo (Etapas 6 e 8).
+- Etapa 5 (Project Context): documento JSON versionado e sanitizado, guardado em `analises_projeto.contexto` (migrations V6 e V7, com `versao_esquema_contexto`). O `MontadorContexto` (lógica pura) recebe o `ResultadoAnalise` e os caminhos da árvore e calcula arquitetura (`EM_CAMADAS`, `POR_FEATURE`, `HEXAGONAL` ou `INDEFINIDA`), domínios, features, endpoints (até 100), componentes, DTOs, exceções, tratador de erros, services e controllers sem teste e infra. O `SanitizadorIdentificador` barra tudo que não for identificador, caminho, método HTTP ou versão válidos. O `AnalisadorRepositorio` monta e grava o contexto junto do resultado, sem leitura extra no GitHub, e `AnaliseProjeto.concluir` exige o contexto. `GET /api/analises/{id}` devolve `contexto` (nulo em análise antiga ou ainda em andamento). O front mostra os domínios do contexto e o cartão "Arquitetura e qualidade" (arquitetura, features, tratador de erros, Dockerfile, Compose e classes sem teste); análise antiga mostra um aviso para reanalisar.
 
-Depois: 4.5 (front com dados reais). O front ainda não tem como listar as análises de um repositório nem pegar a mais recente: falta um endpoint para isso.
+Depois: Etapa 6 (Challenge Engine, com IA). A IA só redige e lê apenas o `ContextoProjeto`, nunca o repositório. O provedor deve ser configurável por URL e chave em variável de ambiente, com um provedor falso em todos os testes; o roteador FreeLLMAPI (endpoint compatível com OpenAI) é o candidato de custo zero, a decidir no plano da etapa.
+
+## Project Context: regras
+
+- Entram só nomes de classes, caminhos de endpoint, método HTTP, versões, tecnologias e contagens. Nunca entram caminhos de arquivo, código, README, comentários, campos de entidade, textos livres nem segredos: nomes de arquivo de repositório de terceiros são hostis e vão virar entrada de um LLM.
+- `parcial`, `truncado` e `itensDescartados` são sinais de qualidade do contexto. A Etapa 6 deve considerá-los (por exemplo, recusar gerar ticket com contexto parcial).
+- Mudar o formato do `ContextoProjeto` exige subir `VERSAO_ESQUEMA` e tratar as versões antigas na leitura. Nunca mudar o formato em silêncio: campo primitivo novo quebra a leitura das linhas antigas (o Jackson falha com `null` em `int`/`boolean`) e a consulta daria 500.
 
 ## Limitações conhecidas dos detectores
 
@@ -103,6 +109,8 @@ Depois: 4.5 (front com dados reais). O front ainda não tem como listar as anál
 - Compose: `image: ${VARIAVEL}` não é resolvida.
 - Endpoints por regex: não pega constantes no caminho, vários caminhos em `{}`, anotação na mesma linha do `class`, nem mapeamento em interface. Se incomodar, trocar por JavaParser.
 
+- Arquitetura pelos nomes de pastas e sufixos de classe: `HEXAGONAL` só com `adapter`/`port` junto de `domain`/`application`; `POR_FEATURE` exige ao menos duas pastas com mais de uma camada; projeto pequeno cai em `EM_CAMADAS` ou `INDEFINIDA`.
+- Domínios são os nomes de controllers e entidades sem sufixo (máximo de 15). "Sem teste" é por nome (`FooServiceTest`, `FooServiceTests`, `FooServiceIT`): teste com outro nome conta como ausente. DTOs, exceções e tratador de erros são detectados pelo sufixo do nome do arquivo.
 - Candidatas a entidade vêm só da convenção de pastas (`entity`, `model`, `domain`): projeto organizado por feature (`user/Usuario.java`) fica sem entidades. Melhorar preenchendo as vagas com outras classes de `src/main`.
 
 ## Armadilhas já encontradas
@@ -113,6 +121,8 @@ Depois: 4.5 (front com dados reais). O front ainda não tem como listar as anál
 - Spring Boot 4: `RestClient.Builder` não vem auto-configurado. Usar `RestClient.builder()`.
 - Tailwind 4: estilos base em `@layer base`. Erros "Unknown at-rule" no `globals.css` são só do IntelliJ.
 - O `[Fatal Error]` no log dos testes do pom é só o parser imprimindo antes de lançar a exceção.
+- `CHECK` com `NULL`: `NULL > 0` é desconhecido e o `CHECK` aceita. Escrever `IS NOT NULL` explícito (a V7 corrige isso na V6).
+- Não rodar `next lint`: abre um assistente de ESLint e o projeto não configura ESLint. Validar o front com `npx tsc --noEmit` e `npm run build`.
 
 ## Dívida técnica
 
@@ -122,7 +132,7 @@ Depois: 4.5 (front com dados reais). O front ainda não tem como listar as anál
 - Senha do banco fixa no `application.yml`: mover para variável de ambiente antes de qualquer deploy.
 - Menu do front sem destino (Progresso, Comunidade, Configurações).
 - `ON DELETE` das chaves estrangeiras (decidir quando existir "excluir conta").
-- Coluna `branch_padrao`: remover numa V5 se o `GithubService` não precisar.
+- Coluna `branch_padrao`: remover numa migration nova se o `GithubService` não precisar.
 - `listarRepositorios` e `buscarArvore` leem a resposta do GitHub inteira, sem teto de bytes.
 - Recuperação de análises em aberto no startup assume uma única instância do servidor.
 - Remover o Lombok do `pom.xml` (não é usado) e alinhar `java.version` (21) com o Java 26 do ambiente.
@@ -130,3 +140,4 @@ Depois: 4.5 (front com dados reais). O front ainda não tem como listar as anál
 - Cookie de sessão sem `Secure` e `SameSite` explícitos; sessão em memória.
 - Validar `dono`, `repositorio` e `sha` das rotas `/api/repositorios` com regex (o `POST /api/analises` já valida o corpo).
 - POST sem sessão devolve 403 (o CSRF recusa antes da autenticação), não 401 como diz a regra de segurança. Decidir se vale um `AccessDeniedHandler` que devolva 401 quando não há usuário.
+- Análises anteriores à V6 ficam sem contexto: a tela pede para reanalisar e não mostra domínios nem o cartão de arquitetura.

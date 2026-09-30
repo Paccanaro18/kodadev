@@ -5,13 +5,29 @@ import { Check } from "lucide-react";
 import AppShell from "./AppShell";
 import { Mascot } from "./ui";
 
-export default function Wait({ mascot, title, subtitle, steps, next }: { mascot: string; title: string; subtitle: string; steps: string[]; next: string }) {
+type Props = {
+  mascot: string;
+  title: string;
+  subtitle: string;
+  steps: string[];
+  next: string;
+  /** Quando informado, os passos param no último até ficar true. Sem ele, avançam sozinhos até o fim. */
+  pronto?: boolean;
+};
+
+export default function Wait({ mascot, title, subtitle, steps, next, pronto }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const aguardando = pronto === false;
+
   useEffect(() => {
-    const t = setInterval(() => setStep((s) => s + 1), 900);
+    const t = setInterval(
+      () => setStep((s) => (aguardando ? Math.min(s + 1, steps.length - 1) : s + 1)),
+      pronto === true ? 350 : 900,
+    );
     return () => clearInterval(t);
-  }, []);
+  }, [aguardando, pronto, steps.length]);
+
   useEffect(() => { if (step > steps.length) router.push(next); }, [step, steps.length, next, router]);
 
   return (
