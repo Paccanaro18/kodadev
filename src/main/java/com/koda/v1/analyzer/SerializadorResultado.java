@@ -11,4 +11,8 @@ public class SerializadorResultado {
     public String paraJson(ResultadoAnalise resultado) {
         return MAPEADOR.writeValueAsString(resultado);
     }
+
+    public ResultadoAnalise deJson(String json) {
+        return MAPEADOR.readValue(json, ResultadoAnalise.class);
+    }
 }
