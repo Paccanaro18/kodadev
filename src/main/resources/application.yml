@@ -33,5 +33,10 @@ koda:
     chave-criptografia: ${TOKEN_ENCRYPTION_KEY}
   github:
     api-url: https://api.github.com
+  ia:
+    provedor: ${KODA_IA_PROVEDOR:falso}
+    url: ${KODA_IA_URL:}
+    chave: ${KODA_IA_CHAVE:}
+    modelo: ${KODA_IA_MODELO:}
   frontend:
       url: http://localhost:3000
