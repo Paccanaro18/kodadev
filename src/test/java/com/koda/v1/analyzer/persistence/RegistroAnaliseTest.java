@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,6 +116,59 @@ class RegistroAnaliseTest {
         assertThat(statusDe(concluida)).isEqualTo(StatusAnalise.CONCLUIDA);
         assertThat(analiseRepository.findById(pendente).orElseThrow().getMensagemErro())
                 .isEqualTo("interrompida");
+    }
+
+    @Test
+    void deveRegistrarRepositorioEAnalisePendenteNaPrimeiraVez() {
+        UUID usuarioId = criarUsuario();
+
+        UUID analiseId = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "koda", "main");
+
+        assertThat(statusDe(analiseId)).isEqualTo(StatusAnalise.PENDENTE);
+        RepositorioGithub repositorio = repositorioRepository
+                .findByUsuarioIdAndGithubIdRepositorio(usuarioId, 777L).orElseThrow();
+        assertThat(repositorio.getNome()).isEqualTo("koda");
+        assertThat(analiseRepository.findById(analiseId).orElseThrow().getRepositorioId())
+                .isEqualTo(repositorio.getId());
+    }
+
+    @Test
+    void naoDeveCriarSegundaAnaliseEnquantoHouverUmaEmAberto() {
+        UUID usuarioId = criarUsuario();
+        registro.registrarNovaAnalise(usuarioId, 777L, "artur", "koda", "main");
+
+        assertThatThrownBy(() -> registro.registrarNovaAnalise(usuarioId, 777L, "artur", "koda", "main"))
+                .isInstanceOf(AnaliseEmAndamentoException.class);
+    }
+
+    @Test
+    void deveReanalisarReaproveitandoORepositorioEAtualizandoSeusDados() {
+        UUID usuarioId = criarUsuario();
+        UUID primeira = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "nome-antigo", "main");
+        registro.iniciar(primeira);
+        registro.concluir(primeira, "{}");
+
+        UUID segunda = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "nome-novo", "develop");
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(segunda).isNotEqualTo(primeira);
+        assertThat(analiseRepository.findById(segunda).orElseThrow().getRepositorioId())
+                .isEqualTo(analiseRepository.findById(primeira).orElseThrow().getRepositorioId());
+        RepositorioGithub repositorio = repositorioRepository
+                .findByUsuarioIdAndGithubIdRepositorio(usuarioId, 777L).orElseThrow();
+        assertThat(repositorio.getNome()).isEqualTo("nome-novo");
+        assertThat(repositorio.getBranchPadrao()).isEqualTo("develop");
+    }
+
+    @Test
+    void deveBarrarNoBancoDuasAnalisesEmAbertoDoMesmoRepositorio() {
+        UUID usuarioId = criarUsuario();
+        UUID analiseId = registro.registrarNovaAnalise(usuarioId, 777L, "artur", "koda", "main");
+        UUID repositorioId = analiseRepository.findById(analiseId).orElseThrow().getRepositorioId();
+
+        assertThatThrownBy(() -> analiseRepository.saveAndFlush(new AnaliseProjeto(repositorioId)))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     private StatusAnalise statusDe(UUID analiseId) {
