@@ -1,5 +1,6 @@
 package com.koda.v1.github;
 
+import com.koda.v1.github.dto.BlobGithub;
 import com.koda.v1.github.dto.RepositorioGithub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,56 @@ class GithubClientTest {
         assertThatThrownBy(() -> client.listarRepositorios("token"))
                 .isInstanceOfSatisfying(GithubApiException.class,
                         e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS));
+    }
+
+    @Test
+    void deveLerBlobEnviandoOToken() {
+        String json = """
+                {"sha": "abc", "size": 5, "content": "b2xhIQ==", "encoding": "base64", "campo_novo": "x"}
+                """;
+
+        servidor.expect(requestTo("https://api.github.com/repos/artur/koda/git/blobs/abc"))
+                .andExpect(header("Authorization", "Bearer token-teste"))
+                .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
+
+        BlobGithub blob = client.buscarBlob("token-teste", "artur", "koda", "abc");
+
+        assertThat(blob.sha()).isEqualTo("abc");
+        assertThat(blob.tamanho()).isEqualTo(5);
+        assertThat(blob.codificacao()).isEqualTo("base64");
+        servidor.verify();
+    }
+
+    @Test
+    void deveRecusarRespostaDeBlobMaiorQueOLimite() {
+        String gigante = "x".repeat(LimitesGithub.TAMANHO_MAXIMO_RESPOSTA_BLOB_BYTES + 1);
+        String json = "{\"sha\":\"abc\",\"size\":1,\"content\":\"" + gigante + "\",\"encoding\":\"utf-8\"}";
+
+        servidor.expect(requestTo("https://api.github.com/repos/artur/koda/git/blobs/abc"))
+                .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.buscarBlob("token", "artur", "koda", "abc"))
+                .isInstanceOf(ArquivoGrandeDemaisException.class);
+    }
+
+    @Test
+    void deveTraduzirErroDoGithubAoBuscarBlob() {
+        servidor.expect(requestTo("https://api.github.com/repos/artur/koda/git/blobs/abc"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        assertThatThrownBy(() -> client.buscarBlob("token", "artur", "koda", "abc"))
+                .isInstanceOfSatisfying(GithubApiException.class,
+                        e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    void deveTraduzirBlobComJsonInvalidoPara502() {
+        servidor.expect(requestTo("https://api.github.com/repos/artur/koda/git/blobs/abc"))
+                .andRespond(withSuccess("isso não é json", MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.buscarBlob("token", "artur", "koda", "abc"))
+                .isInstanceOfSatisfying(GithubApiException.class,
+                        e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY));
     }
 
     @Test
