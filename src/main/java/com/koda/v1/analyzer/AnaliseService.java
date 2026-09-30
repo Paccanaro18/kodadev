@@ -1,5 +1,7 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
+import com.koda.v1.analyzer.contexto.SerializadorContexto;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
 import com.koda.v1.analyzer.persistence.AnaliseEmAndamentoException;
 import com.koda.v1.analyzer.persistence.ConsultaAnalise;
@@ -21,17 +23,20 @@ public class AnaliseService {
     private final ConsultaAnalise consulta;
     private final IniciadorAnalise iniciador;
     private final SerializadorResultado serializador;
+    private final SerializadorContexto serializadorContexto;
 
     public AnaliseService(GithubService githubService,
                           RegistroAnalise registro,
                           ConsultaAnalise consulta,
                           IniciadorAnalise iniciador,
-                          SerializadorResultado serializador) {
+                          SerializadorResultado serializador,
+                          SerializadorContexto serializadorContexto) {
         this.githubService = githubService;
         this.registro = registro;
         this.consulta = consulta;
         this.iniciador = iniciador;
         this.serializador = serializador;
+        this.serializadorContexto = serializadorContexto;
     }
 
     public AnaliseResposta iniciar(UUID usuarioId, String loginDoUsuario, String dono, String nome) {
@@ -61,6 +66,9 @@ public class AnaliseService {
         ResultadoAnalise resultado = detalhe.resultadoJson() == null
                 ? null
                 : serializador.deJson(detalhe.resultadoJson());
+        ContextoProjeto contexto = detalhe.contextoJson() == null
+                ? null
+                : serializadorContexto.deJson(detalhe.contextoJson());
 
         return new AnaliseDetalheResposta(
                 detalhe.id(),
@@ -68,6 +76,7 @@ public class AnaliseService {
                 detalhe.dono(),
                 detalhe.nome(),
                 resultado,
+                contexto,
                 detalhe.mensagemErro(),
                 detalhe.criadoEm(),
                 detalhe.concluidaEm());
