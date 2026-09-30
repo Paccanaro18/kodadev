@@ -7,6 +7,7 @@ import com.koda.v1.challenge.TipoDesafio;
 import com.koda.v1.challenge.catalogo.AlvoDesafio;
 import com.koda.v1.challenge.catalogo.AnguloDesafio;
 import com.koda.v1.challenge.selecao.SelecaoDeDesafio;
+import com.koda.v1.challenge.validacao.MotivoReprovacao;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -62,6 +63,13 @@ public class MontadorPrompt {
 
     public PromptDesafio montar(SelecaoDeDesafio selecao, ContextoProjeto contexto,
                                 String perspectiva, List<String> titulosRecentes) {
+        return montar(selecao, contexto, perspectiva, titulosRecentes, List.of());
+    }
+
+    /** As correções vêm do validador e são textos fixos: nada do que a IA escreveu volta para o prompt. */
+    public PromptDesafio montar(SelecaoDeDesafio selecao, ContextoProjeto contexto, String perspectiva,
+                                List<String> titulosRecentes, List<MotivoReprovacao> correcoes) {
+        Objects.requireNonNull(correcoes, "As correções são obrigatórias");
         Objects.requireNonNull(selecao, "A seleção é obrigatória");
         Objects.requireNonNull(contexto, "O contexto é obrigatório");
         Objects.requireNonNull(titulosRecentes, "Os títulos recentes são obrigatórios");
@@ -82,8 +90,17 @@ public class MontadorPrompt {
 
         acrescentarTitulosRecentes(usuario, titulosRecentes);
         acrescentarContexto(usuario, contexto, selecao.alvo());
+        acrescentarCorrecoes(usuario, correcoes);
 
         return new PromptDesafio(SISTEMA, usuario.toString());
+    }
+
+    private void acrescentarCorrecoes(StringBuilder usuario, List<MotivoReprovacao> correcoes) {
+        if (correcoes.isEmpty()) {
+            return;
+        }
+        usuario.append("\nO ticket anterior foi recusado. Corrija estes pontos no novo ticket:\n");
+        correcoes.forEach(motivo -> usuario.append("- ").append(motivo.orientacao()).append('\n'));
     }
 
     private void acrescentarTitulosRecentes(StringBuilder usuario, List<String> titulosRecentes) {

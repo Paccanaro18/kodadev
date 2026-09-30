@@ -24,6 +24,8 @@ import com.koda.v1.challenge.selecao.SelecaoDeDesafio;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.selecao.UsoAnterior;
 import com.koda.v1.challenge.similaridade.DetectorSimilaridade;
+import com.koda.v1.challenge.validacao.MotivoReprovacao;
+import com.koda.v1.challenge.validacao.ValidadorDesafio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +48,8 @@ public class GeradorDesafio {
 
     static final String MENSAGEM_FORA_DO_FORMATO =
             "A IA devolveu um desafio fora do formato esperado. Tente novamente.";
+    static final String MENSAGEM_NAO_VALIDADO =
+            "O desafio gerado não passou na validação de qualidade. Tente novamente.";
     static final String MENSAGEM_REPETIDO =
             "Não conseguimos gerar um desafio diferente dos anteriores. Tente novamente.";
     static final String MENSAGEM_PRAZO = "A geração do desafio demorou mais que o permitido.";
@@ -62,6 +66,7 @@ public class GeradorDesafio {
     private final ProvedorIa provedor;
     private final VerificadorConteudo verificador;
     private final DetectorSimilaridade detector;
+    private final ValidadorDesafio validador;
     private final SerializadorConteudo serializador;
     private final Duration prazoMaximo;
 
@@ -75,6 +80,7 @@ public class GeradorDesafio {
                           ProvedorIa provedor,
                           VerificadorConteudo verificador,
                           DetectorSimilaridade detector,
+                          ValidadorDesafio validador,
                           SerializadorConteudo serializador,
                           @Value("${koda.desafio.prazo-maximo:PT3M}") Duration prazoMaximo) {
         this.registro = registro;
@@ -87,6 +93,7 @@ public class GeradorDesafio {
         this.provedor = provedor;
         this.verificador = verificador;
         this.detector = detector;
+        this.validador = validador;
         this.serializador = serializador;
         this.prazoMaximo = prazoMaximo;
     }
@@ -121,6 +128,7 @@ public class GeradorDesafio {
         List<UsoAnterior> historico = new ArrayList<>(consulta.historicoDeUso(dados.usuarioId(), dados.analiseId()));
         String perspectiva = dados.perspectiva();
         Falha ultimaFalha = null;
+        List<MotivoReprovacao> correcoes = List.of();
 
         for (int chamada = 1; chamada <= MAXIMO_DE_CHAMADAS; chamada++) {
             if (Instant.now().isAfter(prazo)) {
@@ -135,21 +143,25 @@ public class GeradorDesafio {
             }
 
             registro.registrarTentativa(dados.desafioId());
-            Resultado resultado = tentar(montador.montar(selecao, contexto, perspectiva, titulos), anteriores);
+            Resultado resultado = tentar(
+                    montador.montar(selecao, contexto, perspectiva, titulos, correcoes), selecao, contexto, anteriores);
             if (resultado.conteudo() != null) {
                 return new Pronto(resultado.conteudo(), resultado.modelo());
             }
             ultimaFalha = resultado.falha();
+            correcoes = resultado.correcoes();
         }
 
         throw new GeracaoRecusadaException(switch (ultimaFalha) {
             case MUITO_PARECIDO -> MENSAGEM_REPETIDO;
             case PROVEDOR_INDISPONIVEL -> MotivoFalhaIa.INDISPONIVEL.mensagem();
             case CONTEUDO_INVALIDO -> MENSAGEM_FORA_DO_FORMATO;
+            case REPROVADO_NA_VALIDACAO -> MENSAGEM_NAO_VALIDADO;
         });
     }
 
-    private Resultado tentar(PromptDesafio prompt, List<ConteudoDesafio> anteriores) {
+    private Resultado tentar(PromptDesafio prompt, SelecaoDeDesafio selecao, ContextoProjeto contexto,
+                             List<ConteudoDesafio> anteriores) {
         RespostaIa resposta;
         try {
             resposta = provedor.gerar(prompt);
@@ -180,7 +192,13 @@ public class GeradorDesafio {
                     String.format("%.2f", parecido.get().pontuacao()));
             return Resultado.falha(Falha.MUITO_PARECIDO);
         }
-        return new Resultado(conteudo, resposta.modelo(), null);
+
+        List<MotivoReprovacao> motivos = validador.validar(conteudo, selecao, contexto);
+        if (!motivos.isEmpty()) {
+            LOG.info("Desafio: tentativa descartada, reprovado na validacao: {}", motivos);
+            return Resultado.reprovado(motivos);
+        }
+        return new Resultado(conteudo, resposta.modelo(), null, List.of());
     }
 
     private SelecaoDeDesafio reconstruirSelecao(DadosGeracao dados, ContextoProjeto contexto) {
@@ -204,13 +222,18 @@ public class GeradorDesafio {
     private enum Falha {
         CONTEUDO_INVALIDO,
         MUITO_PARECIDO,
-        PROVEDOR_INDISPONIVEL
+        PROVEDOR_INDISPONIVEL,
+        REPROVADO_NA_VALIDACAO
     }
 
-    private record Resultado(ConteudoDesafio conteudo, String modelo, Falha falha) {
+    private record Resultado(ConteudoDesafio conteudo, String modelo, Falha falha, List<MotivoReprovacao> correcoes) {
 
         static Resultado falha(Falha falha) {
-            return new Resultado(null, null, falha);
+            return new Resultado(null, null, falha, List.of());
+        }
+
+        static Resultado reprovado(List<MotivoReprovacao> motivos) {
+            return new Resultado(null, null, Falha.REPROVADO_NA_VALIDACAO, motivos);
         }
     }
 
