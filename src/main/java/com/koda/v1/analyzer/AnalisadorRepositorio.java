@@ -1,5 +1,8 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
+import com.koda.v1.analyzer.contexto.MontadorContexto;
+import com.koda.v1.analyzer.contexto.SerializadorContexto;
 import com.koda.v1.analyzer.detector.ArquivoNaoAnalisavelException;
 import com.koda.v1.analyzer.detector.DetectorDockerCompose;
 import com.koda.v1.analyzer.detector.DetectorEndpoints;
@@ -15,6 +18,7 @@ import com.koda.v1.github.ArquivoGrandeDemaisException;
 import com.koda.v1.github.GithubApiException;
 import com.koda.v1.github.GithubService;
 import com.koda.v1.github.dto.ArvoreResposta;
+import com.koda.v1.github.dto.ItemArvoreResposta;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +34,7 @@ import java.util.function.Function;
 public class AnalisadorRepositorio {
 
     static final int MAXIMO_ENDPOINTS = 500;
+    private static final String TIPO_ARQUIVO = "blob";
     static final String MENSAGEM_ERRO_INESPERADO = "Não foi possível concluir a análise do repositório.";
 
     private final RegistroAnalise registro;
@@ -41,6 +46,8 @@ public class AnalisadorRepositorio {
     private final DetectorEntidade detectorEntidade;
     private final MontadorResultado montador;
     private final SerializadorResultado serializador;
+    private final MontadorContexto montadorContexto;
+    private final SerializadorContexto serializadorContexto;
     private final Duration prazoMaximo;
 
     public AnalisadorRepositorio(RegistroAnalise registro,
@@ -52,6 +59,8 @@ public class AnalisadorRepositorio {
                                  DetectorEntidade detectorEntidade,
                                  MontadorResultado montador,
                                  SerializadorResultado serializador,
+                                 MontadorContexto montadorContexto,
+                                 SerializadorContexto serializadorContexto,
                                  @Value("${koda.analise.prazo-maximo:PT2M}") Duration prazoMaximo) {
         this.registro = registro;
         this.githubService = githubService;
@@ -62,6 +71,8 @@ public class AnalisadorRepositorio {
         this.detectorEntidade = detectorEntidade;
         this.montador = montador;
         this.serializador = serializador;
+        this.montadorContexto = montadorContexto;
+        this.serializadorContexto = serializadorContexto;
         this.prazoMaximo = prazoMaximo;
     }
 
@@ -69,8 +80,12 @@ public class AnalisadorRepositorio {
         DadosExecucao dados = registro.iniciar(analiseId);
 
         try {
-            ResultadoAnalise resultado = analisarRepositorio(dados);
-            registro.concluir(analiseId, serializador.paraJson(resultado));
+            Produto produto = analisarRepositorio(dados);
+            registro.concluir(
+                    analiseId,
+                    serializador.paraJson(produto.resultado()),
+                    serializadorContexto.paraJson(produto.contexto()),
+                    ContextoProjeto.VERSAO_ESQUEMA);
         } catch (AnaliseRecusadaException | GithubApiException | ArquivoNaoAnalisavelException e) {
             registro.falhar(analiseId, e.getMessage());
         } catch (RuntimeException e) {
@@ -78,7 +93,7 @@ public class AnalisadorRepositorio {
         }
     }
 
-    private ResultadoAnalise analisarRepositorio(DadosExecucao dados) {
+    private Produto analisarRepositorio(DadosExecucao dados) {
         Rodada rodada = new Rodada(dados, Instant.now().plus(prazoMaximo));
 
         ArvoreResposta arvore = githubService.buscarArvore(dados.usuarioId(), dados.dono(), dados.nome());
@@ -113,7 +128,17 @@ public class AnalisadorRepositorio {
 
         boolean parcial = arvore.truncada() || selecionados.limitesAplicados() || rodada.parcial;
 
-        return montador.montar(pom, compose, estruturaFinal, endpoints, parcial);
+        ResultadoAnalise resultado = montador.montar(pom, compose, estruturaFinal, endpoints, parcial);
+        ContextoProjeto contexto = montadorContexto.montar(resultado, caminhosDosArquivos(arvore));
+
+        return new Produto(resultado, contexto);
+    }
+
+    private List<String> caminhosDosArquivos(ArvoreResposta arvore) {
+        return arvore.itens().stream()
+                .filter(item -> TIPO_ARQUIVO.equals(item.tipo()) && item.caminho() != null)
+                .map(ItemArvoreResposta::caminho)
+                .toList();
     }
 
     private List<Endpoint> detectarEndpoints(Rodada rodada, List<ArquivoParaAbrir> controllers) {
@@ -137,6 +162,9 @@ public class AnalisadorRepositorio {
             }
         }
         return entidades;
+    }
+
+    private record Produto(ResultadoAnalise resultado, ContextoProjeto contexto) {
     }
 
     private class Rodada {
