@@ -119,7 +119,10 @@ public class DesafioService {
                 detalhe.conteudoJson() == null ? null : serializadorConteudo.deJson(detalhe.conteudoJson()),
                 detalhe.mensagemErro(),
                 detalhe.criadoEm(),
-                detalhe.concluidoEm());
+                detalhe.concluidoEm(),
+                detalhe.statusProgresso(),
+                detalhe.iniciadoEm(),
+                detalhe.finalizadoEm());
     }
 
     public List<DesafioResumoResposta> listar(UUID usuarioId, UUID analiseId) {
@@ -128,7 +131,8 @@ public class DesafioService {
         return consulta.listarDaAnalise(usuarioId, analiseId).stream()
                 .map(resumo -> new DesafioResumoResposta(
                         resumo.id(), resumo.numero(), codigoDe(resumo.numero()), resumo.tipo(),
-                        resumo.statusGeracao(), resumo.titulo(), resumo.mensagemErro(), resumo.criadoEm()))
+                        resumo.statusGeracao(), resumo.statusProgresso(), resumo.titulo(), resumo.mensagemErro(),
+                        resumo.criadoEm()))
                 .toList();
     }
 
@@ -136,7 +140,7 @@ public class DesafioService {
         List<DesafioRecenteResposta> recentes = consulta.recentesDoUsuario(usuarioId).stream()
                 .map(recente -> new DesafioRecenteResposta(
                         recente.id(), recente.analiseId(), recente.numero(), codigoDe(recente.numero()),
-                        recente.tipo(), recente.statusGeracao(), recente.titulo(),
+                        recente.tipo(), recente.statusGeracao(), recente.statusProgresso(), recente.titulo(),
                         habilidadesDe(recente.conteudoJson()), recente.criadoEm()))
                 .toList();
 

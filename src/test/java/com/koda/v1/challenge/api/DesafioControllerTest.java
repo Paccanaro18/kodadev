@@ -49,6 +49,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -346,6 +347,81 @@ class DesafioControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void deveMudarOProgressoDoProprioTicketEDevolverAsDatas() throws Exception {
+        UUID desafioId = criarPronto(analiseId, "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", "Adicionar paginação");
+
+        mudarProgresso(desafioId, "{\"status\":\"EM_ANDAMENTO\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusProgresso").value("EM_ANDAMENTO"))
+                .andExpect(jsonPath("$.iniciadoEm").isNotEmpty())
+                .andExpect(jsonPath("$.finalizadoEm").doesNotExist());
+        mudarProgresso(desafioId, "{\"status\":\"CONCLUIDO\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusProgresso").value("CONCLUIDO"))
+                .andExpect(jsonPath("$.finalizadoEm").isNotEmpty());
+
+        mockMvc.perform(get("/api/desafios/" + desafioId).session(sessao))
+                .andExpect(jsonPath("$.statusProgresso").value("CONCLUIDO"))
+                .andExpect(jsonPath("$.iniciadoEm").isNotEmpty())
+                .andExpect(jsonPath("$.finalizadoEm").isNotEmpty());
+    }
+
+    @Test
+    void deveDevolver409ParaTransicaoInvalidaComMensagemFixa() throws Exception {
+        UUID desafioId = criarPronto(analiseId, "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", "Adicionar paginação");
+
+        mudarProgresso(desafioId, "{\"status\":\"CONCLUIDO\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Não é possível mudar o progresso deste desafio para esse status."));
+        mudarProgresso(desafioId, "{\"status\":\"EM_ANDAMENTO\"}").andExpect(status().isOk());
+        mudarProgresso(desafioId, "{\"status\":\"NAO_INICIADO\"}").andExpect(status().isConflict());
+    }
+
+    @Test
+    void deveDevolver409ParaProgressoDeTicketAindaPendente() throws Exception {
+        UUID pendente = registro.registrarNovo(usuarioId, analiseId, TipoDesafio.BUG, "BUG_A", "CLASSE:A", "p");
+        entityManager.flush();
+
+        mudarProgresso(pendente, "{\"status\":\"EM_ANDAMENTO\"}").andExpect(status().isConflict());
+    }
+
+    @Test
+    void deveDevolver404ParaProgressoDeTicketDeOutroUsuarioEDeTicketInexistente() throws Exception {
+        UUID desafioId = criarPronto(analiseId, "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", "Adicionar paginação");
+        long outroGithubId = githubIdDoUsuario == Long.MAX_VALUE ? 1 : githubIdDoUsuario + 1;
+        criarUsuario(outroGithubId, "intruso");
+        MockHttpSession intruso = sessaoDe(outroGithubId, "intruso");
+
+        mockMvc.perform(patch("/api/desafios/" + desafioId + "/progresso").session(intruso)
+                        .header("X-CSRF-TOKEN", tokenCsrf(intruso))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"EM_ANDAMENTO\"}"))
+                .andExpect(status().isNotFound());
+        mudarProgresso(UUID.randomUUID(), "{\"status\":\"EM_ANDAMENTO\"}").andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deveRecusarCorpoInvalidoEPatchSemSessaoOuSemCsrf() throws Exception {
+        UUID desafioId = criarPronto(analiseId, "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", "Adicionar paginação");
+
+        mudarProgresso(desafioId, "{\"status\":\"INVENTADO\"}").andExpect(status().isBadRequest());
+        mudarProgresso(desafioId, "{\"status\":null}").andExpect(status().isBadRequest());
+        mudarProgresso(desafioId, "{}").andExpect(status().isBadRequest());
+        mockMvc.perform(patch("/api/desafios/" + desafioId + "/progresso").session(sessao)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"EM_ANDAMENTO\"}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/desafios/" + desafioId + "/progresso")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"EM_ANDAMENTO\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    private ResultActions mudarProgresso(UUID desafioId, String corpo) throws Exception {
+        return mockMvc.perform(patch("/api/desafios/" + desafioId + "/progresso").session(sessao)
+                .header("X-CSRF-TOKEN", tokenCsrf(sessao))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(corpo));
+    }
+
     private ResultActions iniciar(UUID analise, String corpo) throws Exception {
         return mockMvc.perform(post("/api/analises/" + analise + "/desafios").session(sessao)
                 .header("X-CSRF-TOKEN", tokenCsrf())
@@ -354,7 +430,11 @@ class DesafioControllerTest {
     }
 
     private String tokenCsrf() throws Exception {
-        String json = mockMvc.perform(get("/api/csrf").session(sessao))
+        return tokenCsrf(sessao);
+    }
+
+    private String tokenCsrf(MockHttpSession daSessao) throws Exception {
+        String json = mockMvc.perform(get("/api/csrf").session(daSessao))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         return leitor.readTree(json).get("token").asString();

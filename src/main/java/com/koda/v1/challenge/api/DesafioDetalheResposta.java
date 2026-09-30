@@ -4,6 +4,7 @@ import com.koda.v1.challenge.ConteudoDesafio;
 import com.koda.v1.challenge.NivelDesafio;
 import com.koda.v1.challenge.TipoDesafio;
 import com.koda.v1.challenge.persistence.StatusGeracao;
+import com.koda.v1.challenge.persistence.StatusProgresso;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -20,6 +21,9 @@ public record DesafioDetalheResposta(
         ConteudoDesafio conteudo,
         String mensagemErro,
         Instant criadoEm,
-        Instant concluidoEm
+        Instant concluidoEm,
+        StatusProgresso statusProgresso,
+        Instant iniciadoEm,
+        Instant finalizadoEm
 ) {
 }

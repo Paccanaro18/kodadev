@@ -1,5 +1,7 @@
 package com.koda.v1.challenge.api;
 
+import com.koda.v1.challenge.persistence.ProgressoDesafio;
+import com.koda.v1.challenge.persistence.RegistroProgresso;
 import com.koda.v1.user.UsuarioResposta;
 import com.koda.v1.user.UsuarioService;
 import jakarta.validation.Valid;
@@ -7,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +26,13 @@ public class DesafioController {
 
     private final DesafioService desafioService;
     private final UsuarioService usuarioService;
+    private final RegistroProgresso registroProgresso;
 
-    public DesafioController(DesafioService desafioService, UsuarioService usuarioService) {
+    public DesafioController(DesafioService desafioService, UsuarioService usuarioService,
+                             RegistroProgresso registroProgresso) {
         this.desafioService = desafioService;
         this.usuarioService = usuarioService;
+        this.registroProgresso = registroProgresso;
     }
 
     @PostMapping("/analises/{analiseId}/desafios")
@@ -55,6 +61,17 @@ public class DesafioController {
         UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
 
         return desafioService.recentes(usuario.id());
+    }
+
+    @PatchMapping("/desafios/{id}/progresso")
+    public ProgressoResposta mudarProgresso(@AuthenticationPrincipal OAuth2User principal,
+                                            @PathVariable UUID id,
+                                            @Valid @RequestBody MudarProgressoRequisicao requisicao) {
+        UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
+
+        ProgressoDesafio progresso = registroProgresso.mudar(usuario.id(), id, requisicao.status());
+
+        return new ProgressoResposta(progresso.status(), progresso.iniciadoEm(), progresso.finalizadoEm());
     }
 
     @GetMapping("/desafios/{id}")

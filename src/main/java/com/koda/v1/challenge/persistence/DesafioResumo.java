@@ -10,6 +10,7 @@ public record DesafioResumo(
         int numero,
         TipoDesafio tipo,
         StatusGeracao statusGeracao,
+        StatusProgresso statusProgresso,
         String titulo,
         String mensagemErro,
         Instant criadoEm

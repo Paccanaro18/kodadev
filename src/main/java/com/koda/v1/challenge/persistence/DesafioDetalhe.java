@@ -18,6 +18,9 @@ public record DesafioDetalhe(
         String modelo,
         String mensagemErro,
         Instant criadoEm,
-        Instant concluidoEm
+        Instant concluidoEm,
+        StatusProgresso statusProgresso,
+        Instant iniciadoEm,
+        Instant finalizadoEm
 ) {
 }

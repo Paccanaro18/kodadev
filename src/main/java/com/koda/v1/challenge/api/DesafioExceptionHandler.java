@@ -7,6 +7,7 @@ import com.koda.v1.challenge.geracao.ContextoIndisponivelException;
 import com.koda.v1.challenge.geracao.FilaDeDesafiosCheiaException;
 import com.koda.v1.challenge.persistence.DesafioNaoEncontradoException;
 import com.koda.v1.challenge.persistence.GeracaoEmAndamentoException;
+import com.koda.v1.challenge.persistence.TransicaoProgressoInvalidaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +29,11 @@ class DesafioExceptionHandler {
     @ExceptionHandler({GeracaoEmAndamentoException.class, ContextoIndisponivelException.class})
     ProblemDetail tratarConflito(RuntimeException excecao) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(TransicaoProgressoInvalidaException.class)
+    ProblemDetail tratar(TransicaoProgressoInvalidaException excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Não é possível mudar o progresso deste desafio para esse status.");
     }
 
     @ExceptionHandler({SemAnguloAplicavelException.class, DesafiosEsgotadosException.class})

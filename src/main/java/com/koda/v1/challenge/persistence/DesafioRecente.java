@@ -11,6 +11,7 @@ public record DesafioRecente(
         int numero,
         TipoDesafio tipo,
         StatusGeracao statusGeracao,
+        StatusProgresso statusProgresso,
         String titulo,
         String conteudoJson,
         Instant criadoEm

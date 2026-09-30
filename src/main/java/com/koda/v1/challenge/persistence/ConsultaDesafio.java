@@ -79,7 +79,8 @@ public class ConsultaDesafio {
         return new DesafioDetalhe(
                 desafio.getId(), desafio.getAnaliseId(), desafio.getNumero(), desafio.getTipo(), desafio.getNivel(),
                 desafio.getStatusGeracao(), desafio.getTitulo(), desafio.getConteudo(), desafio.getModelo(),
-                desafio.getMensagemErro(), desafio.getCriadoEm(), desafio.getConcluidoEm());
+                desafio.getMensagemErro(), desafio.getCriadoEm(), desafio.getConcluidoEm(),
+                desafio.getStatusProgresso(), desafio.getIniciadoEm(), desafio.getFinalizadoEm());
     }
 
     @Transactional(readOnly = true)
@@ -87,7 +88,8 @@ public class ConsultaDesafio {
         return repository.findByUsuarioIdAndAnaliseIdOrderByNumeroDesc(usuarioId, analiseId).stream()
                 .map(desafio -> new DesafioResumo(
                         desafio.getId(), desafio.getNumero(), desafio.getTipo(), desafio.getStatusGeracao(),
-                        desafio.getTitulo(), desafio.getMensagemErro(), desafio.getCriadoEm()))
+                        desafio.getStatusProgresso(), desafio.getTitulo(), desafio.getMensagemErro(),
+                        desafio.getCriadoEm()))
                 .toList();
     }
 
@@ -96,7 +98,8 @@ public class ConsultaDesafio {
         return repository.findTop10ByUsuarioIdOrderByCriadoEmDesc(usuarioId).stream()
                 .map(desafio -> new DesafioRecente(
                         desafio.getId(), desafio.getAnaliseId(), desafio.getNumero(), desafio.getTipo(),
-                        desafio.getStatusGeracao(), desafio.getTitulo(), desafio.getConteudo(), desafio.getCriadoEm()))
+                        desafio.getStatusGeracao(), desafio.getStatusProgresso(), desafio.getTitulo(),
+                        desafio.getConteudo(), desafio.getCriadoEm()))
                 .toList();
     }
 

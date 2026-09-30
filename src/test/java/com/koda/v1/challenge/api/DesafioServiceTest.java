@@ -28,6 +28,7 @@ import com.koda.v1.challenge.persistence.DesafioResumo;
 import com.koda.v1.challenge.persistence.GeracaoEmAndamentoException;
 import com.koda.v1.challenge.persistence.RegistroDesafio;
 import com.koda.v1.challenge.persistence.StatusGeracao;
+import com.koda.v1.challenge.persistence.StatusProgresso;
 import com.koda.v1.challenge.prompt.Perspectivas;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.selecao.UsoAnterior;
@@ -213,7 +214,8 @@ class DesafioServiceTest {
         ConteudoDesafio conteudo = conteudo("Adicionar filtro");
         when(consulta.buscarDoUsuario(usuarioId, desafioId)).thenReturn(new DesafioDetalhe(
                 desafioId, analiseId, 7, TipoDesafio.FEATURE, NivelDesafio.JUNIOR, StatusGeracao.PRONTO,
-                "Adicionar filtro", serializadorConteudo.paraJson(conteudo), "modelo-x", null, AGORA, AGORA));
+                "Adicionar filtro", serializadorConteudo.paraJson(conteudo), "modelo-x", null, AGORA, AGORA,
+                StatusProgresso.NAO_INICIADO, null, null));
 
         DesafioDetalheResposta resposta = service.consultar(usuarioId, desafioId);
 
@@ -228,7 +230,7 @@ class DesafioServiceTest {
         UUID desafioId = UUID.randomUUID();
         when(consulta.buscarDoUsuario(usuarioId, desafioId)).thenReturn(new DesafioDetalhe(
                 desafioId, analiseId, 120, TipoDesafio.BUG, NivelDesafio.JUNIOR, StatusGeracao.PENDENTE,
-                null, null, null, null, AGORA, null));
+                null, null, null, null, AGORA, null, StatusProgresso.NAO_INICIADO, null, null));
 
         DesafioDetalheResposta resposta = service.consultar(usuarioId, desafioId);
 
@@ -250,7 +252,8 @@ class DesafioServiceTest {
     void deveListarConferindoPrimeiroODonoDaAnalise() {
         UUID desafioId = UUID.randomUUID();
         when(consulta.listarDaAnalise(usuarioId, analiseId)).thenReturn(List.of(
-                new DesafioResumo(desafioId, 3, TipoDesafio.BUG, StatusGeracao.FALHOU, null, "erro", AGORA)));
+                new DesafioResumo(desafioId, 3, TipoDesafio.BUG, StatusGeracao.FALHOU,
+                        StatusProgresso.NAO_INICIADO, null, "erro", AGORA)));
 
         List<DesafioResumoResposta> lista = service.listar(usuarioId, analiseId);
 
