@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -147,6 +148,27 @@ class ConsultaDesafioTest {
         assertThat(lista.get(1).statusGeracao()).isEqualTo(StatusGeracao.FALHOU);
         assertThat(lista.get(1).mensagemErro()).isEqualTo("erro de geração");
         assertThat(lista.get(2).titulo()).isEqualTo("Primeiro");
+    }
+
+    @Test
+    void deveContarParaACotaSoOsQueGastaramRecursoDentroDaJanela() {
+        UUID usuario = DadosDeTeste.usuario(jdbc);
+        UUID outro = DadosDeTeste.usuario(jdbc);
+        UUID analise = DadosDeTeste.analise(jdbc, usuario);
+        UUID analiseDoOutro = DadosDeTeste.analise(jdbc, outro);
+        criarPronto(usuario, analise, "A1", "CLASSE:A", "p", "Recente 1", 60);
+        criarPronto(usuario, analise, "A2", "CLASSE:B", "p", "Recente 2", 600);
+        criarPronto(usuario, analise, "A3", "CLASSE:C", "p", "Fora da janela", 60 * 30);
+        UUID falhado = registro.registrarNovo(usuario, analise, TipoDesafio.BUG, "A4", "CLASSE:D", "p");
+        registro.falhar(falhado, "erro");
+        registro.registrarNovo(usuario, analise, TipoDesafio.BUG, "A5", "CLASSE:E", "p");
+        criarPronto(outro, analiseDoOutro, "A1", "CLASSE:A", "p", "Do outro", 10);
+
+        Instant desde = Instant.now().minusSeconds(24 * 3600);
+
+        assertThat(consulta.contarQueGastaramCotaDesde(usuario, desde)).isEqualTo(3);
+        assertThat(consulta.contarQueGastaramCotaDesde(outro, desde)).isEqualTo(1);
+        assertThat(consulta.contarQueGastaramCotaDesde(usuario, Instant.now().plusSeconds(60))).isZero();
     }
 
     @Test
