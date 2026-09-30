@@ -2,9 +2,11 @@ package com.koda.v1.analyzer.detector;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -151,6 +153,20 @@ class DetectorEndpointsTest {
                 """;
 
         assertThat(detector.detectar(codigo)).isEmpty();
+    }
+
+    @Test
+    void deveTerminarRapidoComArquivoHostilNoTamanhoMaximo() {
+        int maximo = LimitesAnalise.MAXIMO_CARACTERES_ARQUIVO;
+        String quebras = "@RestController\n" + "\n".repeat(maximo - 16);
+        String mapeamentosAbertos = "@RestController\nclass A {\n" + "@RequestMapping(".repeat(maximo / 16 - 2);
+        String blocosAbertos = "@RestController\n" + "/*\n".repeat(maximo / 3 - 6);
+
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+            detector.detectar(quebras);
+            detector.detectar(mapeamentosAbertos);
+            detector.detectar(blocosAbertos);
+        });
     }
 
     @Test
