@@ -1,6 +1,7 @@
-import Wait from "@/components/Wait";
-import { generationSteps } from "@/lib/data";
+import AcompanharDesafio from "@/components/AcompanharDesafio";
 
-export default function Page() {
-  return <Wait mascot="prancheta" title="Gerando seu desafio" subtitle="A IA está escrevendo o ticket. Leva alguns segundos." steps={generationSteps} next="/desafio/DEV-034" />;
+export default async function Page({ searchParams }: { searchParams: Promise<{ desafio?: string }> }) {
+  const { desafio } = await searchParams;
+
+  return <AcompanharDesafio id={desafio ?? null} />;
 }
