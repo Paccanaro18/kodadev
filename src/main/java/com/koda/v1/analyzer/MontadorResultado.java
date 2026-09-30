@@ -6,17 +6,21 @@ import com.koda.v1.analyzer.detector.ResultadoPom;
 import com.koda.v1.analyzer.detector.Tecnologia;
 import com.koda.v1.analyzer.estrutura.ResultadoEstrutura;
 
+import org.springframework.stereotype.Component;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+@Component
 public class MontadorResultado {
 
     public ResultadoAnalise montar(ResultadoPom pom,
                                    ResultadoCompose compose,
                                    ResultadoEstrutura estrutura,
-                                   List<Endpoint> endpoints) {
+                                   List<Endpoint> endpoints,
+                                   boolean parcial) {
 
         Objects.requireNonNull(estrutura, "A estrutura é obrigatória para montar o resultado");
 
@@ -41,7 +45,8 @@ public class MontadorResultado {
                 estrutura.repositories(),
                 estrutura.entidades(),
                 estrutura.testes(),
-                endpoints != null ? endpoints : List.of()
+                endpoints != null ? endpoints : List.of(),
+                parcial
         );
     }
 }

@@ -18,7 +18,8 @@ public record ResultadoAnalise(
         List<String> repositories,
         List<String> entidades,
         List<String> testes,
-        List<Endpoint> endpoints
+        List<Endpoint> endpoints,
+        boolean parcial
 ) {
 
     public ResultadoAnalise {
