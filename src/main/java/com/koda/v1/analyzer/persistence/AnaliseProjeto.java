@@ -34,6 +34,13 @@ public class AnaliseProjeto {
     @Column(columnDefinition = "jsonb")
     private String resultado;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private String contexto;
+
+    @Column(name = "versao_esquema_contexto")
+    private Integer versaoEsquemaContexto;
+
     @Column(name = "mensagem_erro")
     private String mensagemErro;
 
@@ -67,6 +74,18 @@ public class AnaliseProjeto {
         this.resultado = resultadoJson;
         this.mensagemErro = null;
         this.concluidaEm = Instant.now();
+    }
+
+    public void concluir(String resultadoJson, String contextoJson, int versaoEsquemaContexto) {
+        if (contextoJson == null || contextoJson.isBlank()) {
+            throw new IllegalArgumentException("O contexto do projeto é obrigatório");
+        }
+        if (versaoEsquemaContexto <= 0) {
+            throw new IllegalArgumentException("A versão do esquema do contexto deve ser positiva");
+        }
+        concluir(resultadoJson);
+        this.contexto = contextoJson;
+        this.versaoEsquemaContexto = versaoEsquemaContexto;
     }
 
     public void falhar(String mensagemErro) {
@@ -104,6 +123,14 @@ public class AnaliseProjeto {
 
     public String getResultado() {
         return resultado;
+    }
+
+    public String getContexto() {
+        return contexto;
+    }
+
+    public Integer getVersaoEsquemaContexto() {
+        return versaoEsquemaContexto;
     }
 
     public String getMensagemErro() {

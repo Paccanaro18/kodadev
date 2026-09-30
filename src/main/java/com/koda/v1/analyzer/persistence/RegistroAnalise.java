@@ -57,6 +57,11 @@ public class RegistroAnalise {
     }
 
     @Transactional
+    public void concluir(UUID analiseId, String resultadoJson, String contextoJson, int versaoEsquemaContexto) {
+        buscar(analiseId).concluir(resultadoJson, contextoJson, versaoEsquemaContexto);
+    }
+
+    @Transactional
     public void falhar(UUID analiseId, String mensagemErro) {
         buscar(analiseId).falhar(mensagemErro);
     }
