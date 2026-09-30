@@ -1,5 +1,11 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.Arquitetura;
+import com.koda.v1.analyzer.contexto.ComponentesContexto;
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
+import com.koda.v1.analyzer.contexto.InfraContexto;
+import com.koda.v1.analyzer.contexto.SerializadorContexto;
+import com.koda.v1.analyzer.contexto.TestesContexto;
 import com.koda.v1.analyzer.persistence.AnaliseProjetoRepository;
 import com.koda.v1.analyzer.persistence.RegistroAnalise;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
@@ -184,10 +190,16 @@ class AnaliseControllerTest {
         ResultadoAnalise resultado = new ResultadoAnalise(
                 true, true, "21", "4.1.1", List.of(), List.of(), List.of(),
                 List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), true);
-        registro.concluir(analiseId, new SerializadorResultado().paraJson(resultado), "{}", 1);
+        registro.concluir(
+                analiseId, new SerializadorResultado().paraJson(resultado),
+                new SerializadorContexto().paraJson(contextoDeExemplo()), ContextoProjeto.VERSAO_ESQUEMA);
 
         mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contexto.versaoEsquema").value(1))
+                .andExpect(jsonPath("$.contexto.arquitetura").value("EM_CAMADAS"))
+                .andExpect(jsonPath("$.contexto.dominios[0]").value("Pedido"))
+                .andExpect(jsonPath("$.contexto.testes.servicesSemTeste[0]").value("PedidoService"))
                 .andExpect(jsonPath("$.status").value("CONCLUIDA"))
                 .andExpect(jsonPath("$.dono").value("artur"))
                 .andExpect(jsonPath("$.nome").value("koda"))
@@ -197,13 +209,33 @@ class AnaliseControllerTest {
     }
 
     @Test
+    void deveConsultarAnaliseAntigaSemContextoSemQuebrar() throws Exception {
+        UUID analiseId = registro.registrarNovaAnalise(usuarioId, 42L, "artur", "koda", "main");
+        registro.iniciar(analiseId);
+        jdbcTemplate.update(
+                "UPDATE analises_projeto SET status = 'CONCLUIDA', resultado = ?::jsonb WHERE id = ?",
+                new SerializadorResultado().paraJson(new ResultadoAnalise(
+                        true, true, "17", null, List.of(), List.of(), List.of(),
+                        List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false)),
+                analiseId);
+        entityManager.clear();
+
+        mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CONCLUIDA"))
+                .andExpect(jsonPath("$.resultado.versaoJava").value("17"))
+                .andExpect(jsonPath("$.contexto").doesNotExist());
+    }
+
+    @Test
     void deveConsultarAnalisePendenteSemResultado() throws Exception {
         UUID analiseId = registro.registrarNovaAnalise(usuarioId, 42L, "artur", "koda", "main");
 
         mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDENTE"))
-                .andExpect(jsonPath("$.resultado").doesNotExist());
+                .andExpect(jsonPath("$.resultado").doesNotExist())
+                .andExpect(jsonPath("$.contexto").doesNotExist());
     }
 
     @Test
@@ -240,6 +272,15 @@ class AnaliseControllerTest {
                 .andExpect(status().isNotFound());
         mockMvc.perform(get("/api/analises/isso-nao-e-uuid").session(sessao))
                 .andExpect(status().isBadRequest());
+    }
+
+    private ContextoProjeto contextoDeExemplo() {
+        return new ContextoProjeto(
+                ContextoProjeto.VERSAO_ESQUEMA, "21", "4.1.1", "maven", Arquitetura.EM_CAMADAS,
+                List.of("Pedido"), List.of(), List.of("pedidos"), List.of(),
+                new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
+                new TestesContexto(0, List.of("PedidoService"), List.of()),
+                new InfraContexto(false, false), false, false, 0);
     }
 
     private ResultActions iniciar(String corpo) throws Exception {

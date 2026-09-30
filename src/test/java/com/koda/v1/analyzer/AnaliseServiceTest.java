@@ -1,5 +1,11 @@
 package com.koda.v1.analyzer;
 
+import com.koda.v1.analyzer.contexto.Arquitetura;
+import com.koda.v1.analyzer.contexto.ComponentesContexto;
+import com.koda.v1.analyzer.contexto.ContextoProjeto;
+import com.koda.v1.analyzer.contexto.InfraContexto;
+import com.koda.v1.analyzer.contexto.SerializadorContexto;
+import com.koda.v1.analyzer.contexto.TestesContexto;
 import com.koda.v1.analyzer.detector.Endpoint;
 import com.koda.v1.analyzer.detector.Tecnologia;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
@@ -46,7 +52,8 @@ class AnaliseServiceTest {
         registro = mock(RegistroAnalise.class);
         consulta = mock(ConsultaAnalise.class);
         iniciador = mock(IniciadorAnalise.class);
-        service = new AnaliseService(github, registro, consulta, iniciador, new SerializadorResultado());
+        service = new AnaliseService(
+                github, registro, consulta, iniciador, new SerializadorResultado(), new SerializadorContexto());
     }
 
     @Test
@@ -131,6 +138,29 @@ class AnaliseServiceTest {
         assertThat(resposta.status()).isEqualTo(StatusAnalise.CONCLUIDA);
         assertThat(resposta.resultado()).isEqualTo(resultado);
         assertThat(resposta.dono()).isEqualTo("artur");
+    }
+
+    @Test
+    void deveConsultarComOContextoInterpretadoEDeixarNuloNasAnalisesAntigas() {
+        ContextoProjeto contexto = new ContextoProjeto(
+                ContextoProjeto.VERSAO_ESQUEMA, "21", "4.1.1", "maven", Arquitetura.POR_FEATURE,
+                List.of("Pedido"), List.of(), List.of("pedidos"), List.of(),
+                new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
+                new TestesContexto(0, List.of(), List.of()),
+                new InfraContexto(false, false), false, false, 0);
+        String resultadoJson = new SerializadorResultado().paraJson(new ResultadoAnalise(
+                true, true, "21", null, List.of(), List.of(), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false));
+        Instant agora = Instant.now();
+        UUID antiga = UUID.randomUUID();
+        when(consulta.buscarDoUsuario(usuarioId, analiseId)).thenReturn(new AnaliseDetalhe(
+                analiseId, StatusAnalise.CONCLUIDA, "artur", "koda", resultadoJson,
+                new SerializadorContexto().paraJson(contexto), null, agora, agora));
+        when(consulta.buscarDoUsuario(usuarioId, antiga)).thenReturn(new AnaliseDetalhe(
+                antiga, StatusAnalise.CONCLUIDA, "artur", "velho", resultadoJson, null, null, agora, agora));
+
+        assertThat(service.consultar(usuarioId, analiseId).contexto()).isEqualTo(contexto);
+        assertThat(service.consultar(usuarioId, antiga).contexto()).isNull();
     }
 
     @Test
