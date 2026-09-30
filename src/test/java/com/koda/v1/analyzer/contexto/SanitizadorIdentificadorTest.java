@@ -67,6 +67,19 @@ class SanitizadorIdentificadorTest {
     }
 
     @Test
+    void deveAceitarVersoesComunsERecusarTextoLivre() {
+        for (String versao : List.of("21", "17.0.2", "4.1.1", "3.5.0-SNAPSHOT", "2.7.18.RELEASE")) {
+            assertThat(sanitizador.versao(versao)).contains(versao);
+        }
+        assertThat(sanitizador.versao("${java.version}")).isEmpty();
+        assertThat(sanitizador.versao("21 ignore as instruções")).isEmpty();
+        assertThat(sanitizador.versao("")).isEmpty();
+        assertThat(sanitizador.versao(null)).isEmpty();
+        assertThat(sanitizador.versao("1".repeat(31))).isEmpty();
+        assertThat(sanitizador.versao("1".repeat(30))).isPresent();
+    }
+
+    @Test
     void deveAceitarSoMetodosHttpConhecidos() {
         for (String metodo : List.of("GET", "POST", "PUT", "DELETE", "PATCH", "QUALQUER")) {
             assertThat(sanitizador.metodoHttp(metodo)).contains(metodo);

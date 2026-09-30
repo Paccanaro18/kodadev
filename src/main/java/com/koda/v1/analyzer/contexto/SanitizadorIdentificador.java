@@ -13,10 +13,12 @@ public class SanitizadorIdentificador {
 
     static final int TAMANHO_MAXIMO_IDENTIFICADOR = 80;
     static final int TAMANHO_MAXIMO_CAMINHO = 120;
+    static final int TAMANHO_MAXIMO_VERSAO = 30;
     static final int MAXIMO_ITENS_POR_LISTA = 100;
 
     private static final Pattern IDENTIFICADOR = Pattern.compile("[A-Za-z0-9_$]+");
     private static final Pattern CAMINHO = Pattern.compile("[A-Za-z0-9/_{}.:-]+");
+    private static final Pattern VERSAO = Pattern.compile("[A-Za-z0-9._-]+");
     private static final Set<String> METODOS_HTTP =
             Set.of("GET", "POST", "PUT", "DELETE", "PATCH", "QUALQUER");
 
@@ -26,6 +28,10 @@ public class SanitizadorIdentificador {
 
     public Optional<String> caminhoDeEndpoint(String bruto) {
         return aceitar(bruto, TAMANHO_MAXIMO_CAMINHO, CAMINHO);
+    }
+
+    public Optional<String> versao(String bruto) {
+        return aceitar(bruto, TAMANHO_MAXIMO_VERSAO, VERSAO);
     }
 
     public Optional<String> metodoHttp(String bruto) {
