@@ -46,13 +46,13 @@ public class Desafio {
     @Column(name = "status_geracao", nullable = false)
     private StatusGeracao statusGeracao;
 
-    @Column(name = "angulo_id", nullable = false, updatable = false)
+    @Column(name = "angulo_id", nullable = false)
     private String anguloId;
 
-    @Column(name = "alvo_chave", nullable = false, updatable = false)
+    @Column(name = "alvo_chave", nullable = false)
     private String alvoChave;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private String perspectiva;
 
     private String titulo;
@@ -102,6 +102,17 @@ public class Desafio {
     public void iniciar() {
         exigirStatus(StatusGeracao.EM_ANDAMENTO, StatusGeracao.PENDENTE);
         this.statusGeracao = StatusGeracao.EM_ANDAMENTO;
+    }
+
+    public void reselecionar(String anguloId, String alvoChave, String perspectiva) {
+        if (anguloId == null || anguloId.isBlank() || alvoChave == null || alvoChave.isBlank()
+                || perspectiva == null || perspectiva.isBlank()) {
+            throw new IllegalArgumentException("Ângulo, alvo e perspectiva são obrigatórios");
+        }
+        exigirStatus(StatusGeracao.EM_ANDAMENTO, StatusGeracao.EM_ANDAMENTO);
+        this.anguloId = anguloId;
+        this.alvoChave = alvoChave;
+        this.perspectiva = perspectiva;
     }
 
     public void registrarTentativa() {

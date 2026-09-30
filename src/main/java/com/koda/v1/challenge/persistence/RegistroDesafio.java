@@ -42,6 +42,11 @@ public class RegistroDesafio {
     }
 
     @Transactional
+    public void reselecionar(UUID desafioId, String anguloId, String alvoChave, String perspectiva) {
+        buscar(desafioId).reselecionar(anguloId, alvoChave, perspectiva);
+    }
+
+    @Transactional
     public void registrarTentativa(UUID desafioId) {
         buscar(desafioId).registrarTentativa();
     }
