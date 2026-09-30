@@ -3,10 +3,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import AppShell from "./AppShell";
+import CartaoContexto, { AvisoSemContexto } from "./CartaoContexto";
 import { AvisoExemplo, BackLink, btnPrimary, Card, Chip, Eyebrow, Mascot, PageHeader, StatusBadge } from "./ui";
 import { listarAnalises, type ResultadoAnalise } from "@/lib/api";
 import { project } from "@/lib/data";
-import { camadasDe, dependenciasDe, dominiosDe, nomeDaClasse, stackDe } from "@/lib/projeto";
+import { camadasDe, dependenciasDe, stackDe } from "@/lib/projeto";
 import { useAnalise } from "@/lib/useAnalise";
 
 const ENDPOINTS_VISIVEIS = 30;
@@ -78,11 +79,11 @@ function ProjetoAnalisado({ id }: { id: string }) {
 
   const resultado = analise.resultado;
   const dependencias = dependenciasDe(resultado);
-  const dominios = dominiosDe(resultado);
+  const contexto = analise.contexto;
 
   return (
     <AppShell>
-      {resultado.parcial && (
+      {(resultado.parcial || contexto?.parcial) && (
         <div role="status" className="mb-4 rounded-2xl border border-[#f5d98a] bg-[#fff8e1] px-4 py-2.5 text-[13px] text-[#8a5a00]">
           <b>Análise parcial.</b> O repositório é grande ou tem arquivos que não deu para ler, então alguns itens podem estar faltando.
         </div>
@@ -117,14 +118,21 @@ function ProjetoAnalisado({ id }: { id: string }) {
           )}
         </Card>
         <Card>
-          <Eyebrow>Domínios</Eyebrow>
-          {dominios.length > 0
-            ? <div className="flex flex-wrap gap-2">{dominios.map((s) => <Chip key={s} tone="neutral">{s}</Chip>)}</div>
-            : <p className="text-sm text-ink-2">Nenhum domínio identificado pelos nomes das classes.</p>}
-          <div className="mt-6"><Eyebrow>Endpoints</Eyebrow></div>
+          {contexto && (
+            <>
+              <Eyebrow>Domínios</Eyebrow>
+              {contexto.dominios.length > 0
+                ? <div className="flex flex-wrap gap-2">{contexto.dominios.map((s) => <Chip key={s} tone="neutral">{s}</Chip>)}</div>
+                : <p className="text-sm text-ink-2">Nenhum domínio identificado pelos nomes das classes.</p>}
+              <div className="mt-6" />
+            </>
+          )}
+          <Eyebrow>Endpoints</Eyebrow>
           <Endpoints resultado={resultado} />
         </Card>
       </div>
+
+      {contexto ? <CartaoContexto contexto={contexto} /> : <AvisoSemContexto />}
 
       <Card className="mt-6">
         <Eyebrow>Desafios</Eyebrow>

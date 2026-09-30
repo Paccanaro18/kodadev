@@ -1,4 +1,4 @@
-import type { ResultadoAnalise, Tecnologia } from "@/lib/api";
+import type { Arquitetura, ResultadoAnalise, Tecnologia } from "@/lib/api";
 
 const ROTULOS_TECNOLOGIA: Record<Tecnologia, string> = {
   POSTGRESQL: "PostgreSQL",
@@ -6,7 +6,24 @@ const ROTULOS_TECNOLOGIA: Record<Tecnologia, string> = {
   REDIS: "Redis",
 };
 
-const SUFIXOS_DE_CLASSE = ["Controller", "Service", "ServiceImpl", "Repository"];
+const ARQUITETURAS: Record<Arquitetura, { rotulo: string; descricao: string }> = {
+  EM_CAMADAS: {
+    rotulo: "Em camadas",
+    descricao: "Controllers, services e repositories separados por responsabilidade.",
+  },
+  POR_FEATURE: {
+    rotulo: "Por feature",
+    descricao: "O código é organizado por recurso: cada pasta reúne controller, service e repository.",
+  },
+  HEXAGONAL: {
+    rotulo: "Hexagonal",
+    descricao: "Domínio isolado do resto, com portas e adaptadores.",
+  },
+  INDEFINIDA: {
+    rotulo: "Não identificada",
+    descricao: "Não deu para identificar um padrão claro pelos nomes de pastas e classes.",
+  },
+};
 
 export function rotuloTecnologia(tecnologia: Tecnologia): string {
   return ROTULOS_TECNOLOGIA[tecnologia] ?? tecnologia;
@@ -23,19 +40,8 @@ export function stackDe(resultado: ResultadoAnalise): string[] {
   return stack;
 }
 
-export function nomeDaClasse(caminho: string): string {
-  const arquivo = caminho.slice(caminho.lastIndexOf("/") + 1);
-  return arquivo.replace(/\.java$/, "");
-}
-
-/** Domínios aproximados: nomes dos controllers e entidades sem o sufixo. */
-export function dominiosDe(resultado: ResultadoAnalise, maximo = 10): string[] {
-  const nomes = [...resultado.controllers, ...resultado.entidades].map((caminho) => {
-    const nome = nomeDaClasse(caminho);
-    const sufixo = SUFIXOS_DE_CLASSE.find((s) => nome.endsWith(s) && nome.length > s.length);
-    return sufixo ? nome.slice(0, -sufixo.length) : nome;
-  });
-  return [...new Set(nomes)].slice(0, maximo);
+export function arquiteturaDe(arquitetura: Arquitetura): { rotulo: string; descricao: string } {
+  return ARQUITETURAS[arquitetura] ?? ARQUITETURAS.INDEFINIDA;
 }
 
 export function camadasDe(resultado: ResultadoAnalise): { rotulo: string; total: number }[] {
