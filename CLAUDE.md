@@ -82,7 +82,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 
 ## Estado atual
 
-Branch: `feat/analisador-repositorio` (o PR só sai quando a Etapa 4 fechar).
+Branch: `feat/front-analises` (4.5). A Etapa 4 do backend já está na `main` (PR #6).
 
 Pronto:
 - Etapas 0 a 3: projeto, login GitHub, token criptografado, `GithubClient`/`GithubService`, endpoints de repositórios, árvore e blob.
@@ -95,7 +95,9 @@ Pronto:
 
 - 4.4c: `POST /api/analises` (corpo `{dono, nome}`, devolve 202 com `Location` e `{id, status: PENDENTE}`) e `GET /api/analises/{id}`. O usuário vem da sessão. O repositório é conferido no GitHub: precisa ser público e da conta do usuário (dono vem do `full_name` do GitHub, não do corpo). `RegistroAnalise.registrarNovaAnalise` cria ou atualiza a linha em `repositorios` e a análise `PENDENTE`. Erros: 404 (análise inexistente ou de outro usuário, mesma resposta), 409 (já há análise em aberto, garantido por índice único parcial da V5), 422 (repositório privado ou de outra conta), 429 (fila cheia, a análise vira `FALHOU`), 400 (corpo inválido).
 
-Depois: 4.5 (front com dados reais). O front ainda não tem como listar as análises de um repositório nem pegar a mais recente: falta um endpoint para isso.
+- 4.5: `GET /api/analises` devolve a análise mais recente de cada repositório do usuário (até 20, resumo sem endpoints). No front, "Conectar" chama `POST /api/analises`; `/analisando?analise=<id>` acompanha por polling a cada 1,5 s (limite de 3 min) e mostra a mensagem de erro se falhar; `/projeto?analise=<id>` mostra stack, estrutura, dependências, domínios (nomes dos controllers e entidades) e endpoints reais, e sem o parâmetro abre a última análise concluída; o dashboard lista "Repositórios conectados" reais. Os desafios da tela do projeto e o restante do dashboard continuam de exemplo (Etapas 6 e 8).
+
+Depois: Etapa 5 (Project Context).
 
 ## Limitações conhecidas dos detectores
 
