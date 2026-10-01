@@ -1,20 +1,97 @@
 @import "tailwindcss";
 
-@theme{
+/*
+  Temas. O escuro é o padrão (data-tema="escuro" no <html>); o claro entra com data-tema="claro".
+  As telas usam só os tokens abaixo (bg-surface, text-ink-2, border-line...), nunca cores fixas.
+*/
+:root {
+  color-scheme: dark;
+  --c-cream: #0d0f1f;
+  --c-surface: #171a31;
+  --c-tint: #1e2240;
+  --c-tint-2: #272c52;
+  --c-track: #2b3159;
+  --c-line: #2b3053;
+  --c-line-2: #383e69;
+  --c-ink: #eef0ff;
+  --c-ink-2: #a5abc9;
+  --c-ink-3: #7f86a8;
+  --c-body: #cfd3ea;
+  --c-koda: #7468ff;
+  --c-koda-dark: #6154f0;
+  --c-koda-soft: rgb(116 104 255 / 0.18);
+  --c-navy: #2a2f5a;
+  --c-ok: #5fe0a0;
+  --c-ok-soft: rgb(52 199 120 / 0.16);
+  --c-warn: #f7c871;
+  --c-warn-soft: rgb(245 170 40 / 0.16);
+  --c-bad: #ff8f98;
+  --c-bad-soft: rgb(240 80 90 / 0.16);
+  --c-logo: #f4f2ff;
+  --shadow-soft-valor: 0 10px 40px rgb(0 0 0 / 0.35);
+  --shadow-lift-valor: 0 14px 44px rgb(0 0 0 / 0.5);
+}
+
+[data-tema="claro"] {
+  color-scheme: light;
+  --c-cream: #fdfbf8;
+  --c-surface: #ffffff;
+  --c-tint: #faf9ff;
+  --c-tint-2: #f3f1ff;
+  --c-track: #efecfb;
+  --c-line: #efecf7;
+  --c-line-2: #e5e2f2;
+  --c-ink: #11152d;
+  --c-ink-2: #5b6078;
+  --c-ink-3: #8a8fa5;
+  --c-body: #2f344f;
+  --c-koda: #665cff;
+  --c-koda-dark: #5449f0;
+  --c-koda-soft: #ebe9ff;
+  --c-navy: #12163a;
+  --c-ok: #1d7a3c;
+  --c-ok-soft: #dff5e6;
+  --c-warn: #8a5a00;
+  --c-warn-soft: #fff4d6;
+  --c-bad: #b3261e;
+  --c-bad-soft: #fdeaea;
+  --c-logo: transparent;
+  --shadow-soft-valor: 0 10px 40px rgb(102 92 255 / 0.07);
+  --shadow-lift-valor: 0 14px 44px rgb(102 92 255 / 0.16);
+}
+
+@theme inline {
   --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
-  --color-koda: #665cff;
-  --color-koda-dark: #5449f0;
-  --color-koda-soft: #ebe9ff;
-  --color-cream: #fdfbf8;
-  --color-ink: #11152d;
-  --color-ink-2: #5b6078;
-  --color-navy: #12163a;
-  --shadow-soft: 0 10px 40px rgb(102 92 255 / 0.07);
-  --shadow-lift: 0 14px 44px rgb(102 92 255 / 0.16);
+  --color-cream: var(--c-cream);
+  --color-surface: var(--c-surface);
+  --color-tint: var(--c-tint);
+  --color-tint-2: var(--c-tint-2);
+  --color-track: var(--c-track);
+  --color-line: var(--c-line);
+  --color-line-2: var(--c-line-2);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-body: var(--c-body);
+  --color-koda: var(--c-koda);
+  --color-koda-dark: var(--c-koda-dark);
+  --color-koda-soft: var(--c-koda-soft);
+  --color-navy: var(--c-navy);
+  --color-ok: var(--c-ok);
+  --color-ok-soft: var(--c-ok-soft);
+  --color-warn: var(--c-warn);
+  --color-warn-soft: var(--c-warn-soft);
+  --color-bad: var(--c-bad);
+  --color-bad-soft: var(--c-bad-soft);
+  --color-logo: var(--c-logo);
+  --shadow-soft: var(--shadow-soft-valor);
+  --shadow-lift: var(--shadow-lift-valor);
 }
 
 @layer base {
   body { @apply bg-cream font-sans text-ink antialiased; }
   a { color: var(--color-koda); }
   a:hover { color: var(--color-koda-dark); }
+  /* Troca de tema sem piscar, mas só depois da primeira pintura. */
+  html.com-transicao body, html.com-transicao body * { transition-property: background-color, border-color, color, fill; transition-duration: 180ms; }
 }
