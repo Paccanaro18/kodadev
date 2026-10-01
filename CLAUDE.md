@@ -28,6 +28,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 - Front em `frontend/`: Next.js 15, React 19, Tailwind 4, Lucide, fonte Sora.
 - Windows, PowerShell, IntelliJ. Repositório local em `C:\Developer\v1`.
 - Banco via Docker Compose (container `koda-postgres`, porta 5433).
+- CI (`.github/`): `backend.yml` roda `./mvnw -B verify` com JDK 21 (o alvo do `pom.xml`) e Postgres como serviço na porta 5433, com senha própria do job por `SPRING_DATASOURCE_PASSWORD`; `frontend.yml` roda `npm ci`, `typecheck`, `lint` e `build` no Node 22; `dependabot.yml` acompanha Maven, npm, Actions e Compose toda semana. O `mvnw` precisa continuar com a permissão de executável no Git (`git update-index --chmod=+x mvnw`). Front: `npm run lint` usa ESLint 9 com `eslint.config.mjs` (flat config, `next/core-web-vitals` e `next/typescript`); nunca usar `next lint`, que abre um assistente interativo.
 - Testes: rodam num banco próprio, `koda_test`, no mesmo container (só o Postgres precisa estar de pé: `docker compose up -d`). `src/test/resources/application.properties` aponta para ele, não importa o `.env`, usa o provedor de IA falso e chaves de teste. O `BancoDeTesteInicializador` (registrado em `META-INF/spring.factories`) cria o banco se faltar e recusa subir qualquer contexto de teste cujo banco não termine em `_test`. Nenhum teste toca o banco de desenvolvimento nem depende dos dados reais dele.
 - Acessar sempre por `localhost`, nunca `127.0.0.1` (o cookie de sessão é por host).
 
