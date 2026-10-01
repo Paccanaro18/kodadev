@@ -96,6 +96,14 @@ class ValidadorDesafioTest {
     }
 
     @Test
+    void naoDeveJulgarUmNomeCortadoPeloVerificadorNoFimDoTexto() {
+        assertThat(validador.validar(com("O endpoint GET /pedi…", "Objetivo comum."), selecao, contexto))
+                .doesNotContain(MotivoReprovacao.REFERENCIA_INEXISTENTE);
+        assertThat(validador.validar(com("A classe PedidoServi…", "Objetivo comum."), selecao, contexto))
+                .doesNotContain(MotivoReprovacao.REFERENCIA_INEXISTENTE);
+    }
+
+    @Test
     void devePermitirClassesDeFrameworkEDoJdk() {
         assertThat(validador.validar(com(ticket().titulo(), "A resposta vem como ResponseEntity e não como NullPointerException."),
                 selecao, contexto)).doesNotContain(MotivoReprovacao.REFERENCIA_INEXISTENTE);

@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 public class ValidadorDesafio {
 
     static final int MAXIMO_DE_CLASSES_CITADAS = 6;
+    /** O verificador termina com isto o texto que cortou: o nome citado no fim pode estar pela metade. */
+    private static final String RETICENCIAS = "…";
     static final int MINIMO_DE_PALAVRAS_POR_CRITERIO = 4;
 
     private static final Pattern CHAMADA_DE_METODO = Pattern.compile("\\b(?:[a-z]+[A-Z]\\w*|\\w+)\\(\\)|\\b[a-z]+[A-Z]\\w*\\(");
@@ -130,6 +132,9 @@ public class ValidadorDesafio {
         Set<String> declaradosComoNovos = new HashSet<>();
         for (String texto : textos) {
             for (String frase : frases(texto)) {
+                if (frase.endsWith(RETICENCIAS)) {
+                    continue;
+                }
                 boolean criaAlgo = frasePodeCriarAlgo(frase);
                 Matcher classe = CLASSE_DO_PROJETO.matcher(frase);
                 while (classe.find()) {
