@@ -11,6 +11,9 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -21,6 +24,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class ProvedorIaCompativelComOpenAi implements ProvedorIa {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProvedorIaCompativelComOpenAi.class);
 
     static final int TAMANHO_MAXIMO_RESPOSTA_BYTES = 256 * 1024;
 
@@ -75,6 +80,7 @@ public class ProvedorIaCompativelComOpenAi implements ProvedorIa {
                     .body(corpo)
                     .exchange((requisicao, retorno) -> {
                         if (retorno.getStatusCode().isError()) {
+                            LOG.warn("Provedor de IA respondeu com o status HTTP {}", retorno.getStatusCode().value());
                             throw new ProvedorIaException(motivoDoStatus(retorno.getStatusCode()));
                         }
                         byte[] bytes = retorno.getBody().readNBytes(TAMANHO_MAXIMO_RESPOSTA_BYTES + 1);
@@ -86,6 +92,7 @@ public class ProvedorIaCompativelComOpenAi implements ProvedorIa {
         } catch (ProvedorIaException e) {
             throw e;
         } catch (RestClientException | IllegalStateException e) {
+            LOG.warn("Falha de comunicação com o provedor de IA: {}", e.getClass().getSimpleName());
             throw new ProvedorIaException(MotivoFalhaIa.INDISPONIVEL);
         }
 
