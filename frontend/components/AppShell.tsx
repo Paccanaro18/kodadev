@@ -74,8 +74,8 @@ export default function AppShell({ children, width = "max-w-[1360px]" }: { child
             const active = match.some((m) => path.startsWith(m));
             return (
               <Link key={label} href={href} onClick={() => setOpen(false)}
-                className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-medium transition duration-200 ease-out hover:translate-x-1 ${active ? "bg-koda-soft text-koda" : "text-ink hover:bg-tint-2 hover:text-ink"}`}>
-                <Icon className={`size-5.5 transition-transform duration-200 group-hover:scale-110 ${active ? "text-koda" : "text-body group-hover:text-koda"}`} />{label}
+                className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-medium transition duration-200 ease-out hover:translate-x-1 ${active ? "bg-koda-soft text-koda-texto" : "text-ink hover:bg-tint-2 hover:text-ink"}`}>
+                <Icon className={`size-5.5 transition-transform duration-200 group-hover:scale-110 ${active ? "text-koda-texto" : "text-body group-hover:text-koda-texto"}`} />{label}
               </Link>
             );
           })}
@@ -83,7 +83,7 @@ export default function AppShell({ children, width = "max-w-[1360px]" }: { child
         <div className="mt-auto flex items-center gap-3 rounded-2xl bg-tint p-3">
           <Image src={perfil.avatarUrl} alt={perfil.login} width={40} height={40} className="size-10 rounded-full" />
           <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{perfil.nome ?? perfil.login}</div><div className="truncate text-xs text-ink-2">@{perfil.login}</div></div>
-          <button onClick={aoSair} aria-label="Sair" title="Sair" className="grid size-9 place-items-center rounded-xl text-ink-3 transition duration-200 hover:bg-surface hover:text-koda active:scale-95"><LogOut className="size-4.5" /></button>
+          <button onClick={aoSair} aria-label="Sair" title="Sair" className="grid size-9 place-items-center rounded-xl text-ink-3 transition duration-200 hover:bg-surface hover:text-koda-texto active:scale-95"><LogOut className="size-4.5" /></button>
         </div>
       </aside>
 

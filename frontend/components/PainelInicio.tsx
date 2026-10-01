@@ -32,13 +32,13 @@ function Destaque({ desafio }: { desafio: DesafioRecente | undefined }) {
           <>
             <div className="mb-4 flex flex-wrap gap-2 text-xs font-semibold">
               <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-warn-soft px-3.5 py-1.5"><Star className="size-3.5 fill-[#f5a623] text-[#f5a623]" />Último desafio</span>
-              <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda">{rotuloDoTipo(desafio.tipo)}</span>
-              <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda">Júnior</span>
+              <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda-texto">{rotuloDoTipo(desafio.tipo)}</span>
+              <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda-texto">Júnior</span>
               {desafio.statusGeracao === "PRONTO" && <SeloProgresso status={desafio.statusProgresso} />}
             </div>
             <h2 className="text-[22px] leading-tight font-bold tracking-tight">{desafio.codigo} · {desafio.titulo ?? "Gerando o ticket…"}</h2>
             <div className="mt-4 flex flex-wrap gap-2">{desafio.habilidades.map((h) => <span key={h} className={pill}>{h}</span>)}</div>
-            <p className="mt-4 flex items-center gap-1.5 text-[13px] text-body"><Clock className="size-4 text-koda" />Criado {tempoRelativo(desafio.criadoEm)}</p>
+            <p className="mt-4 flex items-center gap-1.5 text-[13px] text-body"><Clock className="size-4 text-koda-texto" />Criado {tempoRelativo(desafio.criadoEm)}</p>
           </>
         ) : (
           <>
@@ -51,7 +51,7 @@ function Destaque({ desafio }: { desafio: DesafioRecente | undefined }) {
         {desafio
           ? <Link href={destino(desafio)} className={botao}>Ver desafio <ArrowRight className="size-4" /></Link>
           : <Link href="/desafio/novo" className={botao}>Gerar desafio <ArrowRight className="size-4" /></Link>}
-        <Link href="/projeto" className="inline-flex h-12 items-center justify-center rounded-[14px] border border-line-2 bg-surface text-sm font-semibold text-koda transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95">Ver projeto</Link>
+        <Link href="/projeto" className="inline-flex h-12 items-center justify-center rounded-[14px] border border-line-2 bg-surface text-sm font-semibold text-koda-texto transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95">Ver projeto</Link>
       </div>
     </section>
   );
@@ -74,7 +74,7 @@ function Atividades({ recentes }: { recentes: DesafioRecente[] }) {
           {recentes.slice(0, 5).map((d) => (
             <li key={d.id}>
               <Link href={destino(d)} className="flex items-center gap-3 text-[13px] text-ink transition duration-200 hover:translate-x-1 hover:text-ink">
-                <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda-soft text-koda">
+                <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda-soft text-koda-texto">
                   {d.statusGeracao === "PRONTO" ? <Check className="size-3.5" strokeWidth={3} /> : <GitBranch className="size-3.5" />}
                 </span>
                 <span className="flex-1">{descricaoDaAtividade(d)}</span>
@@ -111,7 +111,7 @@ function ProximosPassos({ recentes }: { recentes: DesafioRecente[] }) {
           <li key={p.t}>
             <Link href={p.href} className="flex items-center gap-3 text-[13px] text-ink transition duration-200 hover:translate-x-1 hover:text-ink">
               <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{i + 1}</span>
-              <span className="flex-1">{p.t}</span><span className="rounded-lg bg-koda-soft px-2.5 py-0.5 text-[11px] text-koda">{p.tag}</span>
+              <span className="flex-1">{p.t}</span><span className="rounded-lg bg-koda-soft px-2.5 py-0.5 text-[11px] text-koda-texto">{p.tag}</span>
             </Link>
           </li>
         ))}
@@ -143,7 +143,7 @@ function Progresso({ total, resumo }: { total: number; resumo: ResumoDoProgresso
       <div className="grid grid-cols-3 gap-2.5">
         <Numero icone={<CheckCircle2 className="size-4" />} valor={resumo?.concluidos ?? 0} rotulo="concluídos" cor="bg-ok-soft text-ok" />
         <Numero icone={<Play className="size-4" />} valor={resumo?.emAndamento ?? 0} rotulo="em andamento" cor="bg-warn-soft text-warn" />
-        <Numero icone={<Sparkles className="size-4" />} valor={total} rotulo="gerados" cor="bg-koda-soft text-koda" />
+        <Numero icone={<Sparkles className="size-4" />} valor={total} rotulo="gerados" cor="bg-koda-soft text-koda-texto" />
       </div>
       <h3 className="mt-5 mb-3 text-[13px] font-semibold">Habilidades praticadas</h3>
       {habilidades.length === 0 ? <Vazio>Elas aparecem quando você concluir o seu primeiro desafio.</Vazio> : (

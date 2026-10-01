@@ -13,14 +13,14 @@ import { useDesafio } from "@/lib/useDesafio";
 
 const marca = {
   ponto: <span className="size-1.5 rounded-full bg-koda" />,
-  check: <Check className="size-3.5 text-koda" strokeWidth={3} />,
-  alerta: <CircleAlert className="size-3.5 text-koda" strokeWidth={3} />,
+  check: <Check className="size-3.5 text-koda-texto" strokeWidth={3} />,
+  alerta: <CircleAlert className="size-3.5 text-koda-texto" strokeWidth={3} />,
 };
 
 function Bloco({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="mb-2.5 text-xs font-bold tracking-[0.12em] text-koda uppercase">{titulo}</h2>
+      <h2 className="mb-2.5 text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">{titulo}</h2>
       {children}
     </section>
   );
@@ -123,10 +123,10 @@ function AbasDoTicket({ conteudo }: { conteudo: ConteudoDesafio }) {
               aria-controls={`painel-${a.id}`}
               tabIndex={ativa ? 0 : -1}
               onClick={() => setAtual(a.id)}
-              className={`-mb-px rounded-t-xl border-b-2 px-4 py-2.5 text-sm font-semibold transition duration-200 ${ativa ? "border-koda text-koda" : "border-transparent text-ink-2 hover:bg-tint-2 hover:text-ink"}`}
+              className={`-mb-px rounded-t-xl border-b-2 px-4 py-2.5 text-sm font-semibold transition duration-200 ${ativa ? "border-koda text-koda-texto" : "border-transparent text-ink-2 hover:bg-tint-2 hover:text-ink"}`}
             >
               {a.rotulo}
-              {a.contagem !== undefined && <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] ${ativa ? "bg-koda-soft text-koda" : "bg-tint text-ink-3"}`}>{a.contagem}</span>}
+              {a.contagem !== undefined && <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] ${ativa ? "bg-koda-soft text-koda-texto" : "bg-tint text-ink-3"}`}>{a.contagem}</span>}
             </button>
           );
         })}
@@ -167,9 +167,9 @@ function Ticket({ desafio, conteudo }: { desafio: DesafioDetalhe; conteudo: Cont
         <header className="shrink-0 rounded-3xl bg-surface px-6 py-5 shadow-soft">
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">{desafio.codigo}</span>
+              <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda-texto">{desafio.codigo}</span>
               {[rotuloDoTipo(desafio.tipo), "Júnior"].map((t) => (
-                <span key={t} className="rounded-lg border border-line-2 px-2.5 py-0.5 text-xs text-koda">{t}</span>
+                <span key={t} className="rounded-lg border border-line-2 px-2.5 py-0.5 text-xs text-koda-texto">{t}</span>
               ))}
               <SeloProgresso status={progresso.statusProgresso} />
             </div>

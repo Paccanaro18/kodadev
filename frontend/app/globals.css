@@ -17,8 +17,9 @@
   --c-ink-2: #a8a8ba;
   --c-ink-3: #7c7c90;
   --c-body: #d2d2de;
-  --c-koda: #7468ff;
-  --c-koda-dark: #6154f0;
+  --c-koda: #6154f0;
+  --c-koda-dark: #5043dc;
+  --c-koda-texto: #8c83ff;
   --c-koda-soft: rgb(116 104 255 / 0.18);
   --c-navy: #1c1c27;
   --c-ok: #5fe0a0;
@@ -44,8 +45,9 @@
   --c-ink-2: #a5abc9;
   --c-ink-3: #7f86a8;
   --c-body: #cfd3ea;
-  --c-koda: #7468ff;
-  --c-koda-dark: #6154f0;
+  --c-koda: #6154f0;
+  --c-koda-dark: #5043dc;
+  --c-koda-texto: #968eff;
   --c-koda-soft: rgb(116 104 255 / 0.18);
   --c-navy: #2a2f5a;
   --c-ok: #5fe0a0;
@@ -69,10 +71,11 @@
   --c-line-2: #e5e2f2;
   --c-ink: #11152d;
   --c-ink-2: #5b6078;
-  --c-ink-3: #8a8fa5;
+  --c-ink-3: #6b7088;
   --c-body: #2f344f;
   --c-koda: #665cff;
   --c-koda-dark: #5449f0;
+  --c-koda-texto: #5448e8;
   --c-koda-soft: #ebe9ff;
   --c-navy: #12163a;
   --c-ok: #1d7a3c;
@@ -100,6 +103,7 @@
   --color-body: var(--c-body);
   --color-koda: var(--c-koda);
   --color-koda-dark: var(--c-koda-dark);
+  --color-koda-texto: var(--c-koda-texto);
   --color-koda-soft: var(--c-koda-soft);
   --color-navy: var(--c-navy);
   --color-ok: var(--c-ok);
@@ -119,8 +123,8 @@
 
 @layer base {
   body { @apply bg-cream font-sans text-ink antialiased; }
-  a { color: var(--color-koda); }
-  a:hover { color: var(--color-koda-dark); }
+  a { color: var(--color-koda-texto); }
+  a:hover { color: var(--color-koda-texto); }
   /* Troca de tema sem piscar, mas só depois da primeira pintura. */
   html.com-transicao body, html.com-transicao body * { transition-property: background-color, border-color, color, fill; transition-duration: 180ms; }
 }

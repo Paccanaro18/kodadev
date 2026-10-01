@@ -50,13 +50,13 @@ function Endpoints({ resultado }: { resultado: ResultadoAnalise }) {
       <ul className="-mt-2 grid gap-2 text-[13px]">
         {lista.map((e, i) => (
           <li key={`${e.metodoHttp}${e.caminho}${i}`} className="flex items-center gap-2.5">
-            <b className="w-[4.25rem] shrink-0 rounded-lg bg-koda-soft py-0.5 text-center text-[11px] text-koda">{e.metodoHttp}</b>
+            <b className="w-[4.25rem] shrink-0 rounded-lg bg-koda-soft py-0.5 text-center text-[11px] text-koda-texto">{e.metodoHttp}</b>
             <code className="font-mono break-all">{e.caminho}</code>
           </li>
         ))}
       </ul>
       {resultado.endpoints.length > ENDPOINTS_VISIVEIS && (
-        <button onClick={() => setTodos(!todos)} className="mt-4 text-[13px] font-bold text-koda transition duration-200 hover:translate-x-0.5">
+        <button onClick={() => setTodos(!todos)} className="mt-4 text-[13px] font-bold text-koda-texto transition duration-200 hover:translate-x-0.5">
           {todos ? "Mostrar menos" : `Mostrar todos (${resultado.endpoints.length})`}
         </button>
       )}

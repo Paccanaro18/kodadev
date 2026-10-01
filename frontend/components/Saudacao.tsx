@@ -8,7 +8,7 @@ export function Saudacao() {
 
   return (
     <>
-      Olá, <span className="text-koda">{primeiroNome}!</span> 👋
+      Olá, <span className="text-koda-texto">{primeiroNome}!</span> 👋
     </>
   );
 }

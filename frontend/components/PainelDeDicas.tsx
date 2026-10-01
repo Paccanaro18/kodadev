@@ -41,7 +41,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
   return (
     <section className="flex min-h-[16rem] flex-col rounded-3xl bg-surface p-5 shadow-soft lg:min-h-0 lg:flex-1">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xs font-bold tracking-[0.12em] text-koda uppercase">Dicas</h2>
+        <h2 className="text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">Dicas</h2>
         {dados && <span className="text-xs text-ink-2">{usadas} de {maximo} neste desafio · {dados.usadasHoje} de {dados.limiteDiario} hoje</span>}
       </div>
 
@@ -57,7 +57,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
             <li key={d.nivel} className="flex gap-3 rounded-2xl bg-tint p-3.5">
               <span className="grid size-7 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{d.nivel}</span>
               <div className="min-w-0">
-                <div className="text-xs font-bold text-koda">{rotuloDoNivelDaDica(d.nivel)}</div>
+                <div className="text-xs font-bold text-koda-texto">{rotuloDoNivelDaDica(d.nivel)}</div>
                 <p className="mt-1 text-[14px] leading-relaxed text-body">{d.texto}</p>
               </div>
             </li>
@@ -68,7 +68,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
         {erro && <p role="alert" className="mt-3 text-sm text-bad">{erro}</p>}
         {gerando && (
         <p role="status" className="mt-3 flex items-center gap-2 text-sm text-ink-2">
-          <LoaderCircle className="size-4 animate-spin text-koda" /> Escrevendo a dica... pode levar até 1 minuto.
+          <LoaderCircle className="size-4 animate-spin text-koda-texto" /> Escrevendo a dica... pode levar até 1 minuto.
         </p>
       )}
       </div>
@@ -77,7 +77,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
         <button
           onClick={pedir}
           disabled={!podePedir}
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda/25 active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda-texto transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda/25 active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
         >
           <Lightbulb className="size-4" /> {usadas === 0 ? "Pedir uma dica" : "Pedir outra dica"}
         </button>

@@ -35,7 +35,7 @@ export function LoginHero() {
       </div>
 
       <h1 className="mt-10 max-w-[680px] text-[40px] leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-6xl lg:mt-20 lg:text-[68px]">
-        Seu próximo desafio começa no seu <span className="text-koda">código</span>.
+        Seu próximo desafio começa no seu <span className="text-koda-texto">código</span>.
       </h1>
       <p className="mt-5 max-w-[570px] text-base leading-relaxed sm:text-xl">
         Conecte seu GitHub. A Koda entende seu projeto e transforma o repositório em tarefas de desenvolvimento que parecem trabalho de verdade.
@@ -44,7 +44,7 @@ export function LoginHero() {
       <div className="mt-8 grid max-w-[760px] gap-5 sm:grid-cols-3">
         {features.map(({ icon: Icon, t, d }) => (
           <div key={t} className="flex gap-3.5">
-            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-koda-soft text-koda"><Icon className="size-6" /></div>
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-koda-soft text-koda-texto"><Icon className="size-6" /></div>
             <div>
               <div className="text-base leading-snug font-bold">{t}</div>
               <div className="mt-1.5 text-[13px] leading-snug text-ink-2">{d}</div>
@@ -65,22 +65,22 @@ export function LoginHero() {
             <div className="p-5">
               <div className="rounded-2xl p-5 shadow-[0_4px_24px_rgb(102_92_255/0.1)]">
                 <div className="flex items-center justify-between">
-                  <span className="rounded-[9px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">DEV-042</span>
-                  <span className="rounded-md border border-line-2 px-2 py-0.5 text-[11px] text-koda">Backend</span>
+                  <span className="rounded-[9px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda-texto">DEV-042</span>
+                  <span className="rounded-md border border-line-2 px-2 py-0.5 text-[11px] text-koda-texto">Backend</span>
                 </div>
                 <div className="mt-4 mb-2 text-[17px] leading-tight font-bold">Implementar paginação na lista de usuários</div>
                 <div className="text-xs leading-normal text-ink-2">Adicionar paginação no endpoint de listagem de usuários, seguindo o padrão do projeto.</div>
                 <dl className="mt-4 grid gap-2.5 text-[13px]">
                   <div>Critérios de aceite <span className="ml-2 text-xs text-ink-2">4 itens</span></div>
                   <div>Tecnologias <span className="ml-2 text-xs text-ink-2">Spring Boot, JPA</span></div>
-                  <div>Dificuldade <span className="ml-2 text-xs text-koda">Júnior</span></div>
+                  <div>Dificuldade <span className="ml-2 text-xs text-koda-texto">Júnior</span></div>
                 </dl>
               </div>
             </div>
           </div>
         </div>
         <div className="absolute top-2.5 left-[68%] ml-3.5 h-[340px] w-[110px] rounded-t-[14px] bg-[#2b2f4a]/90" />
-        <div className="absolute top-0 right-5 z-20 w-[150px] rounded-[20px] bg-koda-soft px-4 py-3.5 text-[15px] leading-tight font-semibold text-koda">Transforme seu repositório em evolução.</div>
+        <div className="absolute top-0 right-5 z-20 w-[150px] rounded-[20px] bg-koda-soft px-4 py-3.5 text-[15px] leading-tight font-semibold text-koda-texto">Transforme seu repositório em evolução.</div>
         <Mascot name="laptop" className="absolute right-0 -bottom-6 z-10 h-[270px] drop-shadow-[0_18px_24px_rgb(102_92_255/0.25)]" />
       </div>
 
@@ -94,7 +94,7 @@ export function LoginCard({ erro = false }: { erro?: boolean }) {
   return (
     <section className="flex flex-col bg-tint px-4 pt-6 pb-10 sm:px-8">
       <div className="flex items-center gap-3.5 self-end text-[13px] leading-snug text-ink-2">
-        <span>Feito para<br />desenvolvedores</span><Heart className="size-5 fill-koda text-koda" />
+        <span>Feito para<br />desenvolvedores</span><Heart className="size-5 fill-koda text-koda-texto" />
       </div>
       <div className="relative mt-40 w-full max-w-[520px] self-center rounded-[30px] border border-line bg-tint px-5 pb-11 shadow-[0_12px_50px_rgb(17_21_45/0.05)] sm:px-12 lg:mt-44">
         <div className="relative -mt-[115px] flex h-[185px] justify-center">
@@ -102,7 +102,7 @@ export function LoginCard({ erro = false }: { erro?: boolean }) {
             <Mascot name="aceno" className="h-auto w-[330px]" />
           </div>
           <div className="absolute top-[95px] left-0 grid h-16 w-[68px] place-items-center rounded-[18px_18px_18px_6px] border-2 border-line-2 bg-koda-soft shadow-[0_8px_20px_rgb(102_92_255/0.15)] sm:left-6">
-            <GitBranch className="size-8 text-koda" />
+            <GitBranch className="size-8 text-koda-texto" />
           </div>
         </div>
         <div className="rounded-t-[26px] bg-tint pt-6">
@@ -117,7 +117,7 @@ export function LoginCard({ erro = false }: { erro?: boolean }) {
           </a>
           <ul className="mt-12 flex flex-wrap items-center justify-around gap-2 rounded-2xl border border-line bg-tint px-2 py-3.5 text-sm font-medium">
             {trust.map(({ i: Icon, t }, k) => (
-              <li key={t} className={`flex items-center gap-2 ${k ? "sm:border-l sm:border-line sm:pl-4" : ""}`}><Icon className="size-5 text-koda" />{t}</li>
+              <li key={t} className={`flex items-center gap-2 ${k ? "sm:border-l sm:border-line sm:pl-4" : ""}`}><Icon className="size-5 text-koda-texto" />{t}</li>
             ))}
           </ul>
           <p className="mt-20 text-center text-sm leading-7 text-body">

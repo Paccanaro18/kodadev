@@ -36,7 +36,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 
 export function Chip({ children, tone = "soft" }: { children: ReactNode; tone?: "soft" | "neutral" }) {
   return (
-    <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda" : "bg-tint text-ink"}`}>
+    <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda-texto" : "bg-tint text-ink"}`}>
       {children}
     </span>
   );

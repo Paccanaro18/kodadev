@@ -10,7 +10,7 @@ function Situacao({ d }: { d: DesafioResumo }) {
   if (d.statusGeracao === "PRONTO") return <SeloProgresso status={d.statusProgresso} />;
 
   const [texto, cor] = d.statusGeracao === "FALHOU" ? ["Falhou", "bg-bad-soft text-bad"]
-    : ["Gerando", "bg-koda-soft text-koda"];
+    : ["Gerando", "bg-koda-soft text-koda-texto"];
 
   return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cor}`}>{texto}</span>;
 }
@@ -44,7 +44,7 @@ export default function ListaDesafios({ analiseId }: { analiseId: string }) {
           {lista.map((d) => (
             <li key={d.id} className="border-b border-line last:border-0">
               <Link href={destino(d)} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-ink transition duration-200 hover:translate-x-2 hover:bg-tint hover:text-ink active:translate-x-1">
-                <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">{d.codigo}</span>
+                <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda-texto">{d.codigo}</span>
                 <span className="min-w-[200px] flex-1 font-semibold">{d.titulo ?? (d.statusGeracao === "FALHOU" ? "Geração sem sucesso" : "Gerando o ticket…")}</span>
                 <span className="text-xs text-ink-2">{rotuloDoTipo(d.tipo)} · Júnior</span>
                 <Situacao d={d} />

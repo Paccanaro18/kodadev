@@ -109,7 +109,7 @@ export default function Notificacoes() {
           <div className="flex items-center justify-between px-3 pt-2 pb-1">
             <span className="text-sm font-bold">Notificações</span>
             {naoLidas > 0 && (
-              <button onClick={marcarTodas} className="text-xs font-semibold text-koda transition duration-200 hover:translate-x-0.5">Marcar todas como lidas</button>
+              <button onClick={marcarTodas} className="text-xs font-semibold text-koda-texto transition duration-200 hover:translate-x-0.5">Marcar todas como lidas</button>
             )}
           </div>
 
@@ -122,7 +122,7 @@ export default function Notificacoes() {
               {dados.itens.map((n) => (
                 <li key={n.id}>
                   <button onClick={() => abrir(n)} className="flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition duration-200 hover:bg-tint-2">
-                    <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${n.tipo === "DESAFIO_FALHOU" ? "bg-bad-soft text-bad" : "bg-koda-soft text-koda"}`}>
+                    <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${n.tipo === "DESAFIO_FALHOU" ? "bg-bad-soft text-bad" : "bg-koda-soft text-koda-texto"}`}>
                       <Icone tipo={n.tipo} />
                     </span>
                     <span className="min-w-0 flex-1">

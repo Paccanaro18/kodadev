@@ -91,7 +91,7 @@ export default function BuscaGlobal() {
               {resultado.repositorios.map((a) => (
                 <Link key={a.id} href={destinoDaAnalise(a)} onClick={() => setAberta(false)}
                   className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-tint-2 hover:text-ink">
-                  <FolderGit2 className="size-4 shrink-0 text-koda" /><span className="truncate">{a.nome}</span>
+                  <FolderGit2 className="size-4 shrink-0 text-koda-texto" /><span className="truncate">{a.nome}</span>
                 </Link>
               ))}
             </div>
@@ -103,8 +103,8 @@ export default function BuscaGlobal() {
               {resultado.desafios.map((d) => (
                 <Link key={d.id} href={destinoDoDesafio(d)} onClick={() => setAberta(false)}
                   className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-tint-2 hover:text-ink">
-                  <GitBranch className="size-4 shrink-0 text-koda" />
-                  <span className="shrink-0 font-bold text-koda">{d.codigo}</span>
+                  <GitBranch className="size-4 shrink-0 text-koda-texto" />
+                  <span className="shrink-0 font-bold text-koda-texto">{d.codigo}</span>
                   <span className="truncate">{d.titulo ?? "Gerando o ticket…"}</span>
                 </Link>
               ))}

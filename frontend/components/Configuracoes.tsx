@@ -52,7 +52,7 @@ function Conteudo() {
             href={`https://github.com/${encodeURIComponent(perfil.login)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-koda transition duration-200 hover:translate-x-0.5"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-koda-texto transition duration-200 hover:translate-x-0.5"
           >
             Ver perfil no GitHub <ExternalLink className="size-3.5" />
           </a>

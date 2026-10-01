@@ -80,7 +80,7 @@ export default function RepositoriosConectados() {
       {analises !== null && analises.length === 0 && (
         <p className="py-6 text-center text-sm text-ink-2">
           Você ainda não conectou nenhum repositório.{" "}
-          <Link href="/repositorios/adicionar" className="font-bold text-koda">Conectar o primeiro</Link>
+          <Link href="/repositorios/adicionar" className="font-bold text-koda-texto">Conectar o primeiro</Link>
         </p>
       )}
 
@@ -91,7 +91,7 @@ export default function RepositoriosConectados() {
             return (
               <Link key={a.id} href={destinoDe(a)} className="grid content-start gap-2.5 rounded-[18px] border border-line p-4 text-ink transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift active:translate-y-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="grid size-9.5 place-items-center rounded-xl bg-koda-soft text-koda"><FolderGit2 className="size-5" /></div>
+                  <div className="grid size-9.5 place-items-center rounded-xl bg-koda-soft text-koda-texto"><FolderGit2 className="size-5" /></div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold">{a.nome}</div>
                     <div className="truncate text-[11px] text-ink-3">{a.dono}/{a.nome}</div>

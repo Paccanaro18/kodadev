@@ -50,14 +50,14 @@ function Linha({ item }: { item: ItemHistorico }) {
   return (
     <li className="border-b border-line last:border-0">
       <Link href={destino(item)} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-ink transition duration-200 hover:translate-x-2 hover:bg-tint hover:text-ink active:translate-x-1">
-        <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">{item.codigo}</span>
+        <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda-texto">{item.codigo}</span>
         <span className="min-w-[200px] flex-1">
           <span className="block font-semibold">{item.titulo ?? (item.statusGeracao === "FALHOU" ? "Geração sem sucesso" : "Gerando o ticket…")}</span>
           <span className="block text-xs text-ink-2">{item.repositorio} · {rotuloDoTipo(item.tipo)} · criado {tempoRelativo(item.criadoEm)}</span>
         </span>
         {item.dicasUsadas > 0 && (
           <span className="inline-flex items-center gap-1 text-xs text-ink-2" title="Dicas usadas">
-            <Lightbulb className="size-3.5 text-koda" /> {item.dicasUsadas}
+            <Lightbulb className="size-3.5 text-koda-texto" /> {item.dicasUsadas}
           </span>
         )}
         {pronto
@@ -95,7 +95,7 @@ function Conteudo() {
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Indicador icone={<CheckCircle2 className="size-5" />} valor={resumo?.concluidos ?? null} rotulo="concluídos" cor="bg-ok-soft text-ok" />
         <Indicador icone={<Play className="size-5" />} valor={resumo?.emAndamento ?? null} rotulo="em andamento" cor="bg-warn-soft text-warn" />
-        <Indicador icone={<Sparkles className="size-5" />} valor={resumo?.naoIniciados ?? null} rotulo="não iniciados" cor="bg-koda-soft text-koda" />
+        <Indicador icone={<Sparkles className="size-5" />} valor={resumo?.naoIniciados ?? null} rotulo="não iniciados" cor="bg-koda-soft text-koda-texto" />
         <Indicador icone={<Lightbulb className="size-5" />} valor={resumo?.dicasUsadas ?? null} rotulo="dicas usadas" cor="bg-warn-soft text-[#e0631a]" />
       </div>
 

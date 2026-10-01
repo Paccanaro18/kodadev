@@ -35,7 +35,7 @@ export function AvisoSemContexto() {
     <div role="status" className="mt-6 rounded-2xl border border-line-2 bg-surface px-5 py-4 text-[13px] text-ink-2">
       <b className="text-ink">Esta análise é anterior ao contexto do projeto.</b>{" "}
       Para ver arquitetura, features e classes sem teste,{" "}
-      <Link href="/repositorios/adicionar" className="font-bold text-koda">analise o repositório de novo</Link>.
+      <Link href="/repositorios/adicionar" className="font-bold text-koda-texto">analise o repositório de novo</Link>.
     </div>
   );
 }

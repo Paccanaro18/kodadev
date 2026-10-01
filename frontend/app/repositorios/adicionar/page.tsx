@@ -88,7 +88,7 @@ export default function AddRepo() {
                 {[r.descricao, r.linguagem, r.atualizadoEm && `atualizado ${tempoRelativo(r.atualizadoEm)}`].filter(Boolean).join(" · ")}
               </div>
             </div>
-            <button onClick={() => conectar(r)} disabled={conectando !== null} className="h-10 rounded-[14px] border-[1.5px] border-koda px-5 text-sm font-bold text-koda transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-koda">{conectando === r.id ? "Conectando..." : "Conectar"}</button>
+            <button onClick={() => conectar(r)} disabled={conectando !== null} className="h-10 rounded-[14px] border-[1.5px] border-koda px-5 text-sm font-bold text-koda-texto transition duration-200 hover:scale-105 hover:bg-koda hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:text-koda-texto">{conectando === r.id ? "Conectando..." : "Conectar"}</button>
           </div>
         ))}
 

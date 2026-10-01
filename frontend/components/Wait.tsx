@@ -42,7 +42,7 @@ export default function Wait({ mascot, title, subtitle, steps, next, pronto }: P
           const done = i < step, cur = i === step;
           return (
             <li key={s} className={`flex items-center gap-3.5 border-b border-line py-4 text-[15px] last:border-0 ${cur ? "font-bold" : "font-medium"} ${done || cur ? "text-ink" : "text-ink-3"}`}>
-              <span className={`grid size-6.5 place-items-center rounded-full text-[13px] font-bold ${done ? "bg-koda text-white" : cur ? "bg-koda-soft text-koda animate-pulse" : "bg-tint text-koda"}`}>
+              <span className={`grid size-6.5 place-items-center rounded-full text-[13px] font-bold ${done ? "bg-koda text-white" : cur ? "bg-koda-soft text-koda-texto animate-pulse" : "bg-tint text-koda-texto"}`}>
                 {done ? <Check className="size-4" /> : i + 1}
               </span>
               {s}
