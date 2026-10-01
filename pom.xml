@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- A medição com a IA real gasta cota do provedor: só roda com -Pmedicao. -->
+		<excludedGroups>medicao</excludedGroups>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -214,6 +216,18 @@
 
 
 	<profiles>
+		<!--
+			Medição com a IA de verdade (gasta cota do provedor): veja o comentário em MedicaoComIaRealTest.
+			./mvnw -Pmedicao test -Dtest=MedicaoComIaRealTest -Dmedicao.tickets=6 -Dmedicao.dicas=2
+		-->
+		<profile>
+			<id>medicao</id>
+			<properties>
+				<groups>medicao</groups>
+				<excludedGroups>nenhum</excludedGroups>
+			</properties>
+		</profile>
+
 		<!--
 			Teste de mutação (lento, fora do verify): ./mvnw -Pmutacao test-compile org.pitest:pitest-maven:mutationCoverage
 			Altera o código de validação, seleção e similaridade e confere se algum teste percebe. Relatório em target/pit-reports.
