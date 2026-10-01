@@ -1,33 +1,23 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, Check, Clock, GitBranch, Plus, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, Clock, GitBranch, Play, Plus, Sparkles, Star } from "lucide-react";
 import { Mascot } from "./ui";
+import SeloProgresso from "./SeloProgresso";
 import RepositoriosConectados from "./RepositoriosConectados";
 import { Saudacao } from "./Saudacao";
-import type { DesafioRecente } from "@/lib/api";
+import type { DesafioRecente, ResumoDoProgresso } from "@/lib/api";
 import { estaGerando, rotuloDoTipo } from "@/lib/desafio";
 import { tempoRelativo } from "@/lib/formatar";
 import { useDesafiosRecentes } from "@/lib/useDesafiosRecentes";
+import { useResumoDoProgresso } from "@/lib/useResumoDoProgresso";
 
 const card = "rounded-3xl bg-white shadow-soft";
 const pill = "rounded-full border border-[#ece9f5] bg-white px-3 py-1 text-xs font-semibold text-[#3b4058]";
 const botao = "inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-koda font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-koda-dark hover:text-white hover:shadow-[0_12px_28px_rgb(102_92_255/0.4)] active:scale-[.97]";
 
-const MAXIMO_DE_HABILIDADES = 5;
-
 function destino(d: DesafioRecente): string {
   const id = encodeURIComponent(d.id);
   return estaGerando(d.statusGeracao) ? `/desafio/gerando?desafio=${id}` : `/desafio/${id}`;
-}
-
-function habilidadesMaisComuns(recentes: DesafioRecente[]): { nome: string; total: number }[] {
-  const contagem = new Map<string, number>();
-  recentes.forEach((d) => d.habilidades.forEach((h) => contagem.set(h, (contagem.get(h) ?? 0) + 1)));
-
-  return [...contagem.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))
-    .slice(0, MAXIMO_DE_HABILIDADES)
-    .map(([nome, total]) => ({ nome, total }));
 }
 
 function Vazio({ children }: { children: string }) {
@@ -44,6 +34,7 @@ function Destaque({ desafio }: { desafio: DesafioRecente | undefined }) {
               <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#fff4dc] px-3.5 py-1.5"><Star className="size-3.5 fill-[#f5a623] text-[#f5a623]" />Último desafio</span>
               <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda">{rotuloDoTipo(desafio.tipo)}</span>
               <span className="rounded-[10px] bg-koda-soft px-3 py-1.5 text-koda">Júnior</span>
+              {desafio.statusGeracao === "PRONTO" && <SeloProgresso status={desafio.statusProgresso} />}
             </div>
             <h2 className="text-[22px] leading-tight font-bold tracking-tight">{desafio.codigo} · {desafio.titulo ?? "Gerando o ticket…"}</h2>
             <div className="mt-4 flex flex-wrap gap-2">{desafio.habilidades.map((h) => <span key={h} className={pill}>{h}</span>)}</div>
@@ -66,6 +57,14 @@ function Destaque({ desafio }: { desafio: DesafioRecente | undefined }) {
   );
 }
 
+function descricaoDaAtividade(d: DesafioRecente): string {
+  if (d.statusGeracao === "FALHOU") return `A geração do ${d.codigo} falhou`;
+  if (estaGerando(d.statusGeracao)) return `Gerando o ${d.codigo}`;
+  if (d.statusProgresso === "CONCLUIDO") return `Concluiu o ${d.codigo}: ${d.titulo}`;
+  if (d.statusProgresso === "EM_ANDAMENTO") return `Está resolvendo o ${d.codigo}: ${d.titulo}`;
+  return `Gerou o ${d.codigo}: ${d.titulo}`;
+}
+
 function Atividades({ recentes }: { recentes: DesafioRecente[] }) {
   return (
     <section className={card + " p-6"}>
@@ -78,11 +77,7 @@ function Atividades({ recentes }: { recentes: DesafioRecente[] }) {
                 <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda-soft text-koda">
                   {d.statusGeracao === "PRONTO" ? <Check className="size-3.5" strokeWidth={3} /> : <GitBranch className="size-3.5" />}
                 </span>
-                <span className="flex-1">
-                  {d.statusGeracao === "FALHOU" ? `A geração do ${d.codigo} falhou`
-                    : estaGerando(d.statusGeracao) ? `Gerando o ${d.codigo}`
-                    : `Gerou o ${d.codigo}: ${d.titulo}`}
-                </span>
+                <span className="flex-1">{descricaoDaAtividade(d)}</span>
                 <span className="text-[11px] whitespace-nowrap text-[#8a8fa5]">{tempoRelativo(d.criadoEm)}</span>
               </Link>
             </li>
@@ -93,18 +88,26 @@ function Atividades({ recentes }: { recentes: DesafioRecente[] }) {
   );
 }
 
-const PASSOS = [
-  { t: "Gerar um novo desafio", tag: "Desafio", href: "/desafio/novo" },
-  { t: "Analisar outro repositório", tag: "Repositório", href: "/repositorios/adicionar" },
-  { t: "Rever o contexto do seu projeto", tag: "Projeto", href: "/projeto" },
-];
+function passosDe(recentes: DesafioRecente[]) {
+  const emAndamento = recentes.find((d) => d.statusGeracao === "PRONTO" && d.statusProgresso === "EM_ANDAMENTO");
+  const naoIniciado = recentes.find((d) => d.statusGeracao === "PRONTO" && d.statusProgresso === "NAO_INICIADO");
+  const passos: { t: string; tag: string; href: string }[] = [];
 
-function ProximosPassos() {
+  if (emAndamento) passos.push({ t: `Continuar o ${emAndamento.codigo}`, tag: "Em andamento", href: destino(emAndamento) });
+  if (naoIniciado) passos.push({ t: `Começar o ${naoIniciado.codigo}`, tag: "Desafio", href: destino(naoIniciado) });
+  passos.push({ t: "Gerar um novo desafio", tag: "Desafio", href: "/desafio/novo" });
+  passos.push({ t: "Analisar outro repositório", tag: "Repositório", href: "/repositorios/adicionar" });
+  return passos.slice(0, 3);
+}
+
+function ProximosPassos({ recentes }: { recentes: DesafioRecente[] }) {
+  const passos = passosDe(recentes);
+
   return (
     <section className={card + " p-6"}>
       <h2 className="mb-3.5 font-bold">Seus próximos passos</h2>
       <ol className="grid gap-3">
-        {PASSOS.map((p, i) => (
+        {passos.map((p, i) => (
           <li key={p.t}>
             <Link href={p.href} className="flex items-center gap-3 text-[13px] text-ink transition duration-200 hover:translate-x-1 hover:text-ink">
               <span className="grid size-6.5 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{i + 1}</span>
@@ -117,20 +120,33 @@ function ProximosPassos() {
   );
 }
 
-function Progresso({ total, recentes }: { total: number; recentes: DesafioRecente[] }) {
-  const habilidades = habilidadesMaisComuns(recentes);
+function Numero({ icone, valor, rotulo, cor }: { icone: React.ReactNode; valor: number; rotulo: string; cor: string }) {
+  return (
+    <div className="rounded-2xl border border-[#efecf7] p-3">
+      <div className={"grid size-9 place-items-center rounded-full " + cor}>{icone}</div>
+      <div className="mt-2.5 text-[22px] font-extrabold">{valor}</div>
+      <div className="text-[11px] text-ink-2">{rotulo}</div>
+    </div>
+  );
+}
+
+function Progresso({ total, resumo }: { total: number; resumo: ResumoDoProgresso | null }) {
+  const habilidades = resumo?.habilidades.slice(0, 5) ?? [];
   const maximo = habilidades[0]?.total ?? 1;
 
   return (
     <section className={card + " p-5.5"}>
-      <h2 className="mb-3.5 text-xs font-bold tracking-[0.12em] text-ink-2">SEU PROGRESSO</h2>
-      <div className="rounded-2xl border border-[#efecf7] p-3.5">
-        <div className="grid size-9 place-items-center rounded-full bg-[#e4e0fd] text-koda"><Sparkles className="size-4" /></div>
-        <div className="mt-2.5 text-[22px] font-extrabold">{total}</div>
-        <div className="text-[11px] text-ink-2">{total === 1 ? "desafio gerado" : "desafios gerados"}</div>
+      <div className="mb-3.5 flex items-center justify-between">
+        <h2 className="text-xs font-bold tracking-[0.12em] text-ink-2">SEU PROGRESSO</h2>
+        <Link href="/progresso" className="rounded-[10px] border border-[#e5e2f2] px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft">Ver tudo →</Link>
       </div>
-      <h3 className="mt-5 mb-3 text-[13px] font-semibold">Habilidades nos seus desafios</h3>
-      {habilidades.length === 0 ? <Vazio>As habilidades aparecem depois do primeiro desafio.</Vazio> : (
+      <div className="grid grid-cols-3 gap-2.5">
+        <Numero icone={<CheckCircle2 className="size-4" />} valor={resumo?.concluidos ?? 0} rotulo="concluídos" cor="bg-[#dff5e6] text-[#1d7a3c]" />
+        <Numero icone={<Play className="size-4" />} valor={resumo?.emAndamento ?? 0} rotulo="em andamento" cor="bg-[#fff4d6] text-[#8a5a00]" />
+        <Numero icone={<Sparkles className="size-4" />} valor={total} rotulo="gerados" cor="bg-[#e4e0fd] text-koda" />
+      </div>
+      <h3 className="mt-5 mb-3 text-[13px] font-semibold">Habilidades praticadas</h3>
+      {habilidades.length === 0 ? <Vazio>Elas aparecem quando você concluir o seu primeiro desafio.</Vazio> : (
         <ul className="grid gap-3">
           {habilidades.map((h) => (
             <li key={h.nome} className="flex items-center gap-2.5 text-xs">
@@ -147,6 +163,7 @@ function Progresso({ total, recentes }: { total: number; recentes: DesafioRecent
 
 export default function PainelInicio() {
   const { dados, erro } = useDesafiosRecentes();
+  const { resumo } = useResumoDoProgresso();
   const recentes = dados?.recentes ?? [];
 
   return (
@@ -168,12 +185,12 @@ export default function PainelInicio() {
 
         <div className="grid gap-5 md:grid-cols-2">
           <Atividades recentes={recentes} />
-          <ProximosPassos />
+          <ProximosPassos recentes={recentes} />
         </div>
       </div>
 
       <aside className="grid min-w-0 max-w-full flex-[1_1_320px] content-start gap-5 xl:max-w-[340px]">
-        <Progresso total={dados?.totalGerados ?? 0} recentes={recentes} />
+        <Progresso total={dados?.totalGerados ?? 0} resumo={resumo} />
         <Link href="/desafio/novo" className={botao + " h-13 text-[15px]"}><Plus className="size-4" /> Novo desafio</Link>
         <section className={card + " relative flex min-h-[150px] items-center overflow-hidden bg-linear-to-br from-[#f5f3ff] to-white p-5.5"}>
           <Mascot name="cafe" className="mr-4 h-32 shrink-0" />
