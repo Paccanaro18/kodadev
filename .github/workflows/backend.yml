@@ -1,0 +1,58 @@
+name: Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Testes (Java 21 + Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: koda
+          POSTGRES_USER: koda
+          POSTGRES_PASSWORD: senha-so-do-ci
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U koda -d koda"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # Valores só deste job. Os testes usam o banco koda_test, que o próprio teste cria, e o provedor de IA falso.
+      SPRING_DATASOURCE_PASSWORD: senha-so-do-ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Compilar e testar
+        run: ./mvnw -B -ntp verify
+
+      - name: Guardar o relatório dos testes
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-dos-testes
+          path: target/surefire-reports
+          retention-days: 7
