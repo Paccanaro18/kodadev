@@ -1,10 +1,38 @@
 @import "tailwindcss";
 
 /*
-  Temas. O escuro é o padrão (data-tema="escuro" no <html>); o claro entra com data-tema="claro".
+  Temas: preto (padrão), roxo e claro, escolhidos por data-tema no <html>.
   As telas usam só os tokens abaixo (bg-surface, text-ink-2, border-line...), nunca cores fixas.
 */
-:root {
+[data-tema="preto"], :root {
+  color-scheme: dark;
+  --c-cream: #050507;
+  --c-surface: #0e0e13;
+  --c-tint: #15151c;
+  --c-tint-2: #1e1e29;
+  --c-track: #262633;
+  --c-line: #1f1f2a;
+  --c-line-2: #2e2e3d;
+  --c-ink: #f3f3f8;
+  --c-ink-2: #a8a8ba;
+  --c-ink-3: #7c7c90;
+  --c-body: #d2d2de;
+  --c-koda: #7468ff;
+  --c-koda-dark: #6154f0;
+  --c-koda-soft: rgb(116 104 255 / 0.18);
+  --c-navy: #1c1c27;
+  --c-ok: #5fe0a0;
+  --c-ok-soft: rgb(52 199 120 / 0.16);
+  --c-warn: #f7c871;
+  --c-warn-soft: rgb(245 170 40 / 0.16);
+  --c-bad: #ff8f98;
+  --c-bad-soft: rgb(240 80 90 / 0.16);
+  --c-logo: #f4f2ff;
+  --shadow-soft-valor: 0 10px 40px rgb(0 0 0 / 0.35);
+  --shadow-lift-valor: 0 14px 44px rgb(0 0 0 / 0.5);
+}
+
+[data-tema="roxo"] {
   color-scheme: dark;
   --c-cream: #0d0f1f;
   --c-surface: #171a31;
