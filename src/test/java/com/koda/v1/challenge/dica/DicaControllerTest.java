@@ -97,7 +97,7 @@ class DicaControllerTest {
         UUID desafio = criarEmAndamento("A");
 
         mockMvc.perform(get("/api/desafios/" + desafio + "/dicas")).andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/api/desafios/" + desafio + "/dicas")).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/desafios/" + desafio + "/dicas")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/desafios/" + desafio + "/dicas").session(sessao)).andExpect(status().isForbidden());
         assertThat(dicas.findByDesafioIdOrderByNivelAsc(desafio)).isEmpty();
     }

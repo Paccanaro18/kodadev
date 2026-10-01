@@ -107,7 +107,7 @@ class DesafioControllerTest {
         mockMvc.perform(get("/api/desafios")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/analises/" + analiseId + "/desafios")
                         .contentType(MediaType.APPLICATION_JSON).content(CORPO_FEATURE))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         verify(iniciador, never()).disparar(any());
     }
@@ -412,7 +412,7 @@ class DesafioControllerTest {
                 .andExpect(status().isForbidden());
         mockMvc.perform(patch("/api/desafios/" + desafioId + "/progresso")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"EM_ANDAMENTO\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     private ResultActions mudarProgresso(UUID desafioId, String corpo) throws Exception {

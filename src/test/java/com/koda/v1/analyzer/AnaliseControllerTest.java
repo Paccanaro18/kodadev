@@ -101,7 +101,7 @@ class AnaliseControllerTest {
         mockMvc.perform(get("/api/analises"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/analises").contentType(MediaType.APPLICATION_JSON).content(CORPO_VALIDO))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         verify(iniciador, never()).disparar(any());
     }

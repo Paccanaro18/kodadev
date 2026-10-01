@@ -34,7 +34,7 @@ class NotificacaoControllerTest extends TesteDeApiComSessao {
     @Test
     void deveExigirSessaoETokenParaMarcarComoLida() throws Exception {
         mockMvc.perform(get("/api/notificacoes")).andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/api/notificacoes/lidas")).andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/notificacoes/lidas")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/notificacoes/lidas").session(sessao)).andExpect(status().isForbidden());
         mockMvc.perform(post("/api/notificacoes/" + UUID.randomUUID() + "/lida").session(sessao))
                 .andExpect(status().isForbidden());

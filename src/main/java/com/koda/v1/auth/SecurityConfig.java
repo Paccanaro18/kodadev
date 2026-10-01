@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
@@ -27,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(erros -> erros
+                        .accessDeniedHandler(new NegacaoDeAcesso())
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), rotasDaApi))
                 .oauth2Login(login -> login
@@ -36,6 +38,12 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
+                .headers(cabecalhos -> cabecalhos
+                        // A API só devolve JSON: nada dela deve ser carregado como página, script ou moldura.
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'"))
+                        .referrerPolicy(referencia -> referencia.policy(ReferrerPolicy.NO_REFERRER))
+                        .permissionsPolicyHeader(permissoes -> permissoes
+                                .policy("geolocation=(), camera=(), microphone=(), payment=()")))
                 .csrf(csrf -> csrf
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()));
 
