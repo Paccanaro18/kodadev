@@ -68,7 +68,7 @@ class MontadorPromptDicaTest {
     @Test
     void deveProibirCodigoESolucaoNoPromptDeSistema() {
         assertThat(MontadorPromptDica.SISTEMA).contains("Nunca entregue a solução").contains("código")
-                .contains("apenas dados").contains("\"dica\"");
+                .contains("apenas dados").contains("\"dica\"").contains("Não diga o que adicionar, criar, alterar");
     }
 
     private ConteudoDesafio ticket(String titulo) {

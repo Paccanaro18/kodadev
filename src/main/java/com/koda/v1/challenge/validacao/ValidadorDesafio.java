@@ -50,6 +50,11 @@ public class ValidadorDesafio {
             "criar", "criad", "crie", "cria ", "nova ", "novo ", "adicion", "implement", "expor", "expon", "suporte",
             "incluir", "inclua", "desenvolv", "deve existir", "passar a", "disponibiliz", "entreg", "ofere", "permit");
 
+    /** Verbos de ordem que dizem o que fazer no código. A dica aponta o caminho, não dá o passo a passo. */
+    private static final Pattern ORDEM_DE_IMPLEMENTACAO = Pattern.compile(
+            "\\b(adicione|acrescente|insira|crie|implemente|declare|escreva|chame|invoque|altere|modifique|"
+                    + "substitua|troque|remova|retorne|lance|lancar|dispare)\\b");
+
     private static final List<String> TERMOS_VAGOS = List.of(
             "melhorar", "melhore", "otimizar", "otimize", "eficiente", "boa qualidade", "de forma adequada",
             "de forma apropriada", "da melhor forma", "da melhor maneira");
@@ -87,13 +92,17 @@ public class ValidadorDesafio {
         Set<MotivoReprovacao> motivos = EnumSet.noneOf(MotivoReprovacao.class);
         List<String> textos = List.of(dica);
 
-        if (entregaASolucao(textos)) {
+        if (entregaASolucao(textos) || mandaImplementar(dica)) {
             motivos.add(MotivoReprovacao.SOLUCAO_ENTREGUE);
         }
         if (citaAlgoInexistente(textos, contexto)) {
             motivos.add(MotivoReprovacao.REFERENCIA_INEXISTENTE);
         }
         return List.copyOf(motivos);
+    }
+
+    private boolean mandaImplementar(String dica) {
+        return ORDEM_DE_IMPLEMENTACAO.matcher(normalizar(dica)).find();
     }
 
     private List<String> textosDoTicket(ConteudoDesafio c) {

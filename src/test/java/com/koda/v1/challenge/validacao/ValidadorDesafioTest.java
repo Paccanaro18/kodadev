@@ -166,6 +166,26 @@ class ValidadorDesafioTest {
     }
 
     @Test
+    void deveReprovarDicaQueMandaImplementarMasAprovarAsQueSoApontamOCaminho() {
+        // Dicas reais geradas na medição com IA real: a 2 entrega a correção, a 1 e a 3 não.
+        String direcao = "Comece investigando a classe PagamentoService para entender como as requisições que chegam do "
+                + "PagamentoController são processadas atualmente. Vale a pena dar uma olhada também nos métodos de "
+                + "consulta disponíveis no PagamentoRepository para ver como buscar registros existentes.";
+        String entrega = "Antes de chamar o método de salvamento no serviço, adicione uma verificação condicional que "
+                + "utiliza a consulta do repositório para checar se o pagamento já existe. Caso a busca retorne um "
+                + "registro correspondente, lance uma exceção apropriada para impedir a persistência duplicada.";
+        String conferencia = "Para validar seu progresso, teste enviar duas requisições idênticas seguidas para o "
+                + "endpoint POST /pagamentos e confirme se a primeira é cadastrada com sucesso enquanto a segunda é "
+                + "rejeitada. Verifique também se requisições com dados novos continuam funcionando normalmente.";
+
+        assertThat(validador.validarDica(direcao, contexto)).isEmpty();
+        assertThat(validador.validarDica(entrega, contexto)).contains(MotivoReprovacao.SOLUCAO_ENTREGUE);
+        assertThat(validador.validarDica(conferencia, contexto)).isEmpty();
+        assertThat(validador.validarDica("Crie um método novo no repositório.", contexto))
+                .contains(MotivoReprovacao.SOLUCAO_ENTREGUE);
+    }
+
+    @Test
     void deveReprovarDicaQueEntregaASolucaoOuCitaAlgoInexistente() {
         assertThat(validador.validarDica("Chame buscarPorStatus() no repositório.", contexto))
                 .contains(MotivoReprovacao.SOLUCAO_ENTREGUE);
