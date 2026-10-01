@@ -32,6 +32,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 - Testes do front (Vitest 3, Testing Library, jsdom; `npm test`, e `npm run test:watch` para desenvolver): ficam ao lado do código (`*.test.ts` e `*.test.tsx`). Cobrem as regras de `lib/` (rótulos, tema, tempo relativo, hook de polling `useDesafio`) e os componentes críticos (ticket com abas e teclado, painel de dicas com espera, erro e limites, sino, escolha de tema). Ao mockar `useRouter`, devolver sempre o mesmo objeto, como o Next faz, senão os efeitos que dependem do `router` rodam a cada render.
 - Contraste: `lib/contraste.test.ts` lê as variáveis de `app/globals.css` e exige 4,5:1 (WCAG AA) em 19 pares de texto e fundo por tema. Texto roxo usa `text-koda-texto` (mais claro nos temas escuros), nunca `text-koda`; `bg-koda` é só preenchimento com texto branco. Ao criar ou mudar uma cor de tema, esse teste diz se ficou legível.
 - Cobertura e mutação (backend): o JaCoCo roda no `verify` e tem piso: 95% das linhas e 88% dos ramos no projeto, e 98% e 95% nos pacotes `challenge.validacao`, `challenge.selecao` e `challenge.similaridade` (relatório em `target/site/jacoco`). Mutação com PIT, fora do `verify` por ser lenta: `./mvnw -Pmutacao test-compile org.pitest:pitest-maven:mutationCoverage` (relatório em `target/pit-reports`; piso de 95%). Estado atual: 139 de 140 mutações mortas nesses três pacotes; a que sobra é equivalente (desempate num embaralhamento aleatório em `SeletorDeDesafio.menosRecente`). Mutação de fronteira (`>` por `>=`) sobrevive quando falta teste no limite exato: escrever o caso no limite.
+- Bateria de medição da IA (`src/test/java/com/koda/v1/medicao/`): `BateriaDeMedicao` repete em processo, sem banco, o que a produção faz (seleção, prompt, chamada, verificação, similaridade, validador, até 2 tentativas) e depois pede as dicas; devolve um `RelatorioDeMedicao` só com números e nomes fixos de motivo. É testada com o provedor falso (`BateriaDeMedicaoTest`, roda no `verify`). Contra a IA de verdade: `set -a; . ./.env; set +a; ./mvnw -Pmedicao test -Dtest=MedicaoComIaRealTest -Dmedicao.tickets=6 -Dmedicao.dicas=2`; o relatório vai para `target/medicao/relatorio.md`. Esse teste tem a tag `medicao`, fica excluído por padrão (gasta cota do provedor) e nunca imprime a chave. Usar para comparar modelos e reajustar o limite de similaridade e as regras do validador.
 - Métricas de IA (Micrometer, `MetricasDeIa`): `koda.ia.geracoes{origem,resultado}`, `koda.ia.tentativas.descartadas{origem,motivo}`, `koda.ia.validador.reprovacoes{origem,motivo}` e o tempo `koda.ia.chamadas{origem,resultado}`, com `origem` igual a `desafio` ou `dica`. Os rótulos são sempre nomes fixos, nunca texto de ticket, de prompt ou de pessoa. Não são expostas por HTTP (o actuator só expõe `health`); a bateria de medição lê o registro em processo.
 - CI (`.github/`): `backend.yml` roda `./mvnw -B verify` com JDK 21 (o alvo do `pom.xml`) e Postgres como serviço na porta 5433, com senha própria do job por `SPRING_DATASOURCE_PASSWORD`; `frontend.yml` roda `npm ci`, `typecheck`, `lint` e `build` no Node 22; `dependabot.yml` acompanha Maven, npm, Actions e Compose toda semana. O `mvnw` precisa continuar com a permissão de executável no Git (`git update-index --chmod=+x mvnw`). Front: `npm run lint` usa ESLint 9 com `eslint.config.mjs` (flat config, `next/core-web-vitals` e `next/typescript`); nunca usar `next lint`, que abre um assistente interativo.
 - Testes: rodam num banco próprio, `koda_test`, no mesmo container (só o Postgres precisa estar de pé: `docker compose up -d`). `src/test/resources/application.properties` aponta para ele, não importa o `.env`, usa o provedor de IA falso e chaves de teste. O `BancoDeTesteInicializador` (registrado em `META-INF/spring.factories`) cria o banco se faltar e recusa subir qualquer contexto de teste cujo banco não termine em `_test`. Nenhum teste toca o banco de desenvolvimento nem depende dos dados reais dele.
@@ -89,6 +90,8 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 
 ## Estado atual
 
+O README.md da raiz explica como rodar, as variáveis de ambiente e como testar; este arquivo guarda as decisões e as regras de trabalho.
+
 Branch: `main`. As Etapas 4 a 7 já foram mergeadas (PRs #6 a #9). A Etapa 8 (progresso, dicas, histórico e notificações) está implementada e só falta a medição das dicas com IA real.
 
 Pronto:
@@ -125,7 +128,8 @@ Pronto:
 
 ## Dívidas conhecidas
 
-- POST sem sessão devolve 403 (falta `AccessDeniedHandler`); Postgres na porta 5433 em todas as interfaces; backend escuta em todas as interfaces; `FilaDesafios` duplica `FilaAnalises`; alguns commits antigos com assunto acima de 72 caracteres.
+- Resolvidas na Etapa 9: POST sem sessão devolve 401, backend e Postgres escutam só em 127.0.0.1 e as filas usam a base `shared/FilaLimitada` (`FilaDesafios` e `FilaAnalises` são camadas finas sobre ela).
+- Abertas: alguns commits antigos com assunto acima de 72 caracteres (já publicados, não reescrever); `/comunidade` ainda é uma tela "Em breve"; a conclusão do ticket é declarada pela pessoa (a Koda não verifica o código); sem Dockerfile nem stack de produção (candidatos a uma Etapa 10).
 
 ## Project Context: regras
 
