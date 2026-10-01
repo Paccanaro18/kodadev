@@ -232,4 +232,73 @@ class ValidadorDesafioTest {
             return new String(entrada.readAllBytes(), StandardCharsets.UTF_8).trim();
         }
     }
+
+    @Test
+    void deveTratarOLimiteExatoDePalavrasDoCriterio() {
+        ConteudoDesafio tresPalavras = ticketComCriterios(List.of("Retorna lista vazia", "Retorna 200 com a lista"));
+        ConteudoDesafio quatroPalavras = ticketComCriterios(List.of("Retorna 200 com lista", "Retorna 200 com a lista"));
+
+        assertThat(validador.validar(tresPalavras, selecao, contexto)).contains(MotivoReprovacao.CRITERIO_VAGO);
+        assertThat(validador.validar(quatroPalavras, selecao, contexto)).doesNotContain(MotivoReprovacao.CRITERIO_VAGO);
+    }
+
+    @Test
+    void deveTratarOLimiteExatoDeClassesCitadas() {
+        String seis = "Mexe em PagamentoController, PagamentoService, PagamentoRepository, Pagamento, ADto e BDto.";
+        String sete = seis.replace("e BDto.", "BDto e CDto.");
+
+        assertThat(validador.validar(com(ticket().titulo(), seis), selecao, contextoComDtos(3)))
+                .doesNotContain(MotivoReprovacao.ESCOPO_GRANDE);
+        assertThat(validador.validar(com(ticket().titulo(), sete), selecao, contextoComDtos(3)))
+                .contains(MotivoReprovacao.ESCOPO_GRANDE);
+    }
+
+    @Test
+    void deveExigirORecursoDoEndpointNoTextoDoTicket() {
+        SelecaoDeDesafio doEndpoint = selecao("FEATURE_PAGINACAO", EscopoAlvo.ENDPOINT, "GET /clientes");
+
+        assertThat(validador.validar(ticketSemPlural("clientes de teste"), doEndpoint, contexto))
+                .doesNotContain(MotivoReprovacao.FORA_DO_ALVO);
+        assertThat(validador.validar(ticketSemPlural("pedidos de teste"), doEndpoint, contexto))
+                .contains(MotivoReprovacao.FORA_DO_ALVO);
+    }
+
+    @Test
+    void deveCasarOAlvoNoPluralComOTextoNoSingular() {
+        SelecaoDeDesafio plural = selecao("FEATURE_PAGINACAO", EscopoAlvo.RECURSO, "pagamentos");
+
+        assertThat(validador.validar(ticketSemPlural("pagamento"), plural, contexto))
+                .doesNotContain(MotivoReprovacao.FORA_DO_ALVO);
+    }
+
+    @Test
+    void naoDeveCortarOSDeUmAlvoCurtoDeTresLetras() {
+        SelecaoDeDesafio curto = selecao("FEATURE_PAGINACAO", EscopoAlvo.RECURSO, "bus");
+
+        // "burro" contém "bu", mas não "bus": o alvo não foi citado.
+        assertThat(validador.validar(ticketSemPlural("burro"), curto, contexto)).contains(MotivoReprovacao.FORA_DO_ALVO);
+        assertThat(validador.validar(ticketSemPlural("bus"), curto, contexto)).doesNotContain(MotivoReprovacao.FORA_DO_ALVO);
+    }
+
+    /** Um ticket cujos textos só falam de {@code assunto}, sem nenhum plural de pagamento. */
+    private ConteudoDesafio ticketSemPlural(String assunto) {
+        return new ConteudoDesafio("Ajustar " + assunto, "Contexto de " + assunto + " para o time.",
+                "Hoje o fluxo de " + assunto + " se comporta de um jeito simples.",
+                "Permitir ajustar o fluxo de " + assunto + " com pouca mudança.",
+                List.of("Regra sobre " + assunto, "Outra regra sobre " + assunto),
+                List.of("Requisito sobre " + assunto, "Outro requisito sobre " + assunto),
+                List.of("Resposta devolve 200 para " + assunto, "Resposta devolve 400 para " + assunto),
+                List.of("Teste de " + assunto), List.of("Não mexer em outras áreas"), List.of("Habilidade"));
+    }
+
+    private ContextoProjeto contextoComDtos(int quantos) {
+        var c = contexto.componentes();
+        var dtos = java.util.stream.IntStream.range(0, quantos).mapToObj(i -> (char) ('A' + i) + "Dto").toList();
+        var maior = new ComponentesContexto(c.controllers(), c.services(), c.repositories(), c.entidades(), dtos,
+                c.excecoes(), c.temTratadorDeErros());
+        return new ContextoProjeto(contexto.versaoEsquema(), contexto.versaoJava(), contexto.versaoSpringBoot(),
+                contexto.ferramentaDeBuild(), contexto.arquitetura(), contexto.dominios(), contexto.tecnologias(),
+                contexto.features(), contexto.endpoints(), maior, contexto.testes(), contexto.infra(),
+                contexto.parcial(), contexto.truncado(), contexto.itensDescartados());
+    }
 }

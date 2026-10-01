@@ -212,4 +212,51 @@
 		</plugins>
 	</build>
 
+
+	<profiles>
+		<!--
+			Teste de mutação (lento, fora do verify): ./mvnw -Pmutacao test-compile org.pitest:pitest-maven:mutationCoverage
+			Altera o código de validação, seleção e similaridade e confere se algum teste percebe. Relatório em target/pit-reports.
+		-->
+		<profile>
+			<id>mutacao</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-maven</artifactId>
+						<version>1.30.0</version>
+						<dependencies>
+							<dependency>
+								<groupId>org.pitest</groupId>
+								<artifactId>pitest-junit5-plugin</artifactId>
+								<version>1.2.3</version>
+							</dependency>
+						</dependencies>
+						<configuration>
+							<targetClasses>
+								<param>com.koda.v1.challenge.validacao.*</param>
+								<param>com.koda.v1.challenge.selecao.*</param>
+								<param>com.koda.v1.challenge.similaridade.*</param>
+							</targetClasses>
+							<targetTests>
+								<param>com.koda.v1.challenge.validacao.*</param>
+								<param>com.koda.v1.challenge.selecao.*</param>
+								<param>com.koda.v1.challenge.similaridade.*</param>
+								<param>com.koda.v1.challenge.ia.ProvedorIaFalsoValidadoTest</param>
+							</targetTests>
+							<!-- 139 de 140 mutações mortas; a que sobra é equivalente (desempate num embaralhamento aleatório). -->
+							<mutationThreshold>95</mutationThreshold>
+							<outputFormats>
+								<outputFormat>HTML</outputFormat>
+								<outputFormat>XML</outputFormat>
+							</outputFormats>
+							<timestampedReports>false</timestampedReports>
+							<threads>2</threads>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

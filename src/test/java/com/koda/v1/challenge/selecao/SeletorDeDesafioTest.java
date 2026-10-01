@@ -288,4 +288,45 @@ class SeletorDeDesafioTest {
                 new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
                 new TestesContexto(0, List.of(), List.of()), new InfraContexto(false, false), false, false, 0);
     }
+
+    @Test
+    void deveEscolherSempreOAlvoQueFicouMaisTempoSemUsoDentroDoAnguloEscolhido() {
+        // Em contextos pequenos os alvos acabam sendo reaproveitados por outros ângulos: é aí que a idade importa.
+        for (ContextoProjeto contexto : List.of(contextoRico(), contextoGrande())) {
+            for (long numeroDaSemente = 0; numeroDaSemente < 40; numeroDaSemente++) {
+                final long semente = numeroDaSemente;
+                SeletorDeDesafio seletor = new SeletorDeDesafio(catalogo, new Random(semente));
+                List<UsoAnterior> historico = new ArrayList<>();
+
+                for (int passo = 0; passo < 40; passo++) {
+                    SelecaoDeDesafio escolha;
+                    try {
+                        escolha = seletor.selecionar(contexto, TipoDesafio.FEATURE, historico);
+                    } catch (DesafiosEsgotadosException e) {
+                        break;
+                    }
+
+                    Set<String> usadosNoAngulo = new HashSet<>();
+                    historico.stream().filter(uso -> uso.anguloId().equals(escolha.angulo().id()))
+                            .forEach(uso -> usadosNoAngulo.add(uso.alvoChave()));
+                    int idadeEscolhida = idadeDoAlvo(escolha.alvo().chave(), historico);
+                    escolha.angulo().alvosEm(contexto).stream()
+                            .filter(alvo -> !usadosNoAngulo.contains(alvo.chave()))
+                            .forEach(alvo -> assertThat(idadeEscolhida)
+                                    .as("semente %d: o alvo %s ficou mais tempo sem uso que o escolhido", semente, alvo.chave())
+                                    .isGreaterThanOrEqualTo(idadeDoAlvo(alvo.chave(), historico)));
+                    historico.add(0, new UsoAnterior(escolha.angulo().id(), escolha.alvo().chave(), true));
+                }
+            }
+        }
+    }
+
+    private int idadeDoAlvo(String chave, List<UsoAnterior> historico) {
+        for (int i = 0; i < historico.size(); i++) {
+            if (historico.get(i).mesmaAnalise() && historico.get(i).alvoChave().equals(chave)) {
+                return i;
+            }
+        }
+        return Integer.MAX_VALUE;
+    }
 }

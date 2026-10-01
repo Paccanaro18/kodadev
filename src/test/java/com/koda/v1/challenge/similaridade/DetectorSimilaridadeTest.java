@@ -194,4 +194,65 @@ class DetectorSimilaridadeTest {
                 List.of("Regra 1", "Regra 2"), List.of("Requisito 1", "Requisito 2"), criterios,
                 List.of("Teste 1"), List.of("Restrição 1"), List.of("Habilidade 1"));
     }
+
+    @Test
+    void deveConsiderarParecidoQuandoAPontuacaoIgualaOLimiteExato() {
+        DetectorSimilaridade exato = new DetectorSimilaridade(1.0);
+        ConteudoDesafio igual = paginacaoDePedidos();
+
+        assertThat(exato.pontuacao(igual, paginacaoDePedidos())).isEqualTo(1.0);
+        assertThat(exato.buscarParecido(igual, List.of(paginacaoDePedidos()))).isPresent();
+        assertThat(exato.buscarParecido(igual, List.of(paginacaoDeClientes()))).isEmpty();
+    }
+
+    @Test
+    void deveContarTermosDeTresLetrasEIgnorarOsDeDuasNoTitulo() {
+        assertThat(detector.pontuacao(comTituloEOutrosTermosDiferentes("abc", "a"), comTituloEOutrosTermosDiferentes("abc", "b")))
+                .isCloseTo(0.25, within(1e-9));
+        assertThat(detector.pontuacao(comTituloEOutrosTermosDiferentes("ab", "a"), comTituloEOutrosTermosDiferentes("ab", "b")))
+                .isCloseTo(0.0, within(1e-9));
+    }
+
+    @Test
+    void deveTratarPluralESingularComoOMesmoTermo() {
+        assertThat(detector.pontuacao(comTituloEOutrosTermosDiferentes("ações", "a"), comTituloEOutrosTermosDiferentes("ação", "b")))
+                .as("ações e ação").isCloseTo(0.25, within(1e-9));
+        assertThat(detector.pontuacao(comTituloEOutrosTermosDiferentes("pedidos", "a"), comTituloEOutrosTermosDiferentes("pedido", "b")))
+                .as("pedidos e pedido").isCloseTo(0.25, within(1e-9));
+    }
+
+    @Test
+    void naoDeveCortarOSDePalavrasCurtasDeTresLetras() {
+        // "gás" tem três letras: tirar o "s" deixaria "ga" (duas letras) e o termo sumiria.
+        assertThat(detector.pontuacao(comTituloEOutrosTermosDiferentes("gás", "a"), comTituloEOutrosTermosDiferentes("gás", "b")))
+                .isCloseTo(0.25, within(1e-9));
+    }
+
+    /** Só o título é igual (ou parecido); objetivo, cenário e critérios não têm nenhum termo em comum. */
+    private ConteudoDesafio comTituloEOutrosTermosDiferentes(String titulo, String lado) {
+        String[] palavras = lado.equals("a")
+                ? new String[]{"alfa beta", "gama delta", "epsilon zeta"}
+                : new String[]{"iota kappa", "lambda sigma", "omega theta"};
+        return conteudo(titulo, palavras[0], palavras[1], List.of(palavras[2]));
+    }
+
+    @Test
+    void emCasoDeEmpateDeveApontarOPrimeiroTicketParecido() {
+        ConteudoDesafio novo = paginacaoDePedidos();
+
+        var parecido = detector.buscarParecido(novo, List.of(paginacaoDePedidos(), paginacaoDePedidos()));
+
+        assertThat(parecido).isPresent();
+        assertThat(parecido.get().posicao()).isZero();
+    }
+
+    @Test
+    void deveApontarOTicketMaisParecidoQuandoHaVarios() {
+        ConteudoDesafio novo = paginacaoDePedidos();
+
+        var parecido = detector.buscarParecido(novo, List.of(testesDoServiceDeEstoque(), paginacaoDePedidos()));
+
+        assertThat(parecido).isPresent();
+        assertThat(parecido.get().posicao()).isEqualTo(1);
+    }
 }
