@@ -106,6 +106,8 @@ export type TipoPedido = TipoDesafio | "ALEATORIO";
 
 export type StatusGeracao = "PENDENTE" | "EM_ANDAMENTO" | "PRONTO" | "FALHOU";
 
+export type StatusProgresso = "NAO_INICIADO" | "EM_ANDAMENTO" | "CONCLUIDO";
+
 export type ConteudoDesafio = {
   titulo: string;
   contexto: string;
@@ -132,6 +134,9 @@ export type DesafioDetalhe = {
   mensagemErro: string | null;
   criadoEm: string;
   concluidoEm: string | null;
+  statusProgresso: StatusProgresso;
+  iniciadoEm: string | null;
+  finalizadoEm: string | null;
 };
 
 export type DesafioResumo = {
@@ -140,6 +145,7 @@ export type DesafioResumo = {
   codigo: string;
   tipo: TipoDesafio;
   statusGeracao: StatusGeracao;
+  statusProgresso: StatusProgresso;
   titulo: string | null;
   mensagemErro: string | null;
   criadoEm: string;
@@ -152,6 +158,7 @@ export type DesafioRecente = {
   codigo: string;
   tipo: TipoDesafio;
   statusGeracao: StatusGeracao;
+  statusProgresso: StatusProgresso;
   titulo: string | null;
   habilidades: string[];
   criadoEm: string;
@@ -191,13 +198,13 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
   return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
-async function enviar<T>(caminho: string, corpo?: unknown): Promise<T> {
+async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PATCH" = "POST"): Promise<T> {
   const csrf = await requisitar<{ cabecalho: string; token: string }>("/api/csrf");
   const headers: Record<string, string> = { [csrf.cabecalho]: csrf.token };
   if (corpo !== undefined) headers["Content-Type"] = "application/json";
 
   return requisitar<T>(caminho, {
-    method: "POST",
+    method: metodo,
     headers,
     body: corpo === undefined ? undefined : JSON.stringify(corpo),
   });
@@ -246,6 +253,37 @@ export function listarDesafios(analiseId: string): Promise<DesafioResumo[]> {
 
 export function listarDesafiosRecentes(): Promise<DesafiosRecentes> {
   return requisitar<DesafiosRecentes>("/api/desafios");
+}
+
+export type ProgressoDesafio = {
+  statusProgresso: StatusProgresso;
+  iniciadoEm: string | null;
+  finalizadoEm: string | null;
+};
+
+export type Dica = {
+  nivel: number;
+  texto: string;
+  criadoEm: string;
+};
+
+export type Dicas = {
+  dicas: Dica[];
+  maximoPorDesafio: number;
+  usadasHoje: number;
+  limiteDiario: number;
+};
+
+export function mudarProgresso(id: string, status: StatusProgresso): Promise<ProgressoDesafio> {
+  return enviar(`/api/desafios/${encodeURIComponent(id)}/progresso`, { status }, "PATCH");
+}
+
+export function listarDicas(id: string): Promise<Dicas> {
+  return requisitar<Dicas>(`/api/desafios/${encodeURIComponent(id)}/dicas`);
+}
+
+export function pedirDica(id: string): Promise<Dica> {
+  return enviar(`/api/desafios/${encodeURIComponent(id)}/dicas`);
 }
 
 export async function sair(): Promise<void> {
