@@ -28,6 +28,7 @@ Artur, dev backend júnior em São Paulo, estuda ADS na FMU, cofundador da Compi
 - Front em `frontend/`: Next.js 15, React 19, Tailwind 4, Lucide, fonte Sora.
 - Windows, PowerShell, IntelliJ. Repositório local em `C:\Developer\v1`.
 - Banco via Docker Compose (container `koda-postgres`, porta 5433).
+- Testes: rodam num banco próprio, `koda_test`, no mesmo container (só o Postgres precisa estar de pé: `docker compose up -d`). `src/test/resources/application.properties` aponta para ele, não importa o `.env`, usa o provedor de IA falso e chaves de teste. O `BancoDeTesteInicializador` (registrado em `META-INF/spring.factories`) cria o banco se faltar e recusa subir qualquer contexto de teste cujo banco não termine em `_test`. Nenhum teste toca o banco de desenvolvimento nem depende dos dados reais dele.
 - Acessar sempre por `localhost`, nunca `127.0.0.1` (o cookie de sessão é por host).
 
 ## Regras de código
