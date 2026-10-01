@@ -15,6 +15,7 @@ public class ProvedorIaFalso implements ProvedorIa {
     private static final String MARCA_DE_DICA = "<dicas_anteriores>";
     private static final String PREFIXO_ANGULO = "Ângulo: ";
     private static final String PREFIXO_ALVO = "Alvo: ";
+    private static final String PREFIXO_INSTRUCAO = "O que o ticket deve pedir: ";
     private static final String PREFIXO_HABILIDADES = "Habilidades que o ticket pode praticar: ";
     private static final int TAMANHO_MAXIMO_TITULO = 100;
     private static final JsonMapper MAPEADOR = JsonMapper.builder().build();
@@ -26,13 +27,13 @@ public class ProvedorIaFalso implements ProvedorIa {
         }
         String angulo = valorDaLinha(prompt.usuario(), PREFIXO_ANGULO, "ângulo não informado");
         String alvo = valorDaLinha(prompt.usuario(), PREFIXO_ALVO, "alvo não informado");
+        String instrucao = valorDaLinha(prompt.usuario(), PREFIXO_INSTRUCAO, angulo);
 
         Map<String, Object> conteudo = new LinkedHashMap<>();
         conteudo.put("titulo", cortar("[Simulado] " + angulo + " em " + alvo));
         conteudo.put("contexto", "Este ticket foi simulado, sem IA de verdade, para testar o fluxo de " + angulo + ".");
-        conteudo.put("cenarioAtual", "Hoje, em " + alvo + ", o comportamento apresenta um problema em relação ao que o ângulo "
-                + angulo + " descreve.");
-        conteudo.put("objetivo", "Praticar " + angulo + " tendo como alvo " + alvo + ".");
+        conteudo.put("cenarioAtual", "Hoje, em " + alvo + ", o comportamento apresenta um problema: " + instrucao);
+        conteudo.put("objetivo", "Praticar " + angulo + " tendo como alvo " + alvo + ". " + instrucao);
         conteudo.put("regrasDeNegocio", List.of(
                 "Respeitar o comportamento atual de " + alvo + ".",
                 "Manter a tarefa pequena e delimitada, no nível júnior."));
@@ -40,7 +41,7 @@ public class ProvedorIaFalso implements ProvedorIa {
                 "Reaproveitar as classes que já existem ao redor de " + alvo + " e cobrir o resultado com testes automatizados.",
                 "Seguir o padrão de nomes e de camadas do projeto."));
         conteudo.put("criteriosDeAceite", List.of(
-                "O resultado de " + angulo + " pode ser verificado em " + alvo + ".",
+                "O resultado de " + angulo + " pode ser verificado em " + alvo + ": " + instrucao,
                 "Nenhum comportamento existente deixa de funcionar."));
         conteudo.put("testesEsperados", List.of("Cobrir o cenário principal de " + alvo + "."));
         conteudo.put("restricoes", List.of("Não adicionar dependências novas ao projeto."));
