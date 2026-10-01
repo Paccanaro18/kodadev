@@ -4,9 +4,13 @@ import type { ReactNode } from "react";
 import { Check, CircleAlert, Plus } from "lucide-react";
 import AppShell from "./AppShell";
 import { BackLink, btnPrimary, Chip, Mascot } from "./ui";
-import type { ConteudoDesafio, DesafioDetalhe } from "@/lib/api";
+import type { ConteudoDesafio, DesafioDetalhe, ProgressoDesafio } from "@/lib/api";
 import { estaGerando, rotuloDoTipo } from "@/lib/desafio";
 import { useDesafio } from "@/lib/useDesafio";
+import AcompanhamentoDoDesafio from "./AcompanhamentoDoDesafio";
+import SeloProgresso from "./SeloProgresso";
+import PainelDeDicas from "./PainelDeDicas";
+import { useState } from "react";
 
 const marca = {
   ponto: <span className="size-1.5 rounded-full bg-koda" />,
@@ -55,6 +59,12 @@ function Mensagem({ titulo, texto, href, rotulo }: { titulo: string; texto: stri
 }
 
 function Ticket({ desafio, conteudo }: { desafio: DesafioDetalhe; conteudo: ConteudoDesafio }) {
+  const [atualizado, setAtualizado] = useState<ProgressoDesafio | null>(null);
+  const progresso: ProgressoDesafio = atualizado ?? {
+    statusProgresso: desafio.statusProgresso,
+    iniciadoEm: desafio.iniciadoEm,
+    finalizadoEm: desafio.finalizadoEm,
+  };
   const projeto = `/projeto?analise=${encodeURIComponent(desafio.analiseId)}`;
 
   return (
@@ -67,9 +77,12 @@ function Ticket({ desafio, conteudo }: { desafio: DesafioDetalhe; conteudo: Cont
             {[rotuloDoTipo(desafio.tipo), "Júnior"].map((t) => (
               <span key={t} className="rounded-lg border border-[#ddd9ff] px-3 py-1 text-xs text-koda">{t}</span>
             ))}
+            <SeloProgresso status={progresso.statusProgresso} />
           </div>
           <h1 className="mt-5 text-2xl leading-tight font-bold tracking-tight sm:text-3xl">{conteudo.titulo}</h1>
         </header>
+
+        <AcompanhamentoDoDesafio desafioId={desafio.id} progresso={progresso} aoMudar={setAtualizado} />
 
         <Texto titulo="Contexto" texto={conteudo.contexto} />
         <Texto titulo="Cenário atual" texto={conteudo.cenarioAtual} />
@@ -82,6 +95,8 @@ function Ticket({ desafio, conteudo }: { desafio: DesafioDetalhe; conteudo: Cont
         <Secao titulo="Habilidades praticadas">
           <div className="flex flex-wrap gap-2">{conteudo.habilidades.map((h) => <Chip key={h}>{h}</Chip>)}</div>
         </Secao>
+
+        <PainelDeDicas desafioId={desafio.id} status={progresso.statusProgresso} />
 
         <div className="flex justify-center pt-2">
           <Link href={`/desafio/novo?analise=${encodeURIComponent(desafio.analiseId)}`} className={btnPrimary + " hover:text-white"}>

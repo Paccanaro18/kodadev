@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { Card, Eyebrow } from "./ui";
 import { listarDesafios, type DesafioResumo } from "@/lib/api";
 import { estaGerando, rotuloDoTipo } from "@/lib/desafio";
+import SeloProgresso from "./SeloProgresso";
 
 function Situacao({ d }: { d: DesafioResumo }) {
-  const [texto, cor] = d.statusGeracao === "PRONTO" ? ["Pronto", "bg-[#e6f7ee] text-[#137a45]"]
-    : d.statusGeracao === "FALHOU" ? ["Falhou", "bg-[#fdeaea] text-[#b3261e]"]
+  if (d.statusGeracao === "PRONTO") return <SeloProgresso status={d.statusProgresso} />;
+
+  const [texto, cor] = d.statusGeracao === "FALHOU" ? ["Falhou", "bg-[#fdeaea] text-[#b3261e]"]
     : ["Gerando", "bg-koda-soft text-koda"];
 
   return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cor}`}>{texto}</span>;
