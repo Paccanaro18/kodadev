@@ -23,10 +23,16 @@ spring:
             scope: read:user
 
 server:
+  # Só a própria máquina enxerga o servidor. Em produção, defina KODA_SERVIDOR_ENDERECO=0.0.0.0 atrás de um proxy.
+  address: ${KODA_SERVIDOR_ENDERECO:127.0.0.1}
   servlet:
     session:
       cookie:
         name: KODA_SESSAO
+        http-only: true
+        same-site: lax
+        # Em produção (HTTPS), defina KODA_COOKIE_SEGURO=true.
+        secure: ${KODA_COOKIE_SEGURO:false}
 
 koda:
   seguranca:
