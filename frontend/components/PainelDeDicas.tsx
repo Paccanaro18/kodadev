@@ -39,42 +39,45 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
   const podePedir = status === "EM_ANDAMENTO" && usadas < maximo && !semCotaHoje && !gerando;
 
   return (
-    <section className="rounded-[28px] bg-surface px-6 py-6 shadow-soft sm:px-9 sm:py-7">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <section className="flex min-h-[16rem] flex-col rounded-3xl bg-surface p-5 shadow-soft lg:min-h-0 lg:flex-1">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h2 className="text-xs font-bold tracking-[0.12em] text-koda uppercase">Dicas</h2>
         {dados && <span className="text-xs text-ink-2">{usadas} de {maximo} neste desafio · {dados.usadasHoje} de {dados.limiteDiario} hoje</span>}
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-ink-2">
+      <p className="mt-2 shrink-0 text-[13px] leading-relaxed text-ink-2">
         As dicas apontam o caminho, nunca a solução. Cada uma é mais próxima que a anterior.
       </p>
 
+      <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+
       {dados && dados.dicas.length > 0 && (
-        <ol className="mt-4 grid gap-3">
+        <ol className="grid gap-2.5">
           {dados.dicas.map((d) => (
-            <li key={d.nivel} className="flex gap-3 rounded-2xl bg-tint p-4">
+            <li key={d.nivel} className="flex gap-3 rounded-2xl bg-tint p-3.5">
               <span className="grid size-7 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{d.nivel}</span>
               <div className="min-w-0">
                 <div className="text-xs font-bold text-koda">{rotuloDoNivelDaDica(d.nivel)}</div>
-                <p className="mt-1 leading-relaxed text-body">{d.texto}</p>
+                <p className="mt-1 text-[14px] leading-relaxed text-body">{d.texto}</p>
               </div>
             </li>
           ))}
         </ol>
       )}
 
-      {erro && <p role="alert" className="mt-4 text-sm text-bad">{erro}</p>}
-      {gerando && (
-        <p role="status" className="mt-4 flex items-center gap-2 text-sm text-ink-2">
+        {erro && <p role="alert" className="mt-3 text-sm text-bad">{erro}</p>}
+        {gerando && (
+        <p role="status" className="mt-3 flex items-center gap-2 text-sm text-ink-2">
           <LoaderCircle className="size-4 animate-spin text-koda" /> Escrevendo a dica... pode levar até 1 minuto.
         </p>
       )}
+      </div>
 
-      <div className="mt-4">
+      <div className="mt-3 shrink-0">
         <button
           onClick={pedir}
           disabled={!podePedir}
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda-soft active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda/25 active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
         >
           <Lightbulb className="size-4" /> {usadas === 0 ? "Pedir uma dica" : "Pedir outra dica"}
         </button>
