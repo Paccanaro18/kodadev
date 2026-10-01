@@ -286,6 +286,99 @@ export function pedirDica(id: string): Promise<Dica> {
   return enviar(`/api/desafios/${encodeURIComponent(id)}/dicas`);
 }
 
+export type ItemHistorico = {
+  id: string;
+  analiseId: string;
+  repositorio: string;
+  numero: number;
+  codigo: string;
+  tipo: TipoDesafio;
+  statusGeracao: StatusGeracao;
+  statusProgresso: StatusProgresso;
+  titulo: string | null;
+  dicasUsadas: number;
+  criadoEm: string;
+  finalizadoEm: string | null;
+};
+
+export type PaginaHistorico = {
+  itens: ItemHistorico[];
+  pagina: number;
+  tamanho: number;
+  total: number;
+  totalPaginas: number;
+};
+
+export type FiltrosDoHistorico = {
+  status?: StatusProgresso;
+  tipo?: TipoDesafio;
+  pagina?: number;
+  tamanho?: number;
+};
+
+export type HabilidadePraticada = {
+  nome: string;
+  total: number;
+};
+
+export type ResumoDoProgresso = {
+  naoIniciados: number;
+  emAndamento: number;
+  concluidos: number;
+  dicasUsadas: number;
+  habilidades: HabilidadePraticada[];
+};
+
+export type TipoDeEvento =
+  | "DESAFIO_PRONTO"
+  | "DESAFIO_FALHOU"
+  | "PROGRESSO_INICIADO"
+  | "PROGRESSO_CONCLUIDO"
+  | "PROGRESSO_REABERTO"
+  | "DICA_USADA";
+
+export type Notificacao = {
+  id: string;
+  tipo: TipoDeEvento;
+  desafioId: string;
+  codigo: string;
+  titulo: string | null;
+  lida: boolean;
+  criadoEm: string;
+};
+
+export type Notificacoes = {
+  naoLidas: number;
+  itens: Notificacao[];
+};
+
+export function listarHistorico(filtros: FiltrosDoHistorico = {}): Promise<PaginaHistorico> {
+  const parametros = new URLSearchParams();
+  if (filtros.status) parametros.set("status", filtros.status);
+  if (filtros.tipo) parametros.set("tipo", filtros.tipo);
+  if (filtros.pagina !== undefined) parametros.set("pagina", String(filtros.pagina));
+  if (filtros.tamanho !== undefined) parametros.set("tamanho", String(filtros.tamanho));
+  const consulta = parametros.toString();
+
+  return requisitar<PaginaHistorico>(`/api/historico${consulta ? `?${consulta}` : ""}`);
+}
+
+export function buscarResumoDoProgresso(): Promise<ResumoDoProgresso> {
+  return requisitar<ResumoDoProgresso>("/api/progresso");
+}
+
+export function listarNotificacoes(): Promise<Notificacoes> {
+  return requisitar<Notificacoes>("/api/notificacoes");
+}
+
+export async function marcarTodasComoLidas(): Promise<void> {
+  await enviar<void>("/api/notificacoes/lidas");
+}
+
+export async function marcarComoLida(id: string): Promise<void> {
+  await enviar<void>(`/api/notificacoes/${encodeURIComponent(id)}/lida`);
+}
+
 export async function sair(): Promise<void> {
   await enviar<void>("/api/logout");
 }
