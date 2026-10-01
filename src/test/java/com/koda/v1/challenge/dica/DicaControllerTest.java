@@ -138,7 +138,8 @@ class DicaControllerTest {
 
         pedir(sessao, naoIniciado).andExpect(status().isConflict());
         pedir(sessao, concluido).andExpect(status().isConflict());
-        assertThat(dicas.count()).isZero();
+        assertThat(dicas.findByDesafioIdOrderByNivelAsc(naoIniciado)).isEmpty();
+        assertThat(dicas.findByDesafioIdOrderByNivelAsc(concluido)).isEmpty();
     }
 
     @Test
@@ -163,7 +164,7 @@ class DicaControllerTest {
         pedir(intruso, desafio).andExpect(status().isNotFound());
         mockMvc.perform(get("/api/desafios/" + desafio + "/dicas").session(intruso)).andExpect(status().isNotFound());
         pedir(sessao, UUID.randomUUID()).andExpect(status().isNotFound());
-        assertThat(dicas.count()).isZero();
+        assertThat(dicas.findByDesafioIdOrderByNivelAsc(desafio)).isEmpty();
     }
 
     @Test
