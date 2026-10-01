@@ -13,6 +13,7 @@ import com.koda.v1.challenge.TipoDesafio;
 import com.koda.v1.challenge.VerificadorConteudo;
 import com.koda.v1.challenge.geracao.CarregadorContexto;
 import com.koda.v1.challenge.geracao.ContextoIndisponivelException;
+import com.koda.v1.challenge.ia.MetricasDeIa;
 import com.koda.v1.challenge.ia.MotivoFalhaIa;
 import com.koda.v1.challenge.ia.ProvedorIa;
 import com.koda.v1.challenge.ia.ProvedorIaException;
@@ -25,6 +26,7 @@ import com.koda.v1.challenge.persistence.StatusProgresso;
 import com.koda.v1.challenge.prompt.PromptDesafio;
 import com.koda.v1.challenge.validacao.MotivoReprovacao;
 import com.koda.v1.challenge.validacao.ValidadorDesafio;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -66,6 +68,8 @@ class DicaServiceTest {
     private DicaRepository dicas;
     private RegistroDica registro;
     private DicaService service;
+    private SimpleMeterRegistry registroDeMetricas;
+    private MetricasDeIa metricas;
 
     @BeforeEach
     void preparar() {
@@ -73,10 +77,12 @@ class DicaServiceTest {
         carregador = mock(CarregadorContexto.class);
         provedor = mock(ProvedorIa.class);
         validador = mock(ValidadorDesafio.class);
+        registroDeMetricas = new SimpleMeterRegistry();
+        metricas = new MetricasDeIa(registroDeMetricas);
         dicas = mock(DicaRepository.class);
         registro = mock(RegistroDica.class);
         service = new DicaService(consulta, carregador, serializador, new MontadorPromptDica(), provedor,
-                new VerificadorConteudo(), validador, dicas, registro, 10, Clock.fixed(AGORA, ZoneOffset.UTC));
+                new VerificadorConteudo(), validador, metricas, dicas, registro, 10, Clock.fixed(AGORA, ZoneOffset.UTC));
 
         when(consulta.buscarDoUsuario(usuarioId, desafioId)).thenReturn(detalhe(StatusGeracao.PRONTO, StatusProgresso.EM_ANDAMENTO));
         when(carregador.carregar(usuarioId, analiseId)).thenReturn(contexto());
@@ -171,7 +177,7 @@ class DicaServiceTest {
             provedor = mock(ProvedorIa.class);
             when(provedor.gerar(any())).thenThrow(new ProvedorIaException(motivo));
             service = new DicaService(consulta, carregador, serializador, new MontadorPromptDica(), provedor,
-                    new VerificadorConteudo(), validador, dicas, registro, 10, Clock.fixed(AGORA, ZoneOffset.UTC));
+                    new VerificadorConteudo(), validador, metricas, dicas, registro, 10, Clock.fixed(AGORA, ZoneOffset.UTC));
 
             assertThatThrownBy(() -> service.pedir(usuarioId, desafioId))
                     .isInstanceOf(DicaNaoGeradaException.class)
@@ -293,5 +299,46 @@ class DicaServiceTest {
                         List.of("PedidoRepository"), List.of("Pedido"), List.of(), List.of(), false),
                 new TestesContexto(0, List.of("PedidoService"), List.of("PedidoController")),
                 new InfraContexto(false, false), false, false, 0);
+    }
+
+    @Test
+    void deveContarADicaGeradaEAReprovacaoDoValidador() {
+        when(validador.validarDica(anyString(), any()))
+                .thenReturn(List.of(MotivoReprovacao.SOLUCAO_ENTREGUE))
+                .thenReturn(List.of());
+        when(provedor.gerar(any())).thenReturn(resposta("Chame o método x() agora.", "m"), resposta(DICA_BOA, "m"));
+
+        service.pedir(usuarioId, desafioId);
+
+        assertThat(contador("koda.ia.geracoes", "resultado", "pronto")).isEqualTo(1);
+        assertThat(contador("koda.ia.tentativas.descartadas", "motivo", "REPROVADA_NA_VALIDACAO")).isEqualTo(1);
+        assertThat(contador("koda.ia.validador.reprovacoes", "motivo", "SOLUCAO_ENTREGUE")).isEqualTo(1);
+        assertThat(registroDeMetricas.get("koda.ia.chamadas").tag("origem", "dica").timer().count()).isEqualTo(2);
+    }
+
+    @Test
+    void deveContarADicaQueFalhouDeVez() {
+        when(validador.validarDica(anyString(), any())).thenReturn(List.of(MotivoReprovacao.SOLUCAO_ENTREGUE));
+        when(provedor.gerar(any())).thenReturn(resposta("Dica ruim um.", "m"), resposta("Dica ruim dois.", "m"));
+
+        assertThatThrownBy(() -> service.pedir(usuarioId, desafioId)).isInstanceOf(DicaNaoGeradaException.class);
+
+        assertThat(contador("koda.ia.geracoes", "resultado", "falhou")).isEqualTo(1);
+        assertThat(contador("koda.ia.tentativas.descartadas", "motivo", "REPROVADA_NA_VALIDACAO")).isEqualTo(2);
+    }
+
+    @Test
+    void deveContarAFalhaDoProvedorQueNaoTemRetry() {
+        when(provedor.gerar(any())).thenThrow(new ProvedorIaException(MotivoFalhaIa.NAO_AUTORIZADO));
+
+        assertThatThrownBy(() -> service.pedir(usuarioId, desafioId)).isInstanceOf(DicaNaoGeradaException.class);
+
+        assertThat(contador("koda.ia.geracoes", "resultado", "falhou")).isEqualTo(1);
+        assertThat(registroDeMetricas.get("koda.ia.chamadas").tag("resultado", "erro").timer().count()).isEqualTo(1);
+    }
+
+    private double contador(String nome, String rotulo, String valor) {
+        var busca = registroDeMetricas.find(nome).tag(rotulo, valor).counter();
+        return busca == null ? 0 : busca.count();
     }
 }

@@ -10,6 +10,7 @@ import com.koda.v1.challenge.VerificadorConteudo;
 import com.koda.v1.challenge.catalogo.AlvoDesafio;
 import com.koda.v1.challenge.catalogo.AnguloDesafio;
 import com.koda.v1.challenge.catalogo.CatalogoAngulos;
+import com.koda.v1.challenge.ia.MetricasDeIa;
 import com.koda.v1.challenge.ia.MotivoFalhaIa;
 import com.koda.v1.challenge.ia.ProvedorIa;
 import com.koda.v1.challenge.ia.ProvedorIaException;
@@ -68,6 +69,7 @@ public class GeradorDesafio {
     private final DetectorSimilaridade detector;
     private final ValidadorDesafio validador;
     private final SerializadorConteudo serializador;
+    private final MetricasDeIa metricas;
     private final Duration prazoMaximo;
 
     public GeradorDesafio(RegistroDesafio registro,
@@ -82,6 +84,7 @@ public class GeradorDesafio {
                           DetectorSimilaridade detector,
                           ValidadorDesafio validador,
                           SerializadorConteudo serializador,
+                          MetricasDeIa metricas,
                           @Value("${koda.desafio.prazo-maximo:PT3M}") Duration prazoMaximo) {
         this.registro = registro;
         this.consulta = consulta;
@@ -95,6 +98,7 @@ public class GeradorDesafio {
         this.detector = detector;
         this.validador = validador;
         this.serializador = serializador;
+        this.metricas = metricas;
         this.prazoMaximo = prazoMaximo;
     }
 
@@ -109,10 +113,13 @@ public class GeradorDesafio {
                     serializador.paraJson(pronto.conteudo()),
                     ConteudoDesafio.VERSAO_ESQUEMA,
                     pronto.modelo());
+            metricas.geracao(MetricasDeIa.ORIGEM_DESAFIO, true);
         } catch (GeracaoRecusadaException | ContextoIndisponivelException
                  | DesafiosEsgotadosException | SemAnguloAplicavelException e) {
+            metricas.geracao(MetricasDeIa.ORIGEM_DESAFIO, false);
             registro.falhar(desafioId, e.getMessage());
         } catch (RuntimeException e) {
+            metricas.geracao(MetricasDeIa.ORIGEM_DESAFIO, false);
             registro.falhar(desafioId, MENSAGEM_ERRO_INESPERADO);
         }
     }
@@ -164,15 +171,17 @@ public class GeradorDesafio {
                              List<ConteudoDesafio> anteriores) {
         RespostaIa resposta;
         try {
-            resposta = provedor.gerar(prompt);
+            resposta = metricas.medirChamada(MetricasDeIa.ORIGEM_DESAFIO, () -> provedor.gerar(prompt));
         } catch (ProvedorIaException e) {
             if (e.getMotivo() == MotivoFalhaIa.INDISPONIVEL) {
                 LOG.info("Desafio: tentativa descartada, motivo={}", e.getMotivo());
+                metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DESAFIO, Falha.PROVEDOR_INDISPONIVEL.name());
                 return Resultado.falha(Falha.PROVEDOR_INDISPONIVEL);
             }
             if (e.getMotivo() == MotivoFalhaIa.RESPOSTA_INVALIDA
                     || e.getMotivo() == MotivoFalhaIa.RESPOSTA_GRANDE_DEMAIS) {
                 LOG.info("Desafio: tentativa descartada, motivo={}", e.getMotivo());
+                metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DESAFIO, Falha.CONTEUDO_INVALIDO.name());
                 return Resultado.falha(Falha.CONTEUDO_INVALIDO);
             }
             throw new GeracaoRecusadaException(e.getMessage());
@@ -183,6 +192,7 @@ public class GeradorDesafio {
             conteudo = verificador.verificar(resposta.texto());
         } catch (ConteudoInvalidoException e) {
             LOG.info("Desafio: tentativa descartada, conteudo invalido: {}", e.getMessage());
+            metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DESAFIO, Falha.CONTEUDO_INVALIDO.name());
             return Resultado.falha(Falha.CONTEUDO_INVALIDO);
         }
 
@@ -190,12 +200,15 @@ public class GeradorDesafio {
         if (parecido.isPresent()) {
             LOG.info("Desafio: tentativa descartada, parecido com um anterior, pontuacao={}",
                     String.format("%.2f", parecido.get().pontuacao()));
+            metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DESAFIO, Falha.MUITO_PARECIDO.name());
             return Resultado.falha(Falha.MUITO_PARECIDO);
         }
 
         List<MotivoReprovacao> motivos = validador.validar(conteudo, selecao, contexto);
         if (!motivos.isEmpty()) {
             LOG.info("Desafio: tentativa descartada, reprovado na validacao: {}", motivos);
+            metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DESAFIO, Falha.REPROVADO_NA_VALIDACAO.name());
+            motivos.forEach(motivo -> metricas.reprovacaoDoValidador(MetricasDeIa.ORIGEM_DESAFIO, motivo.name()));
             return Resultado.reprovado(motivos);
         }
         return new Resultado(conteudo, resposta.modelo(), null, List.of());

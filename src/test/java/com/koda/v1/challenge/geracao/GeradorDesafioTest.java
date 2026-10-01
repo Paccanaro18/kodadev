@@ -12,6 +12,7 @@ import com.koda.v1.challenge.SerializadorConteudo;
 import com.koda.v1.challenge.TipoDesafio;
 import com.koda.v1.challenge.VerificadorConteudo;
 import com.koda.v1.challenge.catalogo.CatalogoAngulos;
+import com.koda.v1.challenge.ia.MetricasDeIa;
 import com.koda.v1.challenge.ia.MotivoFalhaIa;
 import com.koda.v1.challenge.ia.ProvedorIa;
 import com.koda.v1.challenge.ia.ProvedorIaException;
@@ -27,6 +28,7 @@ import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.similaridade.DetectorSimilaridade;
 import com.koda.v1.challenge.validacao.MotivoReprovacao;
 import com.koda.v1.challenge.validacao.ValidadorDesafio;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -61,6 +63,8 @@ class GeradorDesafioTest {
     private CarregadorContexto carregador;
     private ProvedorIa provedor;
     private ValidadorDesafio validador;
+    private SimpleMeterRegistry registroDeMetricas;
+    private MetricasDeIa metricas;
     private GeradorDesafio gerador;
 
     private DadosGeracao dados;
@@ -72,6 +76,8 @@ class GeradorDesafioTest {
         carregador = mock(CarregadorContexto.class);
         provedor = mock(ProvedorIa.class);
         validador = mock(ValidadorDesafio.class);
+        registroDeMetricas = new SimpleMeterRegistry();
+        metricas = new MetricasDeIa(registroDeMetricas);
         dados = new DadosGeracao(desafioId, usuarioId, analiseId, TipoDesafio.FEATURE,
                 "FEATURE_PAGINACAO", "ENDPOINT:GET /pedidos", perspectivas.todas().get(0));
 
@@ -352,7 +358,7 @@ class GeradorDesafioTest {
         return new GeradorDesafio(
                 registro, consulta, carregador, catalogo, new SeletorDeDesafio(catalogo), perspectivas,
                 new MontadorPrompt(perspectivas), provedor, new VerificadorConteudo(),
-                new DetectorSimilaridade(0.70), validador, serializador, prazo);
+                new DetectorSimilaridade(0.70), validador, serializador, metricas, prazo);
     }
 
     private String tituloDe(String tema) {
@@ -397,5 +403,49 @@ class GeradorDesafioTest {
                 new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
                 new TestesContexto(0, List.of("ClienteService"), List.of()), new InfraContexto(false, false),
                 false, false, 0);
+    }
+
+    @Test
+    void deveContarAGeracaoProntaEATentativaDescartadaPorMotivoSemTextoLivre() {
+        when(validador.validar(any(), any(), any()))
+                .thenReturn(List.of(MotivoReprovacao.SOLUCAO_ENTREGUE, MotivoReprovacao.CRITERIO_VAGO))
+                .thenReturn(List.of());
+        when(provedor.gerar(any())).thenReturn(resposta("primeiro", "m"), resposta("segundo", "m"));
+
+        gerador.gerar(desafioId);
+
+        assertThat(contador("koda.ia.geracoes", "resultado", "pronto")).isEqualTo(1);
+        assertThat(contador("koda.ia.geracoes", "resultado", "falhou")).isZero();
+        assertThat(contador("koda.ia.tentativas.descartadas", "motivo", "REPROVADO_NA_VALIDACAO")).isEqualTo(1);
+        assertThat(contador("koda.ia.validador.reprovacoes", "motivo", "SOLUCAO_ENTREGUE")).isEqualTo(1);
+        assertThat(contador("koda.ia.validador.reprovacoes", "motivo", "CRITERIO_VAGO")).isEqualTo(1);
+        assertThat(registroDeMetricas.get("koda.ia.chamadas").tag("origem", "desafio").tag("resultado", "ok").timer().count())
+                .isEqualTo(2);
+    }
+
+    @Test
+    void deveContarAGeracaoQueFalhouEAChamadaComErro() {
+        when(provedor.gerar(any())).thenThrow(new ProvedorIaException(MotivoFalhaIa.LIMITE_ATINGIDO));
+
+        gerador.gerar(desafioId);
+
+        assertThat(contador("koda.ia.geracoes", "resultado", "falhou")).isEqualTo(1);
+        assertThat(registroDeMetricas.get("koda.ia.chamadas").tag("resultado", "erro").timer().count()).isEqualTo(1);
+    }
+
+    @Test
+    void naoDeveGuardarNenhumRotuloComTextoDoTicketNasMetricas() {
+        when(provedor.gerar(any())).thenReturn(new RespostaIa("isso não é json", "m"), new RespostaIa("{}", "m"));
+
+        gerador.gerar(desafioId);
+
+        registroDeMetricas.getMeters().forEach(medidor -> medidor.getId().getTags().forEach(tag ->
+                assertThat(tag.getValue()).as(tag.getKey()).matches("[A-Za-z_]+")));
+        assertThat(contador("koda.ia.tentativas.descartadas", "motivo", "CONTEUDO_INVALIDO")).isEqualTo(2);
+    }
+
+    private double contador(String nome, String rotulo, String valor) {
+        var busca = registroDeMetricas.find(nome).tag(rotulo, valor).counter();
+        return busca == null ? 0 : busca.count();
     }
 }

@@ -7,6 +7,7 @@ import com.koda.v1.challenge.SerializadorConteudo;
 import com.koda.v1.challenge.VerificadorConteudo;
 import com.koda.v1.challenge.geracao.CarregadorContexto;
 import com.koda.v1.challenge.geracao.ContextoIndisponivelException;
+import com.koda.v1.challenge.ia.MetricasDeIa;
 import com.koda.v1.challenge.ia.MotivoFalhaIa;
 import com.koda.v1.challenge.ia.ProvedorIa;
 import com.koda.v1.challenge.ia.ProvedorIaException;
@@ -58,6 +59,7 @@ public class DicaService {
     private final ProvedorIa provedor;
     private final VerificadorConteudo verificador;
     private final ValidadorDesafio validador;
+    private final MetricasDeIa metricas;
     private final DicaRepository dicas;
     private final RegistroDica registro;
     private final int limiteDiario;
@@ -67,16 +69,16 @@ public class DicaService {
     @Autowired
     public DicaService(ConsultaDesafio consulta, CarregadorContexto carregador, SerializadorConteudo serializador,
                        MontadorPromptDica montador, ProvedorIa provedor, VerificadorConteudo verificador,
-                       ValidadorDesafio validador, DicaRepository dicas, RegistroDica registro,
+                       ValidadorDesafio validador, MetricasDeIa metricas, DicaRepository dicas, RegistroDica registro,
                        @Value("${koda.dica.limite-diario:10}") int limiteDiario) {
-        this(consulta, carregador, serializador, montador, provedor, verificador, validador, dicas, registro,
+        this(consulta, carregador, serializador, montador, provedor, verificador, validador, metricas, dicas, registro,
                 limiteDiario, Clock.systemUTC());
     }
 
     DicaService(ConsultaDesafio consulta, CarregadorContexto carregador, SerializadorConteudo serializador,
                 MontadorPromptDica montador, ProvedorIa provedor, VerificadorConteudo verificador,
-                ValidadorDesafio validador, DicaRepository dicas, RegistroDica registro, int limiteDiario,
-                Clock relogio) {
+                ValidadorDesafio validador, MetricasDeIa metricas, DicaRepository dicas, RegistroDica registro,
+                int limiteDiario, Clock relogio) {
         if (limiteDiario <= 0) {
             throw new IllegalArgumentException("O limite diário de dicas deve ser positivo.");
         }
@@ -87,6 +89,7 @@ public class DicaService {
         this.provedor = provedor;
         this.verificador = verificador;
         this.validador = validador;
+        this.metricas = metricas;
         this.dicas = dicas;
         this.registro = registro;
         this.limiteDiario = limiteDiario;
@@ -149,14 +152,16 @@ public class DicaService {
             PromptDesafio prompt = montador.montar(ticket, contexto, nivel, anteriores, correcoes);
             RespostaIa resposta;
             try {
-                resposta = provedor.gerar(prompt);
+                resposta = metricas.medirChamada(MetricasDeIa.ORIGEM_DICA, () -> provedor.gerar(prompt));
             } catch (ProvedorIaException e) {
                 if (e.getMotivo() == MotivoFalhaIa.INDISPONIVEL
                         || e.getMotivo() == MotivoFalhaIa.RESPOSTA_INVALIDA
                         || e.getMotivo() == MotivoFalhaIa.RESPOSTA_GRANDE_DEMAIS) {
                     LOG.info("Dica: tentativa descartada, motivo={}", e.getMotivo());
+                    metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DICA, e.getMotivo().name());
                     continue;
                 }
+                metricas.geracao(MetricasDeIa.ORIGEM_DICA, false);
                 throw new DicaNaoGeradaException(e.getMessage());
             }
 
@@ -165,15 +170,20 @@ public class DicaService {
                 texto = verificador.verificarTexto(resposta.texto(), "dica", TAMANHO_MAXIMO_DA_DICA);
             } catch (ConteudoInvalidoException e) {
                 LOG.info("Dica: tentativa descartada, conteudo invalido: {}", e.getMessage());
+                metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DICA, "CONTEUDO_INVALIDO");
                 continue;
             }
 
             correcoes = validador.validarDica(texto, contexto);
             if (correcoes.isEmpty()) {
+                metricas.geracao(MetricasDeIa.ORIGEM_DICA, true);
                 return new Aprovada(texto, resposta.modelo());
             }
             LOG.info("Dica: tentativa descartada, reprovada na validacao: {}", correcoes);
+            metricas.tentativaDescartada(MetricasDeIa.ORIGEM_DICA, "REPROVADA_NA_VALIDACAO");
+            correcoes.forEach(motivo -> metricas.reprovacaoDoValidador(MetricasDeIa.ORIGEM_DICA, motivo.name()));
         }
+        metricas.geracao(MetricasDeIa.ORIGEM_DICA, false);
         throw new DicaNaoGeradaException(MENSAGEM_NAO_GERADA);
     }
 
