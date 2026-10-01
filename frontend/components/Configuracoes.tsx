@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink, LogOut } from "lucide-react";
 import AppShell from "./AppShell";
+import EscolhaDeTema from "./EscolhaDeTema";
 import { Card, Eyebrow, PageHeader } from "./ui";
 import { sair } from "@/lib/api";
 import { usePerfil } from "@/lib/SessaoContext";
@@ -80,6 +81,12 @@ function Conteudo() {
           )}
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <Eyebrow>Aparência</Eyebrow>
+        <p className="-mt-2 mb-4 text-sm text-ink-2">Escolha o tema do Koda. A escolha fica salva neste navegador.</p>
+        <EscolhaDeTema />
+      </Card>
 
       <Card className="mt-6">
         <Eyebrow>Sessão</Eyebrow>
