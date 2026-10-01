@@ -27,7 +27,6 @@
   --c-warn-soft: rgb(245 170 40 / 0.16);
   --c-bad: #ff8f98;
   --c-bad-soft: rgb(240 80 90 / 0.16);
-  --c-logo: #f4f2ff;
   --shadow-soft-valor: 0 10px 40px rgb(0 0 0 / 0.35);
   --shadow-lift-valor: 0 14px 44px rgb(0 0 0 / 0.5);
 }
@@ -55,7 +54,6 @@
   --c-warn-soft: rgb(245 170 40 / 0.16);
   --c-bad: #ff8f98;
   --c-bad-soft: rgb(240 80 90 / 0.16);
-  --c-logo: #f4f2ff;
   --shadow-soft-valor: 0 10px 40px rgb(0 0 0 / 0.35);
   --shadow-lift-valor: 0 14px 44px rgb(0 0 0 / 0.5);
 }
@@ -83,7 +81,6 @@
   --c-warn-soft: #fff4d6;
   --c-bad: #b3261e;
   --c-bad-soft: #fdeaea;
-  --c-logo: transparent;
   --shadow-soft-valor: 0 10px 40px rgb(102 92 255 / 0.07);
   --shadow-lift-valor: 0 14px 44px rgb(102 92 255 / 0.16);
 }
@@ -111,10 +108,14 @@
   --color-warn-soft: var(--c-warn-soft);
   --color-bad: var(--c-bad);
   --color-bad-soft: var(--c-bad-soft);
-  --color-logo: var(--c-logo);
   --shadow-soft: var(--shadow-soft-valor);
   --shadow-lift: var(--shadow-lift-valor);
 }
+
+/* Logotipo: a versão de texto escuro vale só no tema claro; nos escuros aparece a de texto claro. */
+.logo-para-escuro { display: none; }
+[data-tema="preto"] .logo-para-claro, [data-tema="roxo"] .logo-para-claro { display: none; }
+[data-tema="preto"] .logo-para-escuro, [data-tema="roxo"] .logo-para-escuro { display: inline-block; }
 
 @layer base {
   body { @apply bg-cream font-sans text-ink antialiased; }

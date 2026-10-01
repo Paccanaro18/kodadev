@@ -6,11 +6,22 @@ export function Mascot({ name, className = "" }: { name: string; className?: str
   return <Image src={`/koda/koda-${name}.png`} alt="Koda" width={600} height={600} className={`w-auto ${className}`} priority />;
 }
 
+/** O logotipo tem duas versões: texto escuro para o tema claro e texto claro para os temas escuros (troca por CSS). */
+export function LogoImagem({ className = "h-11" }: { className?: string }) {
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/koda/logo.webp" alt="Koda" className={`logo-para-claro w-auto ${className}`} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/koda/logo-escuro.webp" alt="Koda" className={`logo-para-escuro w-auto ${className}`} />
+    </>
+  );
+}
+
 export function Logo({ className = "h-11" }: { className?: string }) {
   return (
     <Link href="/dashboard" aria-label="Koda">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/koda/logo.png" alt="Koda" className={`w-auto rounded-xl bg-logo px-1.5 py-0.5 ${className}`} />
+      <LogoImagem className={className} />
     </Link>
   );
 }

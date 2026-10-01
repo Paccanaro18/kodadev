@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { ArrowRight, BarChart3, Code2, Folder, GitBranch, Lock, ShieldCheck, Heart } from "lucide-react";
-import { Mascot } from "./ui";
+import { LogoImagem, Mascot } from "./ui";
 
 const githubLogin =
   process.env.NEXT_PUBLIC_GITHUB_AUTH_URL ??
@@ -29,7 +28,7 @@ export function LoginHero() {
   return (
     <section className="relative flex flex-col overflow-hidden bg-linear-to-b from-cream via-tint to-cream px-5 pt-6 pb-10 sm:px-10 lg:px-16">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <Image src="/koda/logo.png" alt="Koda" width={162} height={54} className="h-12 w-auto" priority />
+        <LogoImagem className="h-12" />
         <nav className="hidden gap-9 text-sm font-medium sm:flex lg:mr-14">
           {["Produto", "Recursos", "Blog", "Ajuda"].map((i) => <span key={i}>{i}</span>)}
         </nav>
