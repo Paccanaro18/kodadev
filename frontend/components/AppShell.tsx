@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { BarChart3, Folder, GitBranch, Home, LogOut, Menu, Plus, Settings, Users, X } from "lucide-react";
 import BuscaGlobal from "./BuscaGlobal";
+import AlternarTema from "./AlternarTema";
 import Notificacoes from "./Notificacoes";
 import { Logo, Mascot } from "./ui";
 import { sair } from "@/lib/api";
@@ -62,8 +63,8 @@ export default function AppShell({ children, width = "max-w-[1360px]" }: { child
   return (
     <SessaoContext.Provider value={perfil}>
     <div className="min-h-screen lg:pl-58">
-      {open && <div className="fixed inset-0 z-30 bg-ink/30 lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-58 flex-col border-r border-[#f0edf7] bg-white px-4 py-5 transition-transform lg:translate-x-0 ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full"}`}>
+      {open && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setOpen(false)} />}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-58 flex-col border-r border-line bg-surface px-4 py-5 transition-transform lg:translate-x-0 ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full"}`}>
         <div className="mb-6 flex items-center justify-between pl-2">
           <Logo className="h-11" />
           <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Fechar menu"><X className="size-5" /></button>
@@ -73,23 +74,24 @@ export default function AppShell({ children, width = "max-w-[1360px]" }: { child
             const active = match.some((m) => path.startsWith(m));
             return (
               <Link key={label} href={href} onClick={() => setOpen(false)}
-                className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-medium transition duration-200 ease-out hover:translate-x-1 ${active ? "bg-koda-soft text-koda" : "text-ink hover:bg-[#f3f1ff] hover:text-ink"}`}>
-                <Icon className={`size-5.5 transition-transform duration-200 group-hover:scale-110 ${active ? "text-koda" : "text-[#3b4058] group-hover:text-koda"}`} />{label}
+                className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-medium transition duration-200 ease-out hover:translate-x-1 ${active ? "bg-koda-soft text-koda" : "text-ink hover:bg-tint-2 hover:text-ink"}`}>
+                <Icon className={`size-5.5 transition-transform duration-200 group-hover:scale-110 ${active ? "text-koda" : "text-body group-hover:text-koda"}`} />{label}
               </Link>
             );
           })}
         </nav>
-        <div className="mt-auto flex items-center gap-3 rounded-2xl bg-[#f8f6fc] p-3">
+        <div className="mt-auto flex items-center gap-3 rounded-2xl bg-tint p-3">
           <Image src={perfil.avatarUrl} alt={perfil.login} width={40} height={40} className="size-10 rounded-full" />
           <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{perfil.nome ?? perfil.login}</div><div className="truncate text-xs text-ink-2">@{perfil.login}</div></div>
-          <button onClick={aoSair} aria-label="Sair" title="Sair" className="grid size-9 place-items-center rounded-xl text-[#8a8fa5] transition duration-200 hover:bg-white hover:text-koda active:scale-95"><LogOut className="size-4.5" /></button>
+          <button onClick={aoSair} aria-label="Sair" title="Sair" className="grid size-9 place-items-center rounded-xl text-ink-3 transition duration-200 hover:bg-surface hover:text-koda active:scale-95"><LogOut className="size-4.5" /></button>
         </div>
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center gap-3 bg-cream/90 px-4 py-3.5 backdrop-blur sm:px-6">
-        <button className="grid size-11 place-items-center rounded-[14px] border border-[#efecf7] bg-white transition duration-200 hover:scale-105 active:scale-95 lg:hidden" onClick={() => setOpen(true)} aria-label="Abrir menu"><Menu className="size-5" /></button>
+        <button className="grid size-11 place-items-center rounded-[14px] border border-line bg-surface transition duration-200 hover:scale-105 active:scale-95 lg:hidden" onClick={() => setOpen(true)} aria-label="Abrir menu"><Menu className="size-5" /></button>
         <BuscaGlobal />
         <div className="flex-1" />
+        <AlternarTema />
         <Notificacoes />
         <Link href="/repositorios/adicionar" className="inline-flex h-12 items-center gap-2 rounded-2xl bg-koda px-4 text-[15px] font-semibold whitespace-nowrap text-white shadow-[0_8px_20px_rgb(102_92_255/0.28)] transition duration-200 hover:-translate-y-0.5 hover:bg-koda-dark hover:text-white hover:shadow-[0_12px_28px_rgb(102_92_255/0.4)] active:scale-[.97] sm:px-6">
           <Plus className="size-4.5" /><span className="hidden sm:inline">Novo repositório</span>

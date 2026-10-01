@@ -37,12 +37,12 @@ export default function Wait({ mascot, title, subtitle, steps, next, pronto }: P
         <h1 className="mt-2 text-[28px] font-bold tracking-tight sm:text-[32px]">{title}</h1>
         <p className="mt-2 mb-8 text-ink-2">{subtitle}</p>
       </div>
-      <ol className="rounded-[28px] bg-white px-6 py-3 shadow-soft" aria-live="polite">
+      <ol className="rounded-[28px] bg-surface px-6 py-3 shadow-soft" aria-live="polite">
         {steps.map((s, i) => {
           const done = i < step, cur = i === step;
           return (
-            <li key={s} className={`flex items-center gap-3.5 border-b border-[#f4f1fa] py-4 text-[15px] last:border-0 ${cur ? "font-bold" : "font-medium"} ${done || cur ? "text-ink" : "text-[#8a8fa5]"}`}>
-              <span className={`grid size-6.5 place-items-center rounded-full text-[13px] font-bold ${done ? "bg-koda text-white" : cur ? "bg-koda-soft text-koda animate-pulse" : "bg-[#f4f1fa] text-koda"}`}>
+            <li key={s} className={`flex items-center gap-3.5 border-b border-line py-4 text-[15px] last:border-0 ${cur ? "font-bold" : "font-medium"} ${done || cur ? "text-ink" : "text-ink-3"}`}>
+              <span className={`grid size-6.5 place-items-center rounded-full text-[13px] font-bold ${done ? "bg-koda text-white" : cur ? "bg-koda-soft text-koda animate-pulse" : "bg-tint text-koda"}`}>
                 {done ? <Check className="size-4" /> : i + 1}
               </span>
               {s}

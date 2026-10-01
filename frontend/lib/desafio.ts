@@ -39,11 +39,11 @@ export function rotuloDoProgresso(status: StatusProgresso): string {
 export function estiloDoProgresso(status: StatusProgresso): string {
   switch (status) {
     case "CONCLUIDO":
-      return "bg-[#dff5e6] text-[#1d7a3c]";
+      return "bg-ok-soft text-ok";
     case "EM_ANDAMENTO":
-      return "bg-[#fff4d6] text-[#8a5a00]";
+      return "bg-warn-soft text-warn";
     default:
-      return "bg-[#f1eefb] text-ink-2";
+      return "bg-tint text-ink-2";
   }
 }
 

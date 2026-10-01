@@ -27,7 +27,7 @@ const tree = [
 
 export function LoginHero() {
   return (
-    <section className="relative flex flex-col overflow-hidden bg-linear-to-b from-cream via-[#faf8fd] to-cream px-5 pt-6 pb-10 sm:px-10 lg:px-16">
+    <section className="relative flex flex-col overflow-hidden bg-linear-to-b from-cream via-tint to-cream px-5 pt-6 pb-10 sm:px-10 lg:px-16">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Image src="/koda/logo.png" alt="Koda" width={162} height={54} className="h-12 w-auto" priority />
         <nav className="hidden gap-9 text-sm font-medium sm:flex lg:mr-14">
@@ -45,7 +45,7 @@ export function LoginHero() {
       <div className="mt-8 grid max-w-[760px] gap-5 sm:grid-cols-3">
         {features.map(({ icon: Icon, t, d }) => (
           <div key={t} className="flex gap-3.5">
-            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#ebe8fd] text-koda"><Icon className="size-6" /></div>
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-koda-soft text-koda"><Icon className="size-6" /></div>
             <div>
               <div className="text-base leading-snug font-bold">{t}</div>
               <div className="mt-1.5 text-[13px] leading-snug text-ink-2">{d}</div>
@@ -55,10 +55,10 @@ export function LoginHero() {
       </div>
 
       <div className="relative mt-10 hidden h-[370px] w-full max-w-[840px] md:block">
-        <div className="absolute top-0 left-0 h-[350px] w-[68%] max-w-[570px] overflow-hidden rounded-t-[18px] bg-white shadow-[0_14px_50px_rgb(102_92_255/0.1)]">
+        <div className="absolute top-0 left-0 h-[350px] w-[68%] max-w-[570px] overflow-hidden rounded-t-[18px] bg-surface shadow-[0_14px_50px_rgb(102_92_255/0.1)]">
           <div className="flex gap-1.5 p-3.5"><i className="size-2.5 rounded-full bg-[#ff6058]" /><i className="size-2.5 rounded-full bg-[#ffbd2e]" /><i className="size-2.5 rounded-full bg-[#28c941]" /></div>
           <div className="grid h-[calc(100%-38px)] grid-cols-[32%_1fr]">
-            <div className="overflow-hidden bg-[#f6f5fb] p-3.5 text-[11.5px] leading-7 whitespace-nowrap">
+            <div className="overflow-hidden bg-tint p-3.5 text-[11.5px] leading-7 whitespace-nowrap">
               <div className="mb-1 font-semibold">seu-projeto</div>
               {tree.map(([d, n]) => <div key={n} style={{ paddingLeft: d * 10 }}>▸ {n}</div>)}
               <div>README.md</div><div className="pl-3">pom.xml</div>
@@ -66,8 +66,8 @@ export function LoginHero() {
             <div className="p-5">
               <div className="rounded-2xl p-5 shadow-[0_4px_24px_rgb(102_92_255/0.1)]">
                 <div className="flex items-center justify-between">
-                  <span className="rounded-[9px] bg-[#ebe8fd] px-3 py-1 text-[13px] font-bold text-koda">DEV-042</span>
-                  <span className="rounded-md border border-[#e3e0fb] px-2 py-0.5 text-[11px] text-koda">Backend</span>
+                  <span className="rounded-[9px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">DEV-042</span>
+                  <span className="rounded-md border border-line-2 px-2 py-0.5 text-[11px] text-koda">Backend</span>
                 </div>
                 <div className="mt-4 mb-2 text-[17px] leading-tight font-bold">Implementar paginação na lista de usuários</div>
                 <div className="text-xs leading-normal text-ink-2">Adicionar paginação no endpoint de listagem de usuários, seguindo o padrão do projeto.</div>
@@ -81,7 +81,7 @@ export function LoginHero() {
           </div>
         </div>
         <div className="absolute top-2.5 left-[68%] ml-3.5 h-[340px] w-[110px] rounded-t-[14px] bg-[#2b2f4a]/90" />
-        <div className="absolute top-0 right-5 z-20 w-[150px] rounded-[20px] bg-[#ebe8fd] px-4 py-3.5 text-[15px] leading-tight font-semibold text-koda">Transforme seu repositório em evolução.</div>
+        <div className="absolute top-0 right-5 z-20 w-[150px] rounded-[20px] bg-koda-soft px-4 py-3.5 text-[15px] leading-tight font-semibold text-koda">Transforme seu repositório em evolução.</div>
         <Mascot name="laptop" className="absolute right-0 -bottom-6 z-10 h-[270px] drop-shadow-[0_18px_24px_rgb(102_92_255/0.25)]" />
       </div>
 
@@ -93,35 +93,35 @@ export function LoginHero() {
 export function LoginCard({ erro = false }: { erro?: boolean }) {
   const trust = [{ i: Lock, t: "Seguro" }, { i: GitBranch, t: "Apenas públicos" }, { i: ShieldCheck, t: "Você controla" }];
   return (
-    <section className="flex flex-col bg-[#f9f7f5] px-4 pt-6 pb-10 sm:px-8">
+    <section className="flex flex-col bg-tint px-4 pt-6 pb-10 sm:px-8">
       <div className="flex items-center gap-3.5 self-end text-[13px] leading-snug text-ink-2">
         <span>Feito para<br />desenvolvedores</span><Heart className="size-5 fill-koda text-koda" />
       </div>
-      <div className="relative mt-40 w-full max-w-[520px] self-center rounded-[30px] border border-[#f3f0ee] bg-[#fcfbfa] px-5 pb-11 shadow-[0_12px_50px_rgb(17_21_45/0.05)] sm:px-12 lg:mt-44">
+      <div className="relative mt-40 w-full max-w-[520px] self-center rounded-[30px] border border-line bg-tint px-5 pb-11 shadow-[0_12px_50px_rgb(17_21_45/0.05)] sm:px-12 lg:mt-44">
         <div className="relative -mt-[115px] flex h-[185px] justify-center">
           <div className="h-[185px] w-[330px] overflow-hidden [mask-image:linear-gradient(#000_82%,transparent)]">
             <Mascot name="aceno" className="h-auto w-[330px]" />
           </div>
-          <div className="absolute top-[95px] left-0 grid h-16 w-[68px] place-items-center rounded-[18px_18px_18px_6px] border-2 border-[#cfc9fb] bg-[#e4e0fd] shadow-[0_8px_20px_rgb(102_92_255/0.15)] sm:left-6">
+          <div className="absolute top-[95px] left-0 grid h-16 w-[68px] place-items-center rounded-[18px_18px_18px_6px] border-2 border-line-2 bg-koda-soft shadow-[0_8px_20px_rgb(102_92_255/0.15)] sm:left-6">
             <GitBranch className="size-8 text-koda" />
           </div>
         </div>
-        <div className="rounded-t-[26px] bg-[#fdfcfb] pt-6">
+        <div className="rounded-t-[26px] bg-tint pt-6">
           <h2 className="text-center text-3xl font-bold tracking-tight whitespace-nowrap sm:text-[44px]">Entrar na Koda</h2>
-          <p className="mt-3 mb-10 text-center text-base text-[#4a5068] sm:text-lg">Use sua conta do GitHub para continuar.</p>
+          <p className="mt-3 mb-10 text-center text-base text-body sm:text-lg">Use sua conta do GitHub para continuar.</p>
           {erro && (
-            <p role="alert" className="-mt-5 mb-6 rounded-2xl bg-[#fdecee] px-4 py-3 text-center text-sm text-[#b42335]">Não foi possível entrar com o GitHub. Tente novamente.</p>
+            <p role="alert" className="-mt-5 mb-6 rounded-2xl bg-bad-soft px-4 py-3 text-center text-sm text-bad">Não foi possível entrar com o GitHub. Tente novamente.</p>
           )}
           <a href={githubLogin} className="relative flex h-16 w-full items-center justify-center gap-4 rounded-2xl bg-navy pr-14 pl-5 text-base font-medium whitespace-nowrap text-white shadow-[0_8px_22px_rgb(18_22_58/0.16)] group transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#1d2246] hover:text-white hover:shadow-[0_14px_30px_rgb(18_22_58/0.28)] active:translate-y-0 active:scale-[.98] sm:text-xl">
             <GithubMark /> Continuar com GitHub
-            <ArrowRight className="absolute right-6 size-5 text-[#8a8fb0] transition duration-200 group-hover:translate-x-1.5 group-hover:text-white" />
+            <ArrowRight className="absolute right-6 size-5 text-ink-3 transition duration-200 group-hover:translate-x-1.5 group-hover:text-white" />
           </a>
-          <ul className="mt-12 flex flex-wrap items-center justify-around gap-2 rounded-2xl border border-[#f0edf3] bg-[#fdfcfc] px-2 py-3.5 text-sm font-medium">
+          <ul className="mt-12 flex flex-wrap items-center justify-around gap-2 rounded-2xl border border-line bg-tint px-2 py-3.5 text-sm font-medium">
             {trust.map(({ i: Icon, t }, k) => (
-              <li key={t} className={`flex items-center gap-2 ${k ? "sm:border-l sm:border-[#eeeaf2] sm:pl-4" : ""}`}><Icon className="size-5 text-koda" />{t}</li>
+              <li key={t} className={`flex items-center gap-2 ${k ? "sm:border-l sm:border-line sm:pl-4" : ""}`}><Icon className="size-5 text-koda" />{t}</li>
             ))}
           </ul>
-          <p className="mt-20 text-center text-sm leading-7 text-[#4a5068]">
+          <p className="mt-20 text-center text-sm leading-7 text-body">
             Ao continuar, você concorda com nossos<br />
             <a href="#" className="underline">Termos de Uso</a> e <a href="#" className="underline">Política de Privacidade.</a>
           </p>

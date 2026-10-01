@@ -58,30 +58,30 @@ export default function AddRepo() {
     <AppShell width="max-w-[760px]">
       <BackLink href="/dashboard">← Voltar</BackLink>
       <PageHeader mascot="duvida" title="Adicionar repositório" subtitle="Escolha um dos seus repositórios públicos do GitHub para conectar." />
-      <label className="mt-7 flex h-14 items-center gap-3 rounded-[18px] border-[1.5px] border-[#e5e2f2] bg-white px-5 focus-within:border-koda">
-        <Search className="size-5 text-[#8a8fa5]" />
+      <label className="mt-7 flex h-14 items-center gap-3 rounded-[18px] border-[1.5px] border-line-2 bg-surface px-5 focus-within:border-koda">
+        <Search className="size-5 text-ink-3" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar repositórios..." className="flex-1 bg-transparent text-[15px] outline-none" />
       </label>
 
       <div className="mt-5 grid gap-3">
         {repositorios === null && !erro &&
           [0, 1, 2].map((i) => (
-            <div key={i} className="h-[86px] animate-pulse rounded-[22px] bg-white shadow-soft" />
+            <div key={i} className="h-[86px] animate-pulse rounded-[22px] bg-surface shadow-soft" />
           ))}
 
         {erro && (
-          <div role="alert" className="rounded-[22px] bg-[#fdecee] px-6 py-5 text-sm text-[#b42335]">
+          <div role="alert" className="rounded-[22px] bg-bad-soft px-6 py-5 text-sm text-bad">
             <p>{erro}</p>
-            <button onClick={carregar} className="mt-3 h-9 rounded-xl border-[1.5px] border-[#b42335] px-4 text-sm font-bold transition duration-200 hover:bg-[#b42335] hover:text-white">Tentar de novo</button>
+            <button onClick={carregar} className="mt-3 h-9 rounded-xl border-[1.5px] border-bad px-4 text-sm font-bold transition duration-200 hover:bg-[#b42335] hover:text-white">Tentar de novo</button>
           </div>
         )}
 
         {erroConexao && (
-          <div role="alert" className="rounded-[22px] bg-[#fdecee] px-6 py-4 text-sm text-[#b42335]">{erroConexao}</div>
+          <div role="alert" className="rounded-[22px] bg-bad-soft px-6 py-4 text-sm text-bad">{erroConexao}</div>
         )}
 
         {lista.map((r) => (
-          <div key={r.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] bg-white px-6 py-5 shadow-soft">
+          <div key={r.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] bg-surface px-6 py-5 shadow-soft">
             <div className="min-w-0 flex-1">
               <div className="font-bold">{r.nome}</div>
               <div className="mt-1 text-[13px] text-ink-2">

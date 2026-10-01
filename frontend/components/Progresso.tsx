@@ -48,8 +48,8 @@ function Linha({ item }: { item: ItemHistorico }) {
   const pronto = item.statusGeracao === "PRONTO";
 
   return (
-    <li className="border-b border-[#f4f1fa] last:border-0">
-      <Link href={destino(item)} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-ink transition duration-200 hover:translate-x-2 hover:bg-[#faf9ff] hover:text-ink active:translate-x-1">
+    <li className="border-b border-line last:border-0">
+      <Link href={destino(item)} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-ink transition duration-200 hover:translate-x-2 hover:bg-tint hover:text-ink active:translate-x-1">
         <span className="rounded-[10px] bg-koda-soft px-3 py-1 text-[13px] font-bold text-koda">{item.codigo}</span>
         <span className="min-w-[200px] flex-1">
           <span className="block font-semibold">{item.titulo ?? (item.statusGeracao === "FALHOU" ? "Geração sem sucesso" : "Gerando o ticket…")}</span>
@@ -62,7 +62,7 @@ function Linha({ item }: { item: ItemHistorico }) {
         )}
         {pronto
           ? <SeloProgresso status={item.statusProgresso} />
-          : <span className="rounded-full bg-[#f1eefb] px-3.5 py-1.5 text-xs font-bold text-ink-2">{item.statusGeracao === "FALHOU" ? "Falhou" : "Gerando"}</span>}
+          : <span className="rounded-full bg-tint px-3.5 py-1.5 text-xs font-bold text-ink-2">{item.statusGeracao === "FALHOU" ? "Falhou" : "Gerando"}</span>}
       </Link>
     </li>
   );
@@ -91,12 +91,12 @@ function Conteudo() {
     <>
       <PageHeader mascot="prancheta" title="Seu progresso" subtitle="O que você já praticou e o que está em andamento." />
 
-      {erroDoResumo && <p role="alert" className="mt-6 text-sm text-[#b3261e]">{erroDoResumo}</p>}
+      {erroDoResumo && <p role="alert" className="mt-6 text-sm text-bad">{erroDoResumo}</p>}
       <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Indicador icone={<CheckCircle2 className="size-5" />} valor={resumo?.concluidos ?? null} rotulo="concluídos" cor="bg-[#dff5e6] text-[#1d7a3c]" />
-        <Indicador icone={<Play className="size-5" />} valor={resumo?.emAndamento ?? null} rotulo="em andamento" cor="bg-[#fff4d6] text-[#8a5a00]" />
-        <Indicador icone={<Sparkles className="size-5" />} valor={resumo?.naoIniciados ?? null} rotulo="não iniciados" cor="bg-[#e4e0fd] text-koda" />
-        <Indicador icone={<Lightbulb className="size-5" />} valor={resumo?.dicasUsadas ?? null} rotulo="dicas usadas" cor="bg-[#ffe9dc] text-[#e0631a]" />
+        <Indicador icone={<CheckCircle2 className="size-5" />} valor={resumo?.concluidos ?? null} rotulo="concluídos" cor="bg-ok-soft text-ok" />
+        <Indicador icone={<Play className="size-5" />} valor={resumo?.emAndamento ?? null} rotulo="em andamento" cor="bg-warn-soft text-warn" />
+        <Indicador icone={<Sparkles className="size-5" />} valor={resumo?.naoIniciados ?? null} rotulo="não iniciados" cor="bg-koda-soft text-koda" />
+        <Indicador icone={<Lightbulb className="size-5" />} valor={resumo?.dicasUsadas ?? null} rotulo="dicas usadas" cor="bg-warn-soft text-[#e0631a]" />
       </div>
 
       <Card className="mt-6">
@@ -109,7 +109,7 @@ function Conteudo() {
             {resumo.habilidades.map((h) => (
               <li key={h.nome} className="flex items-center gap-3 text-sm">
                 <span className="min-w-0 flex-[0_0_9rem] truncate" title={h.nome}>{h.nome}</span>
-                <div className="h-2.5 flex-1 rounded-full bg-[#efecfb]">
+                <div className="h-2.5 flex-1 rounded-full bg-track">
                   <div className="h-2.5 rounded-full bg-[#7d74ff] transition-all duration-500" style={{ width: `${Math.round((h.total / maisComum) * 100)}%` }} />
                 </div>
                 <span className="w-6 text-right text-ink-2">{h.total}</span>
@@ -117,7 +117,7 @@ function Conteudo() {
             ))}
           </ul>
         )}
-        {!resumo && !erroDoResumo && <div className="h-16 animate-pulse rounded-2xl bg-[#f4f1fa]" />}
+        {!resumo && !erroDoResumo && <div className="h-16 animate-pulse rounded-2xl bg-tint" />}
       </Card>
 
       <Card className="mt-6">
@@ -125,18 +125,18 @@ function Conteudo() {
         <div className="-mt-2 mb-4 flex flex-wrap items-center gap-2">
           {FILTROS_DE_STATUS.map((f) => (
             <button key={f.rotulo} onClick={() => filtrarStatus(f.valor)} aria-pressed={status === f.valor}
-              className={chip + (status === f.valor ? " bg-koda text-white" : " bg-[#f5f4fb] text-ink hover:bg-koda-soft")}>
+              className={chip + (status === f.valor ? " bg-koda text-white" : " bg-tint text-ink hover:bg-koda-soft")}>
               {f.rotulo}
             </button>
           ))}
           <select value={tipo ?? ""} onChange={(e) => filtrarTipo((e.target.value || undefined) as TipoDesafio | undefined)}
-            aria-label="Filtrar por tipo" className="ml-auto h-9 rounded-full border border-[#e5e2f2] bg-white px-3 text-[13px] font-semibold outline-none focus:border-koda">
+            aria-label="Filtrar por tipo" className="ml-auto h-9 rounded-full border border-line-2 bg-surface px-3 text-[13px] font-semibold outline-none focus:border-koda">
             {FILTROS_DE_TIPO.map((f) => <option key={f.rotulo} value={f.valor ?? ""}>{f.rotulo}</option>)}
           </select>
         </div>
 
-        {erro && <p role="alert" className="text-sm text-[#b3261e]">{erro}</p>}
-        {!erro && !pagina && <div className="h-40 animate-pulse rounded-2xl bg-[#f4f1fa]" />}
+        {erro && <p role="alert" className="text-sm text-bad">{erro}</p>}
+        {!erro && !pagina && <div className="h-40 animate-pulse rounded-2xl bg-tint" />}
         {!erro && pagina && pagina.itens.length === 0 && (
           <p className="text-sm text-ink-2">
             {status || tipo ? "Nenhum desafio com esses filtros." : "Você ainda não gerou nenhum desafio."}
@@ -151,12 +151,12 @@ function Conteudo() {
         {pagina && pagina.totalPaginas > 1 && (
           <div className="mt-4 flex items-center justify-between text-[13px]">
             <button onClick={() => setNumeroDaPagina((n) => Math.max(0, n - 1))} disabled={numeroDaPagina === 0 || carregando}
-              className="rounded-full border border-[#e5e2f2] px-4 py-1.5 font-semibold transition duration-200 hover:bg-koda-soft disabled:pointer-events-none disabled:opacity-40">
+              className="rounded-full border border-line-2 px-4 py-1.5 font-semibold transition duration-200 hover:bg-koda-soft disabled:pointer-events-none disabled:opacity-40">
               ← Anterior
             </button>
             <span className="text-ink-2">Página {pagina.pagina + 1} de {pagina.totalPaginas}</span>
             <button onClick={() => setNumeroDaPagina((n) => n + 1)} disabled={numeroDaPagina + 1 >= pagina.totalPaginas || carregando}
-              className="rounded-full border border-[#e5e2f2] px-4 py-1.5 font-semibold transition duration-200 hover:bg-koda-soft disabled:pointer-events-none disabled:opacity-40">
+              className="rounded-full border border-line-2 px-4 py-1.5 font-semibold transition duration-200 hover:bg-koda-soft disabled:pointer-events-none disabled:opacity-40">
               Próxima →
             </button>
           </div>

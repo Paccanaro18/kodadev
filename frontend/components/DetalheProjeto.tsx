@@ -30,8 +30,8 @@ function Carregando() {
   return (
     <AppShell>
       <div className="grid gap-6 pt-8 md:grid-cols-2">
-        <div className="h-64 animate-pulse rounded-[28px] bg-white shadow-soft" />
-        <div className="h-64 animate-pulse rounded-[28px] bg-white shadow-soft" />
+        <div className="h-64 animate-pulse rounded-[28px] bg-surface shadow-soft" />
+        <div className="h-64 animate-pulse rounded-[28px] bg-surface shadow-soft" />
       </div>
     </AppShell>
   );
@@ -84,7 +84,7 @@ function ProjetoAnalisado({ id }: { id: string }) {
   return (
     <AppShell>
       {(resultado.parcial || contexto?.parcial) && (
-        <div role="status" className="mb-4 rounded-2xl border border-[#f5d98a] bg-[#fff8e1] px-4 py-2.5 text-[13px] text-[#8a5a00]">
+        <div role="status" className="mb-4 rounded-2xl border border-warn/40 bg-warn-soft px-4 py-2.5 text-[13px] text-warn">
           <b>Análise parcial.</b> O repositório é grande ou tem arquivos que não deu para ler, então alguns itens podem estar faltando.
         </div>
       )}

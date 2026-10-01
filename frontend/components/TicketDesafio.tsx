@@ -20,7 +20,7 @@ const marca = {
 
 function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
-    <section className="rounded-[28px] bg-white px-6 py-6 shadow-soft sm:px-9 sm:py-7">
+    <section className="rounded-[28px] bg-surface px-6 py-6 shadow-soft sm:px-9 sm:py-7">
       <h2 className="mb-3.5 text-xs font-bold tracking-[0.12em] text-koda uppercase">{titulo}</h2>
       {children}
     </section>
@@ -28,7 +28,7 @@ function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
 }
 
 function Texto({ titulo, texto }: { titulo: string; texto: string }) {
-  return <Secao titulo={titulo}><p className="leading-relaxed text-[#2a2f4a]">{texto}</p></Secao>;
+  return <Secao titulo={titulo}><p className="leading-relaxed text-body">{texto}</p></Secao>;
 }
 
 function Lista({ titulo, itens, tipo }: { titulo: string; itens: string[]; tipo: keyof typeof marca }) {
@@ -36,7 +36,7 @@ function Lista({ titulo, itens, tipo }: { titulo: string; itens: string[]; tipo:
     <Secao titulo={titulo}>
       <ul className="grid gap-2.5">
         {itens.map((item, i) => (
-          <li key={`${i}-${item}`} className="flex gap-3 leading-relaxed text-[#2a2f4a]">
+          <li key={`${i}-${item}`} className="flex gap-3 leading-relaxed text-body">
             <span className="mt-0.5 grid size-5.5 shrink-0 place-items-center rounded-[7px] bg-koda-soft">{marca[tipo]}</span>{item}
           </li>
         ))}
@@ -71,11 +71,11 @@ function Ticket({ desafio, conteudo }: { desafio: DesafioDetalhe; conteudo: Cont
     <AppShell width="max-w-[860px]">
       <BackLink href={projeto}>← Voltar ao projeto</BackLink>
       <div className="grid gap-5">
-        <header className="rounded-[28px] bg-white p-6 shadow-soft sm:p-9">
+        <header className="rounded-[28px] bg-surface p-6 shadow-soft sm:p-9">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-[10px] bg-koda-soft px-3.5 py-1.5 text-sm font-bold text-koda">{desafio.codigo}</span>
             {[rotuloDoTipo(desafio.tipo), "Júnior"].map((t) => (
-              <span key={t} className="rounded-lg border border-[#ddd9ff] px-3 py-1 text-xs text-koda">{t}</span>
+              <span key={t} className="rounded-lg border border-line-2 px-3 py-1 text-xs text-koda">{t}</span>
             ))}
             <SeloProgresso status={progresso.statusProgresso} />
           </div>
@@ -116,7 +116,7 @@ export default function TicketDesafio({ id }: { id: string }) {
     return (
       <AppShell width="max-w-[860px]">
         <div className="mt-10 grid gap-5">
-          {[0, 1, 2].map((i) => <div key={i} className="h-40 animate-pulse rounded-[28px] bg-white shadow-soft" />)}
+          {[0, 1, 2].map((i) => <div key={i} className="h-40 animate-pulse rounded-[28px] bg-surface shadow-soft" />)}
         </div>
       </AppShell>
     );

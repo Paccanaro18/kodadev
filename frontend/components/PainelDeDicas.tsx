@@ -39,7 +39,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
   const podePedir = status === "EM_ANDAMENTO" && usadas < maximo && !semCotaHoje && !gerando;
 
   return (
-    <section className="rounded-[28px] bg-white px-6 py-6 shadow-soft sm:px-9 sm:py-7">
+    <section className="rounded-[28px] bg-surface px-6 py-6 shadow-soft sm:px-9 sm:py-7">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xs font-bold tracking-[0.12em] text-koda uppercase">Dicas</h2>
         {dados && <span className="text-xs text-ink-2">{usadas} de {maximo} neste desafio · {dados.usadasHoje} de {dados.limiteDiario} hoje</span>}
@@ -52,18 +52,18 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
       {dados && dados.dicas.length > 0 && (
         <ol className="mt-4 grid gap-3">
           {dados.dicas.map((d) => (
-            <li key={d.nivel} className="flex gap-3 rounded-2xl bg-[#faf9ff] p-4">
+            <li key={d.nivel} className="flex gap-3 rounded-2xl bg-tint p-4">
               <span className="grid size-7 shrink-0 place-items-center rounded-full bg-koda text-xs font-bold text-white">{d.nivel}</span>
               <div className="min-w-0">
                 <div className="text-xs font-bold text-koda">{rotuloDoNivelDaDica(d.nivel)}</div>
-                <p className="mt-1 leading-relaxed text-[#2a2f4a]">{d.texto}</p>
+                <p className="mt-1 leading-relaxed text-body">{d.texto}</p>
               </div>
             </li>
           ))}
         </ol>
       )}
 
-      {erro && <p role="alert" className="mt-4 text-sm text-[#b3261e]">{erro}</p>}
+      {erro && <p role="alert" className="mt-4 text-sm text-bad">{erro}</p>}
       {gerando && (
         <p role="status" className="mt-4 flex items-center gap-2 text-sm text-ink-2">
           <LoaderCircle className="size-4 animate-spin text-koda" /> Escrevendo a dica... pode levar até 1 minuto.
@@ -74,7 +74,7 @@ export default function PainelDeDicas({ desafioId, status }: { desafioId: string
         <button
           onClick={pedir}
           disabled={!podePedir}
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#e4e0fd] active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-koda-soft px-5 text-sm font-bold text-koda transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-koda-soft active:scale-[.97] disabled:pointer-events-none disabled:opacity-50"
         >
           <Lightbulb className="size-4" /> {usadas === 0 ? "Pedir uma dica" : "Pedir outra dica"}
         </button>

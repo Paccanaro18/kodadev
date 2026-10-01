@@ -11,7 +11,7 @@ function plural(total: number, singular: string, muitos: string): string {
 function Situacao({ ok, texto }: { ok: boolean; texto: string }) {
   return (
     <li className="flex items-center gap-2 text-sm">
-      <span className={`grid size-5 shrink-0 place-items-center rounded-full ${ok ? "bg-[#dff5e6] text-[#1d7a3c]" : "bg-[#f1eefb] text-ink-2"}`}>
+      <span className={`grid size-5 shrink-0 place-items-center rounded-full ${ok ? "bg-ok-soft text-ok" : "bg-tint text-ink-2"}`}>
         {ok ? <Check className="size-3" strokeWidth={3} /> : <X className="size-3" strokeWidth={3} />}
       </span>
       {texto}
@@ -32,7 +32,7 @@ function SemTeste({ titulo, nomes }: { titulo: string; nomes: string[] }) {
 
 export function AvisoSemContexto() {
   return (
-    <div role="status" className="mt-6 rounded-2xl border border-[#e5e2f2] bg-white px-5 py-4 text-[13px] text-ink-2">
+    <div role="status" className="mt-6 rounded-2xl border border-line-2 bg-surface px-5 py-4 text-[13px] text-ink-2">
       <b className="text-ink">Esta análise é anterior ao contexto do projeto.</b>{" "}
       Para ver arquitetura, features e classes sem teste,{" "}
       <Link href="/repositorios/adicionar" className="font-bold text-koda">analise o repositório de novo</Link>.

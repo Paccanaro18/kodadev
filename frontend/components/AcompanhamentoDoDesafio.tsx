@@ -43,7 +43,7 @@ export default function AcompanhamentoDoDesafio({
   const data = statusProgresso === "CONCLUIDO" ? progresso.finalizadoEm : progresso.iniciadoEm;
 
   return (
-    <section className="rounded-[28px] bg-white px-6 py-6 shadow-soft sm:px-9 sm:py-7">
+    <section className="rounded-[28px] bg-surface px-6 py-6 shadow-soft sm:px-9 sm:py-7">
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-xs font-bold tracking-[0.12em] text-koda uppercase">Seu andamento</h2>
         <SeloProgresso status={statusProgresso} />
@@ -55,7 +55,7 @@ export default function AcompanhamentoDoDesafio({
       </div>
 
       <p className="mt-3 text-sm leading-relaxed text-ink-2">{AVISO[statusProgresso]}</p>
-      {erro && <p role="alert" className="mt-3 text-sm text-[#b3261e]">{erro}</p>}
+      {erro && <p role="alert" className="mt-3 text-sm text-bad">{erro}</p>}
 
       <div className="mt-4 flex flex-wrap gap-3">
         {statusProgresso === "NAO_INICIADO" && (
@@ -69,7 +69,7 @@ export default function AcompanhamentoDoDesafio({
           </button>
         )}
         {statusProgresso === "CONCLUIDO" && (
-          <button onClick={() => mudar("EM_ANDAMENTO")} disabled={enviando} className={botao + " border border-[#e5e2f2] hover:bg-koda-soft"}>
+          <button onClick={() => mudar("EM_ANDAMENTO")} disabled={enviando} className={botao + " border border-line-2 hover:bg-koda-soft"}>
             <RotateCcw className="size-4" /> {enviando ? "Reabrindo..." : "Reabrir desafio"}
           </button>
         )}

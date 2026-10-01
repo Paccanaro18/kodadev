@@ -10,13 +10,13 @@ export function Logo({ className = "h-11" }: { className?: string }) {
   return (
     <Link href="/dashboard" aria-label="Koda">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/koda/logo.png" alt="Koda" className={`w-auto ${className}`} />
+      <img src="/koda/logo.png" alt="Koda" className={`w-auto rounded-xl bg-logo px-1.5 py-0.5 ${className}`} />
     </Link>
   );
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-[28px] bg-white p-6 shadow-soft sm:p-7 ${className}`}>{children}</div>;
+  return <div className={`rounded-[28px] bg-surface p-6 shadow-soft sm:p-7 ${className}`}>{children}</div>;
 }
 
 export function Eyebrow({ children }: { children: ReactNode }) {
@@ -25,7 +25,7 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 
 export function Chip({ children, tone = "soft" }: { children: ReactNode; tone?: "soft" | "neutral" }) {
   return (
-    <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda" : "bg-[#f5f4fb] text-ink"}`}>
+    <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda" : "bg-tint text-ink"}`}>
       {children}
     </span>
   );

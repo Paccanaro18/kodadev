@@ -94,7 +94,7 @@ export default function Notificacoes() {
         onClick={() => setAberto(!aberto)}
         aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : "Notificações"}
         aria-expanded={aberto}
-        className="relative grid size-11 place-items-center rounded-[14px] border border-[#efecf7] bg-white transition duration-200 hover:scale-110 hover:-rotate-6 hover:bg-[#f3f1ff] active:scale-95"
+        className="relative grid size-11 place-items-center rounded-[14px] border border-line bg-surface transition duration-200 hover:scale-110 hover:-rotate-6 hover:bg-tint-2 active:scale-95"
       >
         <Bell className="size-5" />
         {naoLidas > 0 && (
@@ -105,7 +105,7 @@ export default function Notificacoes() {
       </button>
 
       {aberto && (
-        <div role="dialog" aria-label="Notificações" className="absolute top-14 right-0 z-30 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#efecf7] bg-white p-2 shadow-soft">
+        <div role="dialog" aria-label="Notificações" className="absolute top-14 right-0 z-30 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-surface p-2 shadow-soft">
           <div className="flex items-center justify-between px-3 pt-2 pb-1">
             <span className="text-sm font-bold">Notificações</span>
             {naoLidas > 0 && (
@@ -121,13 +121,13 @@ export default function Notificacoes() {
             <ul className="max-h-96 overflow-y-auto">
               {dados.itens.map((n) => (
                 <li key={n.id}>
-                  <button onClick={() => abrir(n)} className="flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition duration-200 hover:bg-[#f3f1ff]">
-                    <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${n.tipo === "DESAFIO_FALHOU" ? "bg-[#fdeaea] text-[#b3261e]" : "bg-koda-soft text-koda"}`}>
+                  <button onClick={() => abrir(n)} className="flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition duration-200 hover:bg-tint-2">
+                    <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${n.tipo === "DESAFIO_FALHOU" ? "bg-bad-soft text-bad" : "bg-koda-soft text-koda"}`}>
                       <Icone tipo={n.tipo} />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block text-[13px] leading-snug ${n.lida ? "text-ink-2" : "font-semibold"}`}>{textoDe(n)}</span>
-                      <span className="block text-[11px] text-[#8a8fa5]">{tempoRelativo(n.criadoEm)}</span>
+                      <span className="block text-[11px] text-ink-3">{tempoRelativo(n.criadoEm)}</span>
                     </span>
                     {!n.lida && <span aria-label="Não lida" className="mt-2 size-2 shrink-0 rounded-full bg-koda" />}
                   </button>

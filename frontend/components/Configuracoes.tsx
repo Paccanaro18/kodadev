@@ -60,14 +60,14 @@ function Conteudo() {
         <Card>
           <Eyebrow>Uso de hoje</Eyebrow>
           {erro && <p role="alert" className="text-sm text-ink-2">{erro}</p>}
-          {!erro && !dados && <div className="h-20 animate-pulse rounded-2xl bg-[#f4f1fa]" />}
+          {!erro && !dados && <div className="h-20 animate-pulse rounded-2xl bg-tint" />}
           {dados && (
             <>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-extrabold">{dados.cotaUsada}</span>
                 <span className="text-ink-2">de {dados.cotaLimite} desafios gerados nas últimas 24 horas</span>
               </div>
-              <div className="mt-4 h-2.5 rounded-full bg-[#efecfb]" role="progressbar" aria-valuemin={0} aria-valuemax={dados.cotaLimite} aria-valuenow={dados.cotaUsada}>
+              <div className="mt-4 h-2.5 rounded-full bg-track" role="progressbar" aria-valuemin={0} aria-valuemax={dados.cotaLimite} aria-valuenow={dados.cotaUsada}>
                 <div className="h-2.5 rounded-full bg-[#7d74ff] transition-all duration-500" style={{ width: `${porcentagem}%` }} />
               </div>
               <p className="mt-4 text-sm text-ink-2">
@@ -84,11 +84,11 @@ function Conteudo() {
       <Card className="mt-6">
         <Eyebrow>Sessão</Eyebrow>
         <p className="text-sm text-ink-2">Sair encerra a sessão neste navegador. Seus repositórios e desafios continuam guardados.</p>
-        {erroAoSair && <p role="alert" className="mt-3 text-sm text-[#b3261e]">{erroAoSair}</p>}
+        {erroAoSair && <p role="alert" className="mt-3 text-sm text-bad">{erroAoSair}</p>}
         <button
           onClick={aoSair}
           disabled={saindo}
-          className="mt-4 inline-flex h-11 items-center gap-2 rounded-2xl border border-[#e5e2f2] px-5 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:bg-koda-soft active:scale-[.97] disabled:opacity-60"
+          className="mt-4 inline-flex h-11 items-center gap-2 rounded-2xl border border-line-2 px-5 text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:bg-koda-soft active:scale-[.97] disabled:opacity-60"
         >
           <LogOut className="size-4" /> {saindo ? "Saindo..." : "Sair da conta"}
         </button>

@@ -7,8 +7,8 @@ import { ErroApi, listarAnalises, type AnaliseResumo } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 import { rotuloTecnologia } from "@/lib/projeto";
 
-const card = "rounded-3xl bg-white shadow-soft";
-const seeAll = "rounded-[10px] border border-[#e5e2f2] px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft";
+const card = "rounded-3xl bg-surface shadow-soft";
+const seeAll = "rounded-[10px] border border-line-2 px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft";
 
 function tagsDe(a: AnaliseResumo): string[] {
   const tags: string[] = [];
@@ -65,15 +65,15 @@ export default function RepositoriosConectados() {
       </div>
 
       {erro && (
-        <div role="alert" className="rounded-2xl bg-[#fdecee] px-5 py-4 text-sm text-[#b42335]">
+        <div role="alert" className="rounded-2xl bg-bad-soft px-5 py-4 text-sm text-bad">
           <p>{erro}</p>
-          <button onClick={carregar} className="mt-3 h-9 rounded-xl border-[1.5px] border-[#b42335] px-4 text-sm font-bold transition duration-200 hover:bg-[#b42335] hover:text-white">Tentar de novo</button>
+          <button onClick={carregar} className="mt-3 h-9 rounded-xl border-[1.5px] border-bad px-4 text-sm font-bold transition duration-200 hover:bg-[#b42335] hover:text-white">Tentar de novo</button>
         </div>
       )}
 
       {analises === null && !erro && (
         <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-          {[0, 1, 2].map((i) => <div key={i} className="h-36 animate-pulse rounded-[18px] bg-[#f5f4fb]" />)}
+          {[0, 1, 2].map((i) => <div key={i} className="h-36 animate-pulse rounded-[18px] bg-tint" />)}
         </div>
       )}
 
@@ -89,18 +89,18 @@ export default function RepositoriosConectados() {
           {analises.map((a) => {
             const situacao = situacaoDe(a);
             return (
-              <Link key={a.id} href={destinoDe(a)} className="grid content-start gap-2.5 rounded-[18px] border border-[#efecf7] p-4 text-ink transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift active:translate-y-0">
+              <Link key={a.id} href={destinoDe(a)} className="grid content-start gap-2.5 rounded-[18px] border border-line p-4 text-ink transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift active:translate-y-0">
                 <div className="flex items-center gap-2.5">
                   <div className="grid size-9.5 place-items-center rounded-xl bg-koda-soft text-koda"><FolderGit2 className="size-5" /></div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold">{a.nome}</div>
-                    <div className="truncate text-[11px] text-[#8a8fa5]">{a.dono}/{a.nome}</div>
+                    <div className="truncate text-[11px] text-ink-3">{a.dono}/{a.nome}</div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {tagsDe(a).map((t) => <span key={t} className="rounded-full border border-[#ece9f5] px-2.5 py-0.5 text-[11px]">{t}</span>)}
+                  {tagsDe(a).map((t) => <span key={t} className="rounded-full border border-line px-2.5 py-0.5 text-[11px]">{t}</span>)}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#3b4058]">
+                <div className="flex items-center gap-2 text-xs text-body">
                   <i className={`size-2 shrink-0 rounded-full ${situacao.cor}`} /><span className="line-clamp-2">{situacao.texto}</span>
                 </div>
               </Link>

@@ -64,7 +64,7 @@ function Escolha({ analiseId }: { analiseId: string }) {
       <div className="-mt-1 grid grid-cols-3 gap-3.5">
         <div className="rounded-[22px] border-2 border-koda bg-koda-soft p-4 sm:p-5"><div className="font-bold">Júnior</div><div className="mt-1 text-xs text-ink-2">Tarefas guiadas</div></div>
         {["Pleno", "Sênior"].map((n) => (
-          <div key={n} aria-disabled className="rounded-[22px] border-2 border-transparent bg-[#f6f4f0] p-4 opacity-65 sm:p-5"><div className="font-bold">{n}</div><div className="mt-1 text-xs text-ink-2">Em breve</div></div>
+          <div key={n} aria-disabled className="rounded-[22px] border-2 border-transparent bg-tint p-4 opacity-65 sm:p-5"><div className="font-bold">{n}</div><div className="mt-1 text-xs text-ink-2">Em breve</div></div>
         ))}
       </div>
 
@@ -72,14 +72,14 @@ function Escolha({ analiseId }: { analiseId: string }) {
       <div role="radiogroup" className="-mt-1 grid gap-3.5 sm:grid-cols-2">
         {TIPOS_DE_DESAFIO.map((t) => (
           <button key={t.valor} role="radio" aria-checked={tipo === t.valor} disabled={gerando} onClick={() => setTipo(t.valor)}
-            className={`rounded-[22px] border-2 p-5 text-left transition duration-200 hover:-translate-y-1 hover:shadow-lift active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60 ${tipo === t.valor ? "border-koda bg-koda-soft" : "border-[#efecf7] bg-white hover:border-koda/40"}`}>
+            className={`rounded-[22px] border-2 p-5 text-left transition duration-200 hover:-translate-y-1 hover:shadow-lift active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60 ${tipo === t.valor ? "border-koda bg-koda-soft" : "border-line bg-surface hover:border-koda/40"}`}>
             <div className="font-bold">{t.nome}</div><div className="mt-1 text-xs text-ink-2">{t.descricao}</div>
           </button>
         ))}
       </div>
 
       {erro && (
-        <div role="alert" className="mt-6 rounded-[22px] bg-[#fdecee] px-6 py-4 text-sm text-[#b42335]">{erro}</div>
+        <div role="alert" className="mt-6 rounded-[22px] bg-bad-soft px-6 py-4 text-sm text-bad">{erro}</div>
       )}
 
       <button onClick={gerar} disabled={gerando} className={btnPrimary + " mt-9 h-15 w-full text-base disabled:cursor-not-allowed disabled:opacity-60"}>
@@ -99,7 +99,7 @@ function SemAnaliseInformada() {
   if (!id) {
     return (
       <AppShell width="max-w-[760px]">
-        <div className="mt-10 h-64 animate-pulse rounded-[28px] bg-white shadow-soft" />
+        <div className="mt-10 h-64 animate-pulse rounded-[28px] bg-surface shadow-soft" />
       </AppShell>
     );
   }

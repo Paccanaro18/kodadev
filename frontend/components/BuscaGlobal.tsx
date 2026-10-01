@@ -66,7 +66,7 @@ export default function BuscaGlobal() {
 
   return (
     <div ref={caixa} className="relative max-w-[620px] min-w-0 flex-1">
-      <label className="flex h-12 items-center gap-3 rounded-2xl border border-[#efecf7] bg-white px-5 focus-within:border-koda">
+      <label className="flex h-12 items-center gap-3 rounded-2xl border border-line bg-surface px-5 focus-within:border-koda">
         <Search className="size-5 shrink-0 text-ink-2" />
         <input
           value={consulta}
@@ -75,12 +75,12 @@ export default function BuscaGlobal() {
           onKeyDown={(e) => { if (e.key === "Escape") setAberta(false); }}
           placeholder="Buscar desafios ou repositórios..."
           aria-label="Buscar desafios ou repositórios"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#8a8fa5]"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
         />
       </label>
 
       {aberta && termo.length > 0 && (
-        <div role="listbox" className="absolute top-14 right-0 left-0 z-30 max-h-96 overflow-y-auto rounded-2xl border border-[#efecf7] bg-white p-2 shadow-soft">
+        <div role="listbox" className="absolute top-14 right-0 left-0 z-30 max-h-96 overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-soft">
           {erro && <p className="px-3 py-2 text-sm text-ink-2">Não foi possível buscar agora.</p>}
           {!erro && !dados && <p className="px-3 py-2 text-sm text-ink-2">Buscando...</p>}
           {semResultado && <p className="px-3 py-2 text-sm text-ink-2">Nada encontrado para “{consulta.trim()}”.</p>}
@@ -90,7 +90,7 @@ export default function BuscaGlobal() {
               <div className="px-3 pt-2 pb-1 text-[11px] font-bold tracking-[0.12em] text-ink-2/70 uppercase">Repositórios</div>
               {resultado.repositorios.map((a) => (
                 <Link key={a.id} href={destinoDaAnalise(a)} onClick={() => setAberta(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-[#f3f1ff] hover:text-ink">
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-tint-2 hover:text-ink">
                   <FolderGit2 className="size-4 shrink-0 text-koda" /><span className="truncate">{a.nome}</span>
                 </Link>
               ))}
@@ -102,7 +102,7 @@ export default function BuscaGlobal() {
               <div className="px-3 pt-2 pb-1 text-[11px] font-bold tracking-[0.12em] text-ink-2/70 uppercase">Desafios</div>
               {resultado.desafios.map((d) => (
                 <Link key={d.id} href={destinoDoDesafio(d)} onClick={() => setAberta(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-[#f3f1ff] hover:text-ink">
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-tint-2 hover:text-ink">
                   <GitBranch className="size-4 shrink-0 text-koda" />
                   <span className="shrink-0 font-bold text-koda">{d.codigo}</span>
                   <span className="truncate">{d.titulo ?? "Gerando o ticket…"}</span>
