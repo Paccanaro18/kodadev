@@ -1,5 +1,6 @@
 package com.koda.v1;
 
+import com.koda.v1.shared.VerificadorDeConfiguracao;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,7 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class V1Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(V1Application.class, args);
+		SpringApplication aplicacao = new SpringApplication(V1Application.class);
+		aplicacao.addInitializers(new VerificadorDeConfiguracao());
+		aplicacao.run(args);
 	}
 
 }
