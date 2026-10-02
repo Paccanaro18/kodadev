@@ -4,7 +4,7 @@
 
 Koda (antes DevForge) é um SaaS para devs praticarem em cenários reais. O usuário conecta um repositório GitHub, a plataforma analisa a estrutura e usa IA para gerar tickets técnicos baseados no próprio código, no estilo Jira/Linear. A plataforma nunca entrega a solução.
 
-MVP: somente backend Java/Spring Boot, nível Júnior, repositórios públicos.
+MVP: projetos Java (Spring Boot), TypeScript/JavaScript (Node) e Python (FastAPI, Flask, Django), nível Júnior, repositórios públicos.
 
 ## Metas
 
@@ -14,6 +14,7 @@ MVP: somente backend Java/Spring Boot, nível Júnior, repositórios públicos.
 4. Etapa 7: Challenge Validator.
 5. Etapa 8: produto (status, dicas, histórico).
 6. Etapa 9: qualidade.
+7. Etapa 10: mais linguagens (Node/TypeScript e Python), com selo de linguagem na interface.
 
 Prioridades permanentes: segurança, código simples e testado, commits pequenos e legíveis.
 
@@ -99,7 +100,7 @@ Pronto:
 - 4.1 a 4.3: detectores (`DetectorPom`, `DetectorDockerCompose`, `DetectorEndpoints`, `DetectorEntidade`), `AnalisadorEstrutura`, tabelas `repositorios` e `analises_projeto`, entidades e repositories.
 - 4.4a: `ResultadoAnalise` e `MontadorResultado`, com 6 testes verdes.
 - 4.4b: `SelecaoArquivos` (tetos de 30 controllers e 30 candidatas a entidade, `pom.xml` e compose só na raiz, arquivos até 256 KB), `SerializadorResultado` (Jackson 3), `RegistroAnalise` (transições em transações curtas), `AnalisadorRepositorio`, `FilaAnalises` (2 threads, fila de 10, cheia vira `FilaDeAnaliseCheiaException`), `IniciadorAnalise` e `RecuperadorAnalises` (marca `FALHOU` o que ficou em aberto ao subir). `ResultadoAnalise` tem o campo `parcial`.
-- Regras do analisador: sem código Java, sem `pom.xml` na raiz ou sem Spring Boot gera `FALHOU` com mensagem fixa. Arquivo isolado ilegível ou grande demais é pulado e o resultado sai `parcial`. Erro inesperado grava só uma mensagem genérica, nunca `getMessage()`. Prazo máximo de 2 minutos por análise (`koda.analise.prazo-maximo`).
+- Regras do analisador: sem código de linguagem suportada, sem manifesto legível na raiz (`pom.xml`, `package.json`, `pyproject.toml`/`requirements.txt`/`Pipfile`) ou sem framework de servidor reconhecido gera `FALHOU` com mensagem fixa. Arquivo isolado ilegível ou grande demais é pulado e o resultado sai `parcial`. Erro inesperado grava só uma mensagem genérica, nunca `getMessage()`. Prazo máximo de 2 minutos por análise (`koda.analise.prazo-maximo`).
 - Hardening: detectores sem regex quadrática (`RemovedorComentarios`), blob com teto de 512 KB de resposta e 256 KB de arquivo (`ArquivoGrandeDemaisException`, 413), `AnaliseProjeto` valida a ordem das transições.
 - 4.4c: `POST /api/analises` (corpo `{dono, nome}`, devolve 202 com `Location` e `{id, status: PENDENTE}`) e `GET /api/analises/{id}`. O usuário vem da sessão. O repositório é conferido no GitHub: precisa ser público e da conta do usuário (dono vem do `full_name` do GitHub, não do corpo). `RegistroAnalise.registrarNovaAnalise` cria ou atualiza a linha em `repositorios` e a análise `PENDENTE`. Erros: 404 (análise inexistente ou de outro usuário, mesma resposta), 409 (já há análise em aberto, garantido por índice único parcial da V5), 422 (repositório privado ou de outra conta), 429 (fila cheia, a análise vira `FALHOU`), 400 (corpo inválido).
 - 4.5: `GET /api/analises` devolve a análise mais recente de cada repositório do usuário (até 20, resumo sem endpoints). No front, "Conectar" chama `POST /api/analises`; `/analisando?analise=<id>` acompanha por polling a cada 1,5 s (limite de 3 min) e mostra a mensagem de erro se falhar; `/projeto?analise=<id>` mostra stack, estrutura, dependências, domínios (nomes dos controllers e entidades) e endpoints reais, e sem o parâmetro abre a última análise concluída; o dashboard lista "Repositórios conectados" reais. Os desafios da tela do projeto e o restante do dashboard continuam de exemplo (Etapas 6 e 8).
@@ -126,10 +127,19 @@ Pronto:
 - Configuração: o modelo do FreeLLMAPI é `auto` ou `auto:fast`; um nome inexistente dá 404 e a geração falha com a mensagem genérica de provedor indisponível (o log mostra o status).
 - O backend lê o `.env` da raiz pelo `spring.config.import`, que NÃO remove aspas: valores como `KODA_IA_PROVEDOR="openai"` ficam com as aspas e quebram o provedor e os testes. Escrever sem aspas.
 
+## Etapa 10: várias linguagens
+
+- Cada linguagem é um `Ecossistema` (`analyzer/ecossistema/`): `EcossistemaJava`, `EcossistemaNode` e `EcossistemaPython`. O `AnalisadorRepositorio` escolhe o de maior `peso` (arquivos de código do ecossistema, só se o manifesto estiver na raiz) e todos devolvem o mesmo `ResultadoAnalise` e `ContextoProjeto` (esquema 2: `linguagem`, `framework`, `versaoLinguagem`, `versaoFramework`, `ferramentaDeBuild`). JSON antigo (esquema 1) continua legível por `@JsonAlias` e defaults de Java.
+- Nomes de componentes vêm da `ConvencaoDeNomes` de cada linguagem (arquivo `users.controller.ts` vira `UsersController`; classe Python dentro de arquivo é escrita `arquivo.py#Classe`). `ehDto`/`ehExcecao` deixam a convenção reconhecer DTOs e exceções pelo arquivo (Python: `schemas.py`, `exceptions.py`).
+- Node: `DetectorPackageJson` (framework, versões, tecnologias) e `DetectorRotasNode` (NestJS por decorador, Express/Fastify/Koa/Hono por `app.get('/x')`, Next por `route.ts`; `:id` vira `{id}`). Models do Prisma viram entidades. Python: `DetectorPython` (pyproject PEP 621 e Poetry, requirements, Pipfile; rotas FastAPI, Flask e `urls.py` do Django). Rota não reconhecida é omitida, nunca inventada.
+- Catálogo: os 36 ângulos mantêm id e tipo; `VariantesDoCatalogo` troca habilidades, termos e regras para Node e Python (um teste proíbe termos de Java nesses textos). `CatalogoAngulos.porId(id, linguagem)` e `aplicaveis` já devolvem o ângulo adaptado.
+- Front: `SeloDeLinguagem` (lista de repositórios, projeto, busca e login), `lib/linguagem.ts`, stack e rótulos de camadas por linguagem em `lib/projeto.ts`.
+- Pendente: medição com IA real em repositórios Node e Python (`-Pmedicao`) antes de divulgar a qualidade fora do Java; extensão a outras linguagens segue o mesmo molde.
+
 ## Dívidas conhecidas
 
 - Resolvidas na Etapa 9: POST sem sessão devolve 401, backend e Postgres escutam só em 127.0.0.1 e as filas usam a base `shared/FilaLimitada` (`FilaDesafios` e `FilaAnalises` são camadas finas sobre ela).
-- Abertas: alguns commits antigos com assunto acima de 72 caracteres (já publicados, não reescrever); `/comunidade` ainda é uma tela "Em breve"; a conclusão do ticket é declarada pela pessoa (a Koda não verifica o código); sem Dockerfile nem stack de produção (candidatos a uma Etapa 10).
+- Abertas: alguns commits antigos com assunto acima de 72 caracteres (já publicados, não reescrever); `/comunidade` ainda é uma tela "Em breve"; a conclusão do ticket é declarada pela pessoa (a Koda não verifica o código); sem Dockerfile nem stack de produção (candidatos a uma Etapa 11).
 
 ## Project Context: regras
 

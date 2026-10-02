@@ -8,6 +8,8 @@ próprio código. A plataforma nunca entrega a solução: as dicas apontam o cam
 
 - **Login com GitHub** (OAuth), com o token guardado criptografado.
 - **Análise do repositório:** stack, camadas, domínios, endpoints, componentes e testes, sem executar nada do projeto.
+  Linguagens: **Java** (Spring Boot e Maven), **TypeScript e JavaScript** (NestJS, Express, Fastify, Koa, Hono, Hapi e
+  Next.js) e **Python** (FastAPI, Flask e Django). Cada projeto mostra um selo com a linguagem.
 - **Desafios com IA:** o código escolhe o ângulo e o alvo (36 ângulos, sem repetir), a IA só redige, e cada ticket
   passa por um verificador, um detector de similaridade e um validador (sem solução, sem classe inventada, critérios
   verificáveis).
@@ -107,7 +109,7 @@ src/main/java/com/koda/v1/
   auth/        login, sessão, CSRF e cabeçalhos de segurança
   user/        usuários
   github/      cliente da API do GitHub e token criptografado
-  analyzer/    leitura do repositório e contexto do projeto
+  analyzer/    leitura do repositório e contexto do projeto; um ecossistema por linguagem em `ecossistema/`
   challenge/   catálogo de ângulos, seleção, IA, validação, dicas, histórico e notificações
   shared/      criptografia e verificação de configuração
 frontend/      Next.js 15, React 19 e Tailwind 4
