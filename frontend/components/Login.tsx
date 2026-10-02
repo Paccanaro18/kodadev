@@ -124,9 +124,11 @@ export function LoginCard({ erro = false }: { erro?: boolean }) {
             <GithubMark /> Continuar com GitHub
             <ArrowRight className="absolute right-6 size-5 text-ink-3 transition duration-200 group-hover:translate-x-1.5 group-hover:text-white" />
           </a>
-          <ul className="mt-12 flex flex-wrap items-center justify-around gap-2 rounded-2xl border border-line bg-tint px-2 py-3.5 text-sm font-medium">
+          <ul className="mt-12 grid grid-cols-3 rounded-2xl border border-line bg-tint py-4 text-[12px] font-medium whitespace-nowrap sm:text-sm">
             {trust.map(({ i: Icon, t }, k) => (
-              <li key={t} className={`flex items-center gap-2 ${k ? "sm:border-l sm:border-line sm:pl-4" : ""}`}><Icon className="size-5 text-koda-texto" />{t}</li>
+              <li key={t} className={`flex flex-col items-center gap-2 px-1 text-center ${k ? "border-l border-line" : ""}`}>
+                <Icon className="size-5 text-koda-texto" aria-hidden="true" />{t}
+              </li>
             ))}
           </ul>
           <p className="mt-20 text-center text-sm leading-7 text-body">
