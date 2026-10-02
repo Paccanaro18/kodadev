@@ -215,7 +215,7 @@ public class GeradorDesafio {
     }
 
     private SelecaoDeDesafio reconstruirSelecao(DadosGeracao dados, ContextoProjeto contexto) {
-        AnguloDesafio angulo = catalogo.porId(dados.anguloId())
+        AnguloDesafio angulo = catalogo.porId(dados.anguloId(), contexto.linguagem())
                 .filter(encontrado -> encontrado.tipo() == dados.tipo())
                 .orElseThrow(() -> new GeracaoRecusadaException(MENSAGEM_NAO_PREPARADO));
         AlvoDesafio alvo = angulo.alvosEm(contexto).stream()

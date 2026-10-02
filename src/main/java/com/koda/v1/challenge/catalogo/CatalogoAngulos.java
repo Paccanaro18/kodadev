@@ -2,6 +2,7 @@ package com.koda.v1.challenge.catalogo;
 
 import com.koda.v1.analyzer.contexto.ContextoProjeto;
 import com.koda.v1.analyzer.detector.Tecnologia;
+import com.koda.v1.analyzer.ecossistema.Linguagem;
 import com.koda.v1.challenge.TipoDesafio;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ public class CatalogoAngulos {
             " Descreva o problema como um cenário reportado por um usuário ou pela equipe de QA, "
                     + "sem afirmar qual trecho causa o erro e sem indicar a correção.";
 
-    private static final List<AnguloDesafio> ANGULOS = List.of(
+    private static final List<AnguloDesafio> BASE = List.of(
             testing("TESTING_UNITARIO_DE_SERVICE", "Teste unitário de um service sem cobertura",
                     "Peça testes unitários para o service alvo, que hoje não tem teste, cobrindo o fluxo principal "
                             + "e ao menos um cenário de erro, com as dependências isoladas por mocks.",
@@ -207,6 +208,10 @@ public class CatalogoAngulos {
                     List.of("JPA", "Desempenho", "Consultas N+1"),
                     classes(c -> c.componentes().entidades())));
 
+    private static final List<AnguloDesafio> ANGULOS = BASE.stream()
+            .map(angulo -> angulo.comVariantes(VariantesDoCatalogo.de(angulo.id())))
+            .toList();
+
     public List<AnguloDesafio> todos() {
         return ANGULOS;
     }
@@ -219,9 +224,15 @@ public class CatalogoAngulos {
         return ANGULOS.stream().filter(angulo -> angulo.id().equals(id)).findFirst();
     }
 
+    /** O ângulo já escrito para a linguagem do projeto. */
+    public Optional<AnguloDesafio> porId(String id, Linguagem linguagem) {
+        return porId(id).map(angulo -> angulo.para(linguagem));
+    }
+
     public List<AnguloAplicavel> aplicaveis(ContextoProjeto contexto, TipoDesafio tipo) {
         return ANGULOS.stream()
                 .filter(angulo -> tipo == null || angulo.tipo() == tipo)
+                .map(angulo -> angulo.para(contexto.linguagem()))
                 .map(angulo -> new AnguloAplicavel(angulo, angulo.alvosEm(contexto)))
                 .filter(aplicavel -> !aplicavel.alvos().isEmpty())
                 .toList();

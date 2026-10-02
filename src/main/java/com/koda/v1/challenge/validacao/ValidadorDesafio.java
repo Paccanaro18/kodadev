@@ -45,7 +45,12 @@ public class ValidadorDesafio {
             "IllegalStateException", "NoSuchElementException", "ResponseEntity", "ResponseStatusException",
             "MethodArgumentNotValidException", "DataIntegrityViolationException", "ConstraintViolationException",
             "HttpMessageNotReadableException", "EntityNotFoundException", "DataAccessException",
-            "OptimisticLockException", "TransactionSystemException");
+            "OptimisticLockException", "TransactionSystemException",
+            // Node (NestJS, Express) e Python (FastAPI, Django)
+            "HttpException", "HTTPException", "BadRequestException", "NotFoundException", "UnauthorizedException",
+            "ForbiddenException", "ConflictException", "UnprocessableEntityException",
+            "InternalServerErrorException", "ValidationException", "ObjectDoesNotExist", "PermissionDenied",
+            "SuspiciousOperation", "RequestValidationError");
     private static final List<String> VERBOS_DE_CRIACAO = List.of(
             "criar", "criad", "crie", "cria ", "nova ", "novo ", "adicion", "implement", "expor", "expon", "suporte",
             "incluir", "inclua", "desenvolv", "deve existir", "passar a", "disponibiliz", "entreg", "ofere", "permit");
