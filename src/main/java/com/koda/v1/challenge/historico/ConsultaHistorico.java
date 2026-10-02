@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,6 +23,14 @@ import java.util.UUID;
 public class ConsultaHistorico {
 
     private static final int MAXIMO_DE_HABILIDADES = 8;
+
+    static final int MAXIMO_EM_ABERTO = 100;
+
+    private static final String COLUNAS = """
+            SELECT d.id, d.analise_id, r.nome AS repositorio, d.numero, d.tipo, d.status_geracao,
+                   d.status_progresso, d.titulo, d.criado_em, d.finalizado_em,
+                   (SELECT count(*) FROM dicas_desafio x WHERE x.desafio_id = d.id) AS dicas
+            """;
 
     private static final String DE = """
             FROM desafios d
@@ -61,29 +71,41 @@ public class ConsultaHistorico {
         List<Object> parametrosDaPagina = new ArrayList<>(parametros);
         parametrosDaPagina.add(tamanho);
         parametrosDaPagina.add((long) pagina * tamanho);
-        List<LinhaDoHistorico> linhas = jdbc.query("""
-                SELECT d.id, d.analise_id, r.nome AS repositorio, d.numero, d.tipo, d.status_geracao,
-                       d.status_progresso, d.titulo, d.criado_em, d.finalizado_em,
-                       (SELECT count(*) FROM dicas_desafio x WHERE x.desafio_id = d.id) AS dicas
-                """ + DE + filtros + """
+        List<LinhaDoHistorico> linhas = jdbc.query(COLUNAS + DE + filtros + """
                 ORDER BY d.criado_em DESC, d.numero DESC
                 LIMIT ? OFFSET ?
                 """,
-                (rs, i) -> new LinhaDoHistorico(
-                        rs.getObject("id", UUID.class),
-                        rs.getObject("analise_id", UUID.class),
-                        rs.getString("repositorio"),
-                        rs.getInt("numero"),
-                        TipoDesafio.valueOf(rs.getString("tipo")),
-                        StatusGeracao.valueOf(rs.getString("status_geracao")),
-                        StatusProgresso.valueOf(rs.getString("status_progresso")),
-                        rs.getString("titulo"),
-                        rs.getInt("dicas"),
-                        instante(rs.getTimestamp("criado_em")),
-                        instante(rs.getTimestamp("finalizado_em"))),
+                this::linha,
                 parametrosDaPagina.toArray());
 
         return new PaginaBruta(linhas, total == null ? 0 : total);
+    }
+
+    /** Os que ainda pedem trabalho: sendo gerados, ou prontos e não concluídos. Falhas e concluídos ficam de fora. */
+    @Transactional(readOnly = true)
+    public List<LinhaDoHistorico> emAberto(UUID usuarioId) {
+        return jdbc.query(COLUNAS + DE + """
+                AND d.status_geracao <> 'FALHOU' AND d.status_progresso <> 'CONCLUIDO'
+                ORDER BY d.criado_em DESC, d.numero DESC
+                LIMIT ?
+                """,
+                this::linha,
+                usuarioId, MAXIMO_EM_ABERTO);
+    }
+
+    private LinhaDoHistorico linha(ResultSet rs, int i) throws SQLException {
+        return new LinhaDoHistorico(
+                rs.getObject("id", UUID.class),
+                rs.getObject("analise_id", UUID.class),
+                rs.getString("repositorio"),
+                rs.getInt("numero"),
+                TipoDesafio.valueOf(rs.getString("tipo")),
+                StatusGeracao.valueOf(rs.getString("status_geracao")),
+                StatusProgresso.valueOf(rs.getString("status_progresso")),
+                rs.getString("titulo"),
+                rs.getInt("dicas"),
+                instante(rs.getTimestamp("criado_em")),
+                instante(rs.getTimestamp("finalizado_em")));
     }
 
     @Transactional(readOnly = true)

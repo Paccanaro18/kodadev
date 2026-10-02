@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,6 +39,13 @@ public class HistoricoController {
         UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
 
         return historicoService.listar(usuario.id(), status, tipo, analiseId, pagina, tamanho);
+    }
+
+    @GetMapping("/historico/abertos")
+    public List<ItemHistorico> emAberto(@AuthenticationPrincipal OAuth2User principal) {
+        UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
+
+        return historicoService.emAberto(usuario.id());
     }
 
     @GetMapping("/progresso")

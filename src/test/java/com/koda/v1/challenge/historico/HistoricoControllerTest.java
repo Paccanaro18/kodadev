@@ -28,6 +28,47 @@ class HistoricoControllerTest extends TesteDeApiComSessao {
     void deveExigirSessao() throws Exception {
         mockMvc.perform(get("/api/historico")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/progresso")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/historico/abertos")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deveListarSoOsDesafiosEmAbertoDeTodosOsProjetos() throws Exception {
+        UUID analiseA = criarAnalise(usuarioId, "repo-a");
+        UUID analiseB = criarAnalise(usuarioId, "repo-b");
+        UUID naoIniciado = criarPronto(analiseA, TipoDesafio.FEATURE, "A", List.of("REST"));
+        UUID emAndamento = criarPronto(analiseB, TipoDesafio.BUG, "B", List.of("JPA"));
+        UUID concluido = criarPronto(analiseA, TipoDesafio.TESTING, "C", List.of("JUnit"));
+        progresso.mudar(usuarioId, emAndamento, StatusProgresso.EM_ANDAMENTO);
+        progresso.mudar(usuarioId, concluido, StatusProgresso.EM_ANDAMENTO);
+        progresso.mudar(usuarioId, concluido, StatusProgresso.CONCLUIDO);
+        UUID falhou = registro.registrarNovo(usuarioId, analiseA, TipoDesafio.BUG, "ANGULO_F", "CLASSE:F", "p");
+        registro.iniciar(falhou);
+        registro.falhar(falhou, "erro");
+        entityManager.flush();
+        UUID gerando = registro.registrarNovo(usuarioId, analiseB, TipoDesafio.FEATURE, "ANGULO_G", "CLASSE:G", "p");
+        entityManager.flush();
+
+        mockMvc.perform(get("/api/historico/abertos").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[?(@.id=='" + naoIniciado + "')].repositorio").value("repo-a"))
+                .andExpect(jsonPath("$[?(@.id=='" + emAndamento + "')].statusProgresso").value("EM_ANDAMENTO"))
+                .andExpect(jsonPath("$[?(@.id=='" + gerando + "')].statusGeracao").value("PENDENTE"))
+                .andExpect(jsonPath("$[?(@.id=='" + concluido + "')]").isEmpty())
+                .andExpect(jsonPath("$[?(@.id=='" + falhou + "')]").isEmpty());
+    }
+
+    @Test
+    void naoDeveListarComoEmAbertoOQueEDeOutraPessoa() throws Exception {
+        long outroGithubId = githubId + 1;
+        UUID outroUsuario = criarUsuario(outroGithubId, "outra");
+        UUID analiseDoOutro = criarAnalise(outroUsuario, "repo-do-outro");
+        registro.registrarNovo(outroUsuario, analiseDoOutro, TipoDesafio.FEATURE, "ANGULO_X", "CLASSE:X", "p");
+        entityManager.flush();
+
+        mockMvc.perform(get("/api/historico/abertos").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test

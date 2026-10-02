@@ -32,15 +32,22 @@ public class HistoricoService {
 
         ConsultaHistorico.PaginaBruta bruta =
                 consulta.buscar(usuarioId, progresso, tipo, analiseId, paginaEscolhida, tamanhoEscolhido);
-        List<ItemHistorico> itens = bruta.linhas().stream()
-                .map(linha -> new ItemHistorico(
-                        linha.id(), linha.analiseId(), linha.repositorio(), linha.numero(), codigoDe(linha.numero()),
-                        linha.tipo(), linha.statusGeracao(), linha.statusProgresso(), linha.titulo(),
-                        linha.dicasUsadas(), linha.criadoEm(), linha.finalizadoEm()))
-                .toList();
+        List<ItemHistorico> itens = bruta.linhas().stream().map(this::paraItem).toList();
         int totalPaginas = (int) ((bruta.total() + tamanhoEscolhido - 1) / tamanhoEscolhido);
 
         return new PaginaHistorico(itens, paginaEscolhida, tamanhoEscolhido, bruta.total(), totalPaginas);
+    }
+
+    /** Todos os desafios em aberto, de todos os projetos, do mais novo para o mais antigo. */
+    public List<ItemHistorico> emAberto(UUID usuarioId) {
+        return consulta.emAberto(usuarioId).stream().map(this::paraItem).toList();
+    }
+
+    private ItemHistorico paraItem(ConsultaHistorico.LinhaDoHistorico linha) {
+        return new ItemHistorico(
+                linha.id(), linha.analiseId(), linha.repositorio(), linha.numero(), codigoDe(linha.numero()),
+                linha.tipo(), linha.statusGeracao(), linha.statusProgresso(), linha.titulo(),
+                linha.dicasUsadas(), linha.criadoEm(), linha.finalizadoEm());
     }
 
     public ResumoProgresso resumir(UUID usuarioId) {
