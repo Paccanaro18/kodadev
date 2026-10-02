@@ -14,7 +14,7 @@ import { useSessao } from "@/lib/useSessao";
 
 const nav = [
   { label: "Home", href: "/dashboard", icon: Home, match: ["/dashboard"] },
-  { label: "Desafios", href: "/projeto", icon: GitBranch, match: ["/projeto", "/desafio"] },
+  { label: "Desafios", href: "/desafios", icon: GitBranch, match: ["/desafios", "/projeto", "/desafio"] },
   { label: "Repositórios", href: "/repositorios/adicionar", icon: Folder, match: ["/repositorios", "/analisando"] },
   { label: "Progresso", href: "/progresso", icon: BarChart3, match: ["/progresso"] },
   { label: "Comunidade", href: "/comunidade", icon: Users, match: ["/comunidade"] },

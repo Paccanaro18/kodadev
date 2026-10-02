@@ -359,6 +359,11 @@ export type Notificacoes = {
   itens: Notificacao[];
 };
 
+/** Todos os desafios que ainda estão em aberto, de todos os projetos. */
+export function listarDesafiosEmAberto(): Promise<ItemHistorico[]> {
+  return requisitar<ItemHistorico[]>("/api/historico/abertos");
+}
+
 export function listarHistorico(filtros: FiltrosDoHistorico = {}): Promise<PaginaHistorico> {
   const parametros = new URLSearchParams();
   if (filtros.status) parametros.set("status", filtros.status);
