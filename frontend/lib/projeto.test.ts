@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Linguagem, ResultadoAnalise } from "@/lib/api";
-import { camadasDe, dependenciasDe, stackDe } from "@/lib/projeto";
+import { camadasDe, dependenciasDe, stackDe, stackDetalhadaDe } from "@/lib/projeto";
 
 function resultado(parcial: Partial<ResultadoAnalise>): ResultadoAnalise {
   return {
@@ -61,6 +61,24 @@ describe("stackDe", () => {
   it("ignora linguagem que não conhece", () => {
     const r = resultado({ linguagem: "COBOL" as unknown as Linguagem });
     expect(stackDe(r)[0]).toBe("Spring Boot 4.1.1");
+  });
+});
+
+describe("stackDetalhadaDe", () => {
+  it("traz o logo de linguagem, framework e tecnologias, e nenhum para o build", () => {
+    const itens = stackDetalhadaDe(resultado({ tecnologias: ["POSTGRESQL", "REDIS"] }));
+    expect(itens).toEqual([
+      { rotulo: "Java 21", icone: "java" },
+      { rotulo: "Spring Boot 4.1.1", icone: "spring" },
+      { rotulo: "Maven", icone: null },
+      { rotulo: "PostgreSQL", icone: "postgresql" },
+      { rotulo: "Redis", icone: "redis" },
+    ]);
+  });
+
+  it("deixa sem logo o framework que não tem", () => {
+    const itens = stackDetalhadaDe(resultado({ linguagem: "JAVASCRIPT", framework: "Koa", versaoFramework: null }));
+    expect(itens[1]).toEqual({ rotulo: "Koa", icone: null });
   });
 });
 

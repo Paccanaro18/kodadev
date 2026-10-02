@@ -120,3 +120,7 @@ docker-compose.yml, .github/   banco local e CI
 
 Só a máquina local alcança o backend e o banco; sem sessão a API devolve 401; tudo que vem da IA é validado e nunca
 entra em log; prompts e chaves nunca são registrados. Os detalhes e as decisões estão no [CLAUDE.md](CLAUDE.md).
+
+## Créditos
+
+Os logos das tecnologias em `frontend/public/tecnologias` vêm do [Devicon](https://github.com/devicons/devicon) (licença MIT). Cada logo pertence à respectiva marca.

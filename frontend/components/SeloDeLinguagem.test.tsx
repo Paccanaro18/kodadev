@@ -17,6 +17,13 @@ describe("SeloDeLinguagem", () => {
     expect(screen.getByTitle("Linguagem do projeto: Python")).toBeInTheDocument();
   });
 
+  it("mostra o logo da linguagem, sem repetir o nome para leitores de tela", () => {
+    const { container } = render(<SeloDeLinguagem linguagem="JAVA" />);
+    const logo = container.querySelector("img");
+    expect(logo).toHaveAttribute("src", "/tecnologias/java.svg");
+    expect(logo).toHaveAttribute("alt", "");
+  });
+
   it("aceita o tamanho médio", () => {
     render(<SeloDeLinguagem linguagem="TYPESCRIPT" tamanho="medio" />);
     expect(screen.getByText("TypeScript").className).toContain("text-[13px]");

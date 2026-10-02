@@ -6,15 +6,17 @@ import { FolderGit2 } from "lucide-react";
 import { ErroApi, listarAnalises, type AnaliseResumo } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 import { rotuloTecnologia } from "@/lib/projeto";
+import { iconeDaTecnologia, iconeDoFramework } from "@/lib/tecnologias";
+import IconeDeTecnologia from "./IconeDeTecnologia";
 import SeloDeLinguagem from "./SeloDeLinguagem";
 
 const card = "rounded-3xl bg-surface shadow-soft";
 const seeAll = "rounded-[10px] border border-line-2 px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft";
 
-function tagsDe(a: AnaliseResumo): string[] {
-  const tags: string[] = [];
-  if (a.framework) tags.push(a.framework);
-  tags.push(...a.tecnologias.map(rotuloTecnologia));
+function tagsDe(a: AnaliseResumo): { rotulo: string; icone: string | null }[] {
+  const tags: { rotulo: string; icone: string | null }[] = [];
+  if (a.framework) tags.push({ rotulo: a.framework, icone: iconeDoFramework(a.framework) });
+  tags.push(...a.tecnologias.map((t) => ({ rotulo: rotuloTecnologia(t), icone: iconeDaTecnologia(t) })));
   return tags;
 }
 
@@ -99,7 +101,12 @@ export default function RepositoriosConectados() {
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <SeloDeLinguagem linguagem={a.linguagem} />
-                  {tagsDe(a).map((t) => <span key={t} className="rounded-full border border-line px-2.5 py-0.5 text-[11px]">{t}</span>)}
+                  {tagsDe(a).map((t) => (
+                    <span key={t.rotulo} className="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-0.5 text-[11px]">
+                      {t.icone && <IconeDeTecnologia icone={t.icone} />}
+                      {t.rotulo}
+                    </span>
+                  ))}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-body">
                   <i className={`size-2 shrink-0 rounded-full ${situacao.cor}`} /><span className="line-clamp-2">{situacao.texto}</span>

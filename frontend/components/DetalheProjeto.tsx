@@ -7,7 +7,7 @@ import CartaoContexto, { AvisoSemContexto } from "./CartaoContexto";
 import ListaDesafios from "./ListaDesafios";
 import { BackLink, btnPrimary, Card, Chip, Eyebrow, Mascot, PageHeader } from "./ui";
 import { listarAnalises, type ResultadoAnalise } from "@/lib/api";
-import { camadasDe, dependenciasDe, stackDe } from "@/lib/projeto";
+import { camadasDe, dependenciasDe, stackDetalhadaDe } from "@/lib/projeto";
 import SeloDeLinguagem from "./SeloDeLinguagem";
 import { useAnalise } from "@/lib/useAnalise";
 
@@ -102,7 +102,7 @@ function ProjetoAnalisado({ id }: { id: string }) {
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         <Card>
           <Eyebrow>Stack detectada</Eyebrow>
-          <div className="flex flex-wrap gap-2">{stackDe(resultado).map((s) => <Chip key={s}>{s}</Chip>)}</div>
+          <div className="flex flex-wrap gap-2">{stackDetalhadaDe(resultado).map((s) => <Chip key={s.rotulo} icone={s.icone}>{s.rotulo}</Chip>)}</div>
           <div className="mt-6"><Eyebrow>Estrutura</Eyebrow></div>
           <ul className="-mt-2 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
             {camadasDe(resultado).map((c) => (

@@ -1,13 +1,12 @@
 import type { Linguagem } from "@/lib/api";
 
-type Info = { rotulo: string; cor: string };
+type Info = { rotulo: string };
 
-/** A cor só enfeita o selo (um ponto): o texto do selo usa as cores do tema e mantém o contraste. */
 const LINGUAGENS: Record<Linguagem, Info> = {
-  JAVA: { rotulo: "Java", cor: "#e76f00" },
-  TYPESCRIPT: { rotulo: "TypeScript", cor: "#3178c6" },
-  JAVASCRIPT: { rotulo: "JavaScript", cor: "#d4b800" },
-  PYTHON: { rotulo: "Python", cor: "#3776ab" },
+  JAVA: { rotulo: "Java" },
+  TYPESCRIPT: { rotulo: "TypeScript" },
+  JAVASCRIPT: { rotulo: "JavaScript" },
+  PYTHON: { rotulo: "Python" },
 };
 
 export const LINGUAGENS_SUPORTADAS: Linguagem[] = ["JAVA", "TYPESCRIPT", "JAVASCRIPT", "PYTHON"];

@@ -1,5 +1,6 @@
 import type { Arquitetura, Linguagem, ResultadoAnalise, Tecnologia } from "@/lib/api";
 import { rotuloDaLinguagem } from "@/lib/linguagem";
+import { iconeDaLinguagem, iconeDaTecnologia, iconeDoFramework } from "@/lib/tecnologias";
 
 const ROTULOS_TECNOLOGIA: Record<Tecnologia, string> = {
   POSTGRESQL: "PostgreSQL",
@@ -50,18 +51,25 @@ function linguagemComVersao(resultado: ResultadoAnalise): string | null {
   return resultado.versaoLinguagem ? `${nome} ${resultado.versaoLinguagem}` : rotulo;
 }
 
-export function stackDe(resultado: ResultadoAnalise): string[] {
-  const stack: string[] = [];
+export type ItemDaStack = { rotulo: string; icone: string | null };
+
+export function stackDetalhadaDe(resultado: ResultadoAnalise): ItemDaStack[] {
+  const stack: ItemDaStack[] = [];
   const linguagem = linguagemComVersao(resultado);
-  if (linguagem) stack.push(linguagem);
+  if (linguagem) stack.push({ rotulo: linguagem, icone: iconeDaLinguagem(resultado.linguagem) });
   if (resultado.framework) {
-    stack.push(resultado.versaoFramework ? `${resultado.framework} ${resultado.versaoFramework}` : resultado.framework);
+    const rotulo = resultado.versaoFramework ? `${resultado.framework} ${resultado.versaoFramework}` : resultado.framework;
+    stack.push({ rotulo, icone: iconeDoFramework(resultado.framework) });
   }
   if (resultado.ferramentaDeBuild) {
-    stack.push(FERRAMENTAS_DE_BUILD[resultado.ferramentaDeBuild] ?? resultado.ferramentaDeBuild);
+    stack.push({ rotulo: FERRAMENTAS_DE_BUILD[resultado.ferramentaDeBuild] ?? resultado.ferramentaDeBuild, icone: null });
   }
-  stack.push(...resultado.tecnologias.map(rotuloTecnologia));
+  stack.push(...resultado.tecnologias.map((t) => ({ rotulo: rotuloTecnologia(t), icone: iconeDaTecnologia(t) })));
   return stack;
+}
+
+export function stackDe(resultado: ResultadoAnalise): string[] {
+  return stackDetalhadaDe(resultado).map((item) => item.rotulo);
 }
 
 export function arquiteturaDe(arquitetura: Arquitetura): { rotulo: string; descricao: string } {

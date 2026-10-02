@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import IconeDeTecnologia from "./IconeDeTecnologia";
 import type { ReactNode } from "react";
 
 export function Mascot({ name, className = "" }: { name: string; className?: string }) {
@@ -34,9 +35,10 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   return <div className="mb-4 text-xs font-bold tracking-[0.12em] text-ink-2/70 uppercase">{children}</div>;
 }
 
-export function Chip({ children, tone = "soft" }: { children: ReactNode; tone?: "soft" | "neutral" }) {
+export function Chip({ children, tone = "soft", icone }: { children: ReactNode; tone?: "soft" | "neutral"; icone?: string | null }) {
   return (
-    <span className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda-texto" : "bg-tint text-ink"}`}>
+    <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${tone === "soft" ? "bg-koda-soft text-koda-texto" : "bg-tint text-ink"}`}>
+      {icone && <IconeDeTecnologia icone={icone} tamanho="medio" />}
       {children}
     </span>
   );

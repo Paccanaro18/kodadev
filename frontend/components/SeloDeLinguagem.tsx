@@ -1,22 +1,25 @@
 import { infoDaLinguagem } from "@/lib/linguagem";
+import { iconeDaLinguagem } from "@/lib/tecnologias";
+import IconeDeTecnologia from "./IconeDeTecnologia";
 
 type Props = {
   linguagem: string | null | undefined;
   tamanho?: "pequeno" | "medio";
 };
 
-/** Mostra a linguagem do projeto. Sem linguagem conhecida, não mostra nada. */
+/** Mostra a linguagem do projeto, com o logo. Sem linguagem conhecida, não mostra nada. */
 export default function SeloDeLinguagem({ linguagem, tamanho = "pequeno" }: Props) {
   const info = infoDaLinguagem(linguagem);
   if (!info) return null;
 
-  const medidas = tamanho === "medio" ? "px-3 py-1 text-[13px]" : "px-2.5 py-0.5 text-[11px]";
+  const icone = iconeDaLinguagem(linguagem);
+  const medidas = tamanho === "medio" ? "gap-2 px-3 py-1 text-[13px]" : "gap-1.5 px-2 py-0.5 text-[11px]";
   return (
     <span
       title={`Linguagem do projeto: ${info.rotulo}`}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-line-2 bg-surface font-semibold text-ink ${medidas}`}
+      className={`inline-flex items-center rounded-full border border-line-2 bg-surface font-semibold text-ink ${medidas}`}
     >
-      <i aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: info.cor }} />
+      {icone && <IconeDeTecnologia icone={icone} tamanho={tamanho} />}
       {info.rotulo}
     </span>
   );
