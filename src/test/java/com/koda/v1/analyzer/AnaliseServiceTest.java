@@ -190,12 +190,12 @@ class AnaliseServiceTest {
         List<AnaliseResumoResposta> resumos = service.listar(usuarioId);
 
         assertThat(resumos).hasSize(2);
-        assertThat(resumos.get(0).springBoot()).isTrue();
-        assertThat(resumos.get(0).versaoJava()).isEqualTo("21");
+        assertThat(resumos.get(0).framework()).isEqualTo("Spring Boot");
+        assertThat(resumos.get(0).versaoLinguagem()).isEqualTo("21");
         assertThat(resumos.get(0).tecnologias()).containsExactly(Tecnologia.POSTGRESQL);
         assertThat(resumos.get(0).parcial()).isTrue();
-        assertThat(resumos.get(1).springBoot()).isFalse();
-        assertThat(resumos.get(1).versaoJava()).isNull();
+        assertThat(resumos.get(1).framework()).isNull();
+        assertThat(resumos.get(1).versaoLinguagem()).isNull();
         assertThat(resumos.get(1).tecnologias()).isEmpty();
         assertThat(resumos.get(1).mensagemErro()).isEqualTo("O repositório não é um projeto Spring Boot.");
     }

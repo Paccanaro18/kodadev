@@ -2,6 +2,7 @@ package com.koda.v1.analyzer.contexto;
 
 import com.koda.v1.analyzer.ResultadoAnalise;
 import com.koda.v1.analyzer.detector.Endpoint;
+import com.koda.v1.analyzer.ecossistema.ConvencaoDeNomes;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,10 +23,6 @@ public class MontadorContexto {
     static final int MAXIMO_DOMINIOS = 15;
     static final int MAXIMO_FEATURES = 30;
     static final int MAXIMO_ENDPOINTS = SanitizadorIdentificador.MAXIMO_ITENS_POR_LISTA;
-
-    private static final String FERRAMENTA_DE_BUILD = "maven";
-    private static final String PREFIXO_MAIN = "src/main/java/";
-    private static final String EXTENSAO_JAVA = ".java";
 
     private static final List<String> SUFIXOS_DE_DOMINIO =
             List.of("ServiceImpl", "Service", "Controller", "Repository");
@@ -59,36 +56,39 @@ public class MontadorContexto {
         Objects.requireNonNull(caminhosDaArvore, "Os caminhos da árvore são obrigatórios");
 
         Balanco balanco = new Balanco();
-        List<String> arquivosDeMain = arquivosJavaDeMain(caminhosDaArvore);
+        ConvencaoDeNomes convencao = ConvencaoDeNomes.de(resultado.linguagem());
+        List<String> arquivosDeMain = convencao.arquivosDeFonte(caminhosDaArvore);
 
         List<EndpointContexto> endpoints = endpoints(resultado.endpoints(), balanco);
-        ComponentesContexto componentes = componentes(resultado, arquivosDeMain, balanco);
+        ComponentesContexto componentes = componentes(resultado, arquivosDeMain, convencao, balanco);
 
         return new ContextoProjeto(
                 ContextoProjeto.VERSAO_ESQUEMA,
-                sanitizador.versao(resultado.versaoJava()).orElse(null),
-                sanitizador.versao(resultado.versaoSpringBoot()).orElse(null),
-                FERRAMENTA_DE_BUILD,
-                arquitetura(resultado, arquivosDeMain),
-                dominios(resultado, balanco),
+                resultado.linguagem(),
+                resultado.framework(),
+                sanitizador.versao(resultado.versaoLinguagem()).orElse(null),
+                sanitizador.versao(resultado.versaoFramework()).orElse(null),
+                resultado.ferramentaDeBuild(),
+                arquitetura(resultado, arquivosDeMain, convencao),
+                dominios(resultado, convencao, balanco),
                 resultado.tecnologias(),
                 features(endpoints, balanco),
                 endpoints,
                 componentes,
-                testes(resultado, balanco),
+                testes(resultado, convencao, balanco),
                 infra(caminhosDaArvore),
                 resultado.parcial(),
                 balanco.truncado,
                 balanco.descartados);
     }
 
-    private Arquitetura arquitetura(ResultadoAnalise resultado, List<String> arquivosDeMain) {
+    private Arquitetura arquitetura(ResultadoAnalise resultado, List<String> arquivosDeMain, ConvencaoDeNomes convencao) {
         Set<String> pastas = new HashSet<>();
         Map<String, Set<String>> camadasPorPasta = new HashMap<>();
 
         for (String arquivo : arquivosDeMain) {
             String pasta = pastaDe(arquivo);
-            String nome = nomeDaClasse(arquivo);
+            String nome = convencao.nome(arquivo);
             for (String segmento : pasta.split("/")) {
                 pastas.add(segmento.toLowerCase());
             }
@@ -134,9 +134,9 @@ public class MontadorContexto {
         return Optional.empty();
     }
 
-    private List<String> dominios(ResultadoAnalise resultado, Balanco balanco) {
+    private List<String> dominios(ResultadoAnalise resultado, ConvencaoDeNomes convencao, Balanco balanco) {
         List<String> nomes = Stream.concat(resultado.controllers().stream(), resultado.entidades().stream())
-                .map(this::nomeDaClasse)
+                .map(convencao::nome)
                 .map(this::semSufixoDeDominio)
                 .sorted()
                 .toList();
@@ -179,26 +179,27 @@ public class MontadorContexto {
         return recursos.stream().limit(MAXIMO_FEATURES).toList();
     }
 
-    private ComponentesContexto componentes(ResultadoAnalise resultado, List<String> arquivosDeMain, Balanco balanco) {
-        List<String> nomesDeArquivos = nomesDeClasses(arquivosDeMain);
+    private ComponentesContexto componentes(ResultadoAnalise resultado, List<String> arquivosDeMain,
+                                            ConvencaoDeNomes convencao, Balanco balanco) {
+        List<String> nomesDeArquivos = nomesDeClasses(arquivosDeMain, convencao);
 
         return new ComponentesContexto(
-                listar(nomesDeClasses(resultado.controllers()), balanco),
-                listar(nomesDeClasses(resultado.services()), balanco),
-                listar(nomesDeClasses(resultado.repositories()), balanco),
-                listar(nomesDeClasses(resultado.entidades()), balanco),
+                listar(nomesDeClasses(resultado.controllers(), convencao), balanco),
+                listar(nomesDeClasses(resultado.services(), convencao), balanco),
+                listar(nomesDeClasses(resultado.repositories(), convencao), balanco),
+                listar(nomesDeClasses(resultado.entidades(), convencao), balanco),
                 listar(comSufixo(nomesDeArquivos, SUFIXOS_DE_DTO), balanco),
                 listar(comSufixo(nomesDeArquivos, List.of(SUFIXO_DE_EXCECAO)), balanco),
                 !comSufixo(nomesDeArquivos, SUFIXOS_DE_TRATADOR).isEmpty());
     }
 
-    private TestesContexto testes(ResultadoAnalise resultado, Balanco balanco) {
-        Set<String> classesDeTeste = new HashSet<>(nomesDeClasses(resultado.testes()));
+    private TestesContexto testes(ResultadoAnalise resultado, ConvencaoDeNomes convencao, Balanco balanco) {
+        Set<String> classesDeTeste = new HashSet<>(nomesDeClasses(resultado.testes(), convencao));
 
-        List<String> servicesSemTeste = nomesDeClasses(resultado.services()).stream()
+        List<String> servicesSemTeste = nomesDeClasses(resultado.services(), convencao).stream()
                 .filter(nome -> !temTeste(nome, classesDeTeste))
                 .toList();
-        List<String> controllersSemTeste = nomesDeClasses(resultado.controllers()).stream()
+        List<String> controllersSemTeste = nomesDeClasses(resultado.controllers(), convencao).stream()
                 .filter(nome -> !temTeste(nome, classesDeTeste))
                 .toList();
 
@@ -228,32 +229,14 @@ public class MontadorContexto {
         return new InfraContexto(temDockerfile, temCompose);
     }
 
-    private List<String> arquivosJavaDeMain(List<String> caminhosDaArvore) {
-        List<String> arquivos = new ArrayList<>();
-        for (String caminho : caminhosDaArvore) {
-            int posicao = caminho.indexOf(PREFIXO_MAIN);
-            if (posicao >= 0 && caminho.endsWith(EXTENSAO_JAVA)) {
-                arquivos.add(caminho.substring(posicao + PREFIXO_MAIN.length()));
-            }
-        }
-        return arquivos;
-    }
-
     private List<String> comSufixo(Collection<String> nomes, List<String> sufixos) {
         return nomes.stream()
                 .filter(nome -> sufixos.stream().anyMatch(sufixo -> nome.endsWith(sufixo) && nome.length() > sufixo.length()))
                 .toList();
     }
 
-    private List<String> nomesDeClasses(Collection<String> caminhos) {
-        return caminhos.stream().map(this::nomeDaClasse).sorted().toList();
-    }
-
-    private String nomeDaClasse(String caminho) {
-        String arquivo = caminho.substring(caminho.lastIndexOf('/') + 1);
-        return arquivo.endsWith(EXTENSAO_JAVA)
-                ? arquivo.substring(0, arquivo.length() - EXTENSAO_JAVA.length())
-                : arquivo;
+    private List<String> nomesDeClasses(Collection<String> caminhos, ConvencaoDeNomes convencao) {
+        return caminhos.stream().map(convencao::nome).sorted().toList();
     }
 
     private String pastaDe(String caminhoRelativo) {

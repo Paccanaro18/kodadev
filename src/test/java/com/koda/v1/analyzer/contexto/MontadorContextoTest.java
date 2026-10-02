@@ -46,8 +46,8 @@ class MontadorContextoTest {
         ContextoProjeto contexto = montador.montar(resultado, arvore);
 
         assertThat(contexto.versaoEsquema()).isEqualTo(ContextoProjeto.VERSAO_ESQUEMA);
-        assertThat(contexto.versaoJava()).isEqualTo("21");
-        assertThat(contexto.versaoSpringBoot()).isEqualTo("4.1.1");
+        assertThat(contexto.versaoLinguagem()).isEqualTo("21");
+        assertThat(contexto.versaoFramework()).isEqualTo("4.1.1");
         assertThat(contexto.ferramentaDeBuild()).isEqualTo("maven");
         assertThat(contexto.arquitetura()).isEqualTo(Arquitetura.EM_CAMADAS);
         assertThat(contexto.dominios()).containsExactly("Pedido");
@@ -222,8 +222,8 @@ class MontadorContextoTest {
 
         ContextoProjeto contexto = montador.montar(resultado, List.of());
 
-        assertThat(contexto.versaoJava()).isNull();
-        assertThat(contexto.versaoSpringBoot()).isNull();
+        assertThat(contexto.versaoLinguagem()).isNull();
+        assertThat(contexto.versaoFramework()).isNull();
     }
 
     @Test

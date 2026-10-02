@@ -55,7 +55,7 @@ class MontadorPromptTest {
         assertThat(usuario).contains("Habilidades que o ticket pode praticar: Tratamento de exceções, HTTP 404, Depuração");
         assertThat(usuario).contains("Perspectiva de negócio para escrever o contexto do ticket: " + perspectiva);
         assertThat(usuario).contains("- Título antigo");
-        assertThat(usuario).contains("Projeto Spring Boot 4.1.1 com Java 21, arquitetura em camadas.");
+        assertThat(usuario).contains("Projeto Java 21 com Spring Boot 4.1.1, arquitetura em camadas.");
         assertThat(usuario).contains("Tecnologias de infraestrutura: POSTGRESQL");
         assertThat(usuario).contains("Controllers: PedidoController, ClienteController");
         assertThat(usuario).contains("Services sem teste: ClienteService");
@@ -192,7 +192,7 @@ class MontadorPromptTest {
         String primeiro = montador.montar(selecaoPadrao(), semVersoes, perspectiva, List.of()).usuario();
         String segundo = montador.montar(selecaoPadrao(), semVersoes, perspectiva, List.of()).usuario();
 
-        assertThat(primeiro).contains("Projeto Spring Boot, arquitetura não identificada.");
+        assertThat(primeiro).contains("Projeto Java com Spring Boot, arquitetura não identificada.");
         assertThat(primeiro).isEqualTo(segundo);
     }
 

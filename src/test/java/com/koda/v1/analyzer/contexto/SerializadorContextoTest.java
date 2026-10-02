@@ -36,11 +36,31 @@ class SerializadorContextoTest {
 
     @Test
     void deveEscreverAVersaoDoEsquemaNoJson() {
-        assertThat(serializador.paraJson(exemplo())).contains("\"versaoEsquema\":1");
+        assertThat(serializador.paraJson(exemplo())).contains("\"versaoEsquema\":2");
     }
 
     @Test
     void deveRecusarJsonInvalido() {
         assertThatThrownBy(() -> serializador.deJson("isso não é json")).isInstanceOf(JacksonException.class);
+    }
+
+    @Test
+    void deveLerContextoDoEsquemaUmComoJavaComSpringBoot() {
+        String antigo = """
+                {"versaoEsquema":1,"versaoJava":"21","versaoSpringBoot":"4.1.1","ferramentaDeBuild":"maven",
+                 "arquitetura":"EM_CAMADAS","dominios":[],"tecnologias":[],"features":[],"endpoints":[],
+                 "componentes":{"controllers":[],"services":[],"repositories":[],"entidades":[],"dtos":[],
+                 "excecoes":[],"temTratadorDeErros":false},
+                 "testes":{"total":0,"servicesSemTeste":[],"controllersSemTeste":[]},
+                 "infra":{"temDockerfile":false,"temCompose":false},
+                 "parcial":false,"truncado":false,"itensDescartados":0}
+                """;
+
+        ContextoProjeto lido = serializador.deJson(antigo);
+
+        assertThat(lido.linguagem()).isEqualTo(com.koda.v1.analyzer.ecossistema.Linguagem.JAVA);
+        assertThat(lido.framework()).isEqualTo("Spring Boot");
+        assertThat(lido.versaoLinguagem()).isEqualTo("21");
+        assertThat(lido.versaoFramework()).isEqualTo("4.1.1");
     }
 }

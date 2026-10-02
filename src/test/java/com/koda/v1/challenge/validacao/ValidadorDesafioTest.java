@@ -147,8 +147,8 @@ class ValidadorDesafioTest {
         var maior = new ComponentesContexto(componentes.controllers(), componentes.services(),
                 componentes.repositories(), componentes.entidades(),
                 List.of("ADto", "BDto", "CDto"), componentes.excecoes(), componentes.temTratadorDeErros());
-        ContextoProjeto grande = new ContextoProjeto(contexto.versaoEsquema(), contexto.versaoJava(),
-                contexto.versaoSpringBoot(), contexto.ferramentaDeBuild(), contexto.arquitetura(),
+        ContextoProjeto grande = new ContextoProjeto(contexto.versaoEsquema(), contexto.versaoLinguagem(),
+                contexto.versaoFramework(), contexto.ferramentaDeBuild(), contexto.arquitetura(),
                 contexto.dominios(), contexto.tecnologias(), contexto.features(), contexto.endpoints(),
                 maior, contexto.testes(), contexto.infra(), contexto.parcial(), contexto.truncado(),
                 contexto.itensDescartados());
@@ -296,7 +296,7 @@ class ValidadorDesafioTest {
         var dtos = java.util.stream.IntStream.range(0, quantos).mapToObj(i -> (char) ('A' + i) + "Dto").toList();
         var maior = new ComponentesContexto(c.controllers(), c.services(), c.repositories(), c.entidades(), dtos,
                 c.excecoes(), c.temTratadorDeErros());
-        return new ContextoProjeto(contexto.versaoEsquema(), contexto.versaoJava(), contexto.versaoSpringBoot(),
+        return new ContextoProjeto(contexto.versaoEsquema(), contexto.versaoLinguagem(), contexto.versaoFramework(),
                 contexto.ferramentaDeBuild(), contexto.arquitetura(), contexto.dominios(), contexto.tecnologias(),
                 contexto.features(), contexto.endpoints(), maior, contexto.testes(), contexto.infra(),
                 contexto.parcial(), contexto.truncado(), contexto.itensDescartados());

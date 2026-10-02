@@ -1,6 +1,7 @@
 package com.koda.v1.analyzer;
 
 import com.koda.v1.analyzer.detector.Tecnologia;
+import com.koda.v1.analyzer.ecossistema.Linguagem;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 
 import java.time.Instant;
@@ -12,8 +13,9 @@ public record AnaliseResumoResposta(
         StatusAnalise status,
         String dono,
         String nome,
-        boolean springBoot,
-        String versaoJava,
+        Linguagem linguagem,
+        String framework,
+        String versaoLinguagem,
         List<Tecnologia> tecnologias,
         boolean parcial,
         String mensagemErro,

@@ -19,7 +19,7 @@ public class MontadorPromptDica {
 
     static final String SISTEMA = """
             Você é a Koda, uma plataforma que ajuda pessoas desenvolvedoras de nível júnior a praticar em projetos \
-            Java com Spring Boot. Escreva UMA dica para um ticket que a pessoa está resolvendo.
+            reais, em Java, TypeScript ou Python. Escreva UMA dica para um ticket que a pessoa está resolvendo.
 
             Regras obrigatórias:
             1. Escreva em português do Brasil, em tom direto e acolhedor, em até 3 frases.

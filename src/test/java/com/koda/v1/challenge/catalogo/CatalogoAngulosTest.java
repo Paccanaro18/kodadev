@@ -245,7 +245,7 @@ class CatalogoAngulosTest {
 
     private ContextoProjeto comEndpoints(ContextoProjeto base, List<EndpointContexto> endpoints) {
         return new ContextoProjeto(
-                base.versaoEsquema(), base.versaoJava(), base.versaoSpringBoot(), base.ferramentaDeBuild(),
+                base.versaoEsquema(), base.versaoLinguagem(), base.versaoFramework(), base.ferramentaDeBuild(),
                 base.arquitetura(), base.dominios(), base.tecnologias(), base.features(), endpoints,
                 base.componentes(), base.testes(), base.infra(), base.parcial(), base.truncado(), base.itensDescartados());
     }

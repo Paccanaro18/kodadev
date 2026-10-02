@@ -11,6 +11,7 @@ import com.koda.v1.analyzer.detector.DetectorEntidade;
 import com.koda.v1.analyzer.detector.DetectorPom;
 import com.koda.v1.analyzer.detector.Endpoint;
 import com.koda.v1.analyzer.detector.Tecnologia;
+import com.koda.v1.analyzer.ecossistema.java.EcossistemaJava;
 import com.koda.v1.analyzer.estrutura.AnalisadorEstrutura;
 import com.koda.v1.analyzer.persistence.AnaliseNaoEncontradaException;
 import com.koda.v1.analyzer.persistence.DadosExecucao;
@@ -132,9 +133,9 @@ class AnalisadorRepositorioTest {
         analisador.analisar(analiseId);
 
         ResultadoAnalise resultado = resultadoGravado();
-        assertThat(resultado.springBoot()).isTrue();
-        assertThat(resultado.versaoJava()).isEqualTo("21");
-        assertThat(resultado.versaoSpringBoot()).isEqualTo("4.1.1");
+        assertThat(resultado.framework()).isEqualTo("Spring Boot");
+        assertThat(resultado.versaoLinguagem()).isEqualTo("21");
+        assertThat(resultado.versaoFramework()).isEqualTo("4.1.1");
         assertThat(resultado.tecnologias()).containsExactly(Tecnologia.POSTGRESQL);
         assertThat(resultado.imagensDocker()).containsExactly("postgres");
         assertThat(resultado.endpoints()).containsExactly(new Endpoint("GET", "/pedidos", "PedidoController"));
@@ -154,17 +155,17 @@ class AnalisadorRepositorioTest {
         assertThat(contexto.testes().controllersSemTeste()).containsExactly("PedidoController");
         assertThat(contexto.infra().temCompose()).isTrue();
         assertThat(contexto.infra().temDockerfile()).isFalse();
-        assertThat(contexto.versaoJava()).isEqualTo("21");
+        assertThat(contexto.versaoLinguagem()).isEqualTo("21");
         assertThat(contexto.parcial()).isFalse();
     }
 
     @Test
-    void deveRecusarCedoQuandoNaoHaCodigoJava() {
+    void deveRecusarCedoQuandoALinguagemNaoESuportada() {
         arvore(false, arquivo("README.md"), arquivo("src/index.js"));
 
         analisador.analisar(analiseId);
 
-        verify(registro).falhar(analiseId, "O repositório não tem código Java em src/main/java.");
+        verify(registro).falhar(analiseId, AnalisadorRepositorio.MENSAGEM_LINGUAGEM_NAO_SUPORTADA);
         verify(github, never()).lerArquivo(any(), any(), any(), any());
         verify(registro, never()).concluir(any(), anyString(), anyString(), anyInt());
     }
@@ -254,7 +255,7 @@ class AnalisadorRepositorioTest {
     @Test
     void deveLimitarAQuantidadeDeEndpointsEMarcarParcial() {
         StringBuilder muitos = new StringBuilder("@RestController\npublic class MuitosController {\n");
-        for (int i = 0; i < AnalisadorRepositorio.MAXIMO_ENDPOINTS + 100; i++) {
+        for (int i = 0; i < EcossistemaJava.MAXIMO_ENDPOINTS + 100; i++) {
             muitos.append("@GetMapping(\"/e").append(i).append("\")\nvoid m").append(i).append("() {}\n");
         }
         muitos.append("}\n");
@@ -266,7 +267,7 @@ class AnalisadorRepositorioTest {
         analisador.analisar(analiseId);
 
         ResultadoAnalise resultado = resultadoGravado();
-        assertThat(resultado.endpoints()).hasSize(AnalisadorRepositorio.MAXIMO_ENDPOINTS);
+        assertThat(resultado.endpoints()).hasSize(EcossistemaJava.MAXIMO_ENDPOINTS);
         assertThat(resultado.parcial()).isTrue();
     }
 
@@ -350,14 +351,15 @@ class AnalisadorRepositorioTest {
         return new AnalisadorRepositorio(
                 registro,
                 github,
-                new SelecaoArquivos(new AnalisadorEstrutura()),
-                new DetectorPom(),
-                new DetectorDockerCompose(),
-                new DetectorEndpoints(),
-                new DetectorEntidade(),
-                new MontadorResultado(),
+                List.of(new EcossistemaJava(
+                        new SelecaoArquivos(new AnalisadorEstrutura()),
+                        new DetectorPom(),
+                        new DetectorDockerCompose(),
+                        new DetectorEndpoints(),
+                        new DetectorEntidade(),
+                        new MontadorResultado(),
+                        montadorContexto)),
                 new SerializadorResultado(),
-                montadorContexto,
                 new SerializadorContexto(),
                 prazo);
     }

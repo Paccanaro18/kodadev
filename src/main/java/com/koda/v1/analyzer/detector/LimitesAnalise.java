@@ -7,7 +7,7 @@ public final class LimitesAnalise {
     private LimitesAnalise() {
     }
 
-    static void validarTamanho(String conteudo, String nomeArquivo) {
+    public static void validarTamanho(String conteudo, String nomeArquivo) {
         if (conteudo == null || conteudo.isBlank()) {
             throw new ArquivoNaoAnalisavelException(nomeArquivo, "arquivo vazio");
         }

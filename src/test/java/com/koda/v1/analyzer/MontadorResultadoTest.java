@@ -38,10 +38,10 @@ class MontadorResultadoTest {
 
         ResultadoAnalise resultado = montador.montar(pom, compose, estrutura, endpoints, false);
 
-        assertThat(resultado.temCodigoJava()).isTrue();
-        assertThat(resultado.springBoot()).isTrue();
-        assertThat(resultado.versaoJava()).isEqualTo("21");
-        assertThat(resultado.versaoSpringBoot()).isEqualTo("3.5.0");
+        assertThat(resultado.temCodigo()).isTrue();
+        assertThat(resultado.framework()).isEqualTo("Spring Boot");
+        assertThat(resultado.versaoLinguagem()).isEqualTo("21");
+        assertThat(resultado.versaoFramework()).isEqualTo("3.5.0");
         assertThat(resultado.imagensDocker()).containsExactly("postgres", "redis");
         assertThat(resultado.controllers()).hasSize(1);
         assertThat(resultado.endpoints()).containsExactly(endpoints.get(0));
@@ -64,9 +64,9 @@ class MontadorResultadoTest {
     void aguentaRepositorioSemPom() {
         ResultadoAnalise resultado = montador.montar(null, null, estruturaVazia(), null, false);
 
-        assertThat(resultado.springBoot()).isFalse();
-        assertThat(resultado.versaoJava()).isNull();
-        assertThat(resultado.versaoSpringBoot()).isNull();
+        assertThat(resultado.framework()).isNull();
+        assertThat(resultado.versaoLinguagem()).isNull();
+        assertThat(resultado.versaoFramework()).isNull();
         assertThat(resultado.dependencias()).isEmpty();
         assertThat(resultado.tecnologias()).isEmpty();
         assertThat(resultado.endpoints()).isEmpty();
@@ -90,7 +90,7 @@ class MontadorResultadoTest {
 
         ResultadoAnalise resultado = montador.montar(pom, null, estruturaVazia(), List.of(), false);
 
-        assertThat(resultado.springBoot()).isTrue();
+        assertThat(resultado.framework()).isEqualTo("Spring Boot");
     }
 
     @Test

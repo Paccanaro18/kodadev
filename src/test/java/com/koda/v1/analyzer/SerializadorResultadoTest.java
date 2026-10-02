@@ -49,9 +49,9 @@ class SerializadorResultadoTest {
 
         JsonNode json = leitor.readTree(serializador.paraJson(resultado));
 
-        assertThat(json.get("temCodigoJava").asBoolean()).isTrue();
-        assertThat(json.get("versaoJava").asString()).isEqualTo("21");
-        assertThat(json.get("versaoSpringBoot").isNull()).isTrue();
+        assertThat(json.get("temCodigo").asBoolean()).isTrue();
+        assertThat(json.get("versaoLinguagem").asString()).isEqualTo("21");
+        assertThat(json.get("versaoFramework").isNull()).isTrue();
         assertThat(json.get("tecnologias").get(0).asString()).isEqualTo("RABBITMQ");
         assertThat(json.get("endpoints").get(0).get("metodoHttp").asString()).isEqualTo("POST");
         assertThat(json.get("controllers").isArray()).isTrue();
@@ -67,5 +67,23 @@ class SerializadorResultadoTest {
         ResultadoAnalise lido = leitor.readValue(serializador.paraJson(vazio), ResultadoAnalise.class);
 
         assertThat(lido).isEqualTo(vazio);
+    }
+
+    @Test
+    void deveLerResultadoGravadoAntesDoSuporteAOutrasLinguagens() {
+        String antigo = """
+                {"temCodigoJava":true,"springBoot":true,"versaoJava":"21","versaoSpringBoot":"4.1.1",
+                 "dependencias":[],"tecnologias":[],"imagensDocker":[],"controllers":[],"services":[],
+                 "repositories":[],"entidades":[],"testes":[],"endpoints":[],"parcial":false}
+                """;
+
+        ResultadoAnalise lido = serializador.deJson(antigo);
+
+        assertThat(lido.linguagem()).isEqualTo(com.koda.v1.analyzer.ecossistema.Linguagem.JAVA);
+        assertThat(lido.framework()).isEqualTo("Spring Boot");
+        assertThat(lido.ferramentaDeBuild()).isEqualTo("maven");
+        assertThat(lido.temCodigo()).isTrue();
+        assertThat(lido.versaoLinguagem()).isEqualTo("21");
+        assertThat(lido.versaoFramework()).isEqualTo("4.1.1");
     }
 }

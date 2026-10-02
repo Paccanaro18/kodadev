@@ -196,15 +196,15 @@ class AnaliseControllerTest {
 
         mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contexto.versaoEsquema").value(1))
+                .andExpect(jsonPath("$.contexto.versaoEsquema").value(2))
                 .andExpect(jsonPath("$.contexto.arquitetura").value("EM_CAMADAS"))
                 .andExpect(jsonPath("$.contexto.dominios[0]").value("Pedido"))
                 .andExpect(jsonPath("$.contexto.testes.servicesSemTeste[0]").value("PedidoService"))
                 .andExpect(jsonPath("$.status").value("CONCLUIDA"))
                 .andExpect(jsonPath("$.dono").value("artur"))
                 .andExpect(jsonPath("$.nome").value("koda"))
-                .andExpect(jsonPath("$.resultado.springBoot").value(true))
-                .andExpect(jsonPath("$.resultado.versaoJava").value("21"))
+                .andExpect(jsonPath("$.resultado.framework").value("Spring Boot"))
+                .andExpect(jsonPath("$.resultado.versaoLinguagem").value("21"))
                 .andExpect(jsonPath("$.resultado.parcial").value(true));
     }
 
@@ -223,7 +223,7 @@ class AnaliseControllerTest {
         mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CONCLUIDA"))
-                .andExpect(jsonPath("$.resultado.versaoJava").value("17"))
+                .andExpect(jsonPath("$.resultado.versaoLinguagem").value("17"))
                 .andExpect(jsonPath("$.contexto").doesNotExist());
     }
 

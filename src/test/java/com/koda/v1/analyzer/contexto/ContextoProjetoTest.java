@@ -49,7 +49,7 @@ class ContextoProjetoTest {
     void deveEscreverEnumsComoTextoEAVersaoDoEsquema() {
         var json = mapeador.readTree(mapeador.writeValueAsString(exemplo()));
 
-        assertThat(json.get("versaoEsquema").asInt()).isEqualTo(1);
+        assertThat(json.get("versaoEsquema").asInt()).isEqualTo(2);
         assertThat(json.get("arquitetura").asString()).isEqualTo("EM_CAMADAS");
         assertThat(json.get("tecnologias").get(0).asString()).isEqualTo("POSTGRESQL");
         assertThat(json.get("componentes").get("temTratadorDeErros").asBoolean()).isTrue();
