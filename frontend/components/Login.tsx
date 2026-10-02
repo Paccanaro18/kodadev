@@ -1,5 +1,7 @@
 import { ArrowRight, BarChart3, Code2, Folder, GitBranch, Lock, ShieldCheck, Heart } from "lucide-react";
+import Link from "next/link";
 import SeloDeLinguagem from "./SeloDeLinguagem";
+import { PAGINAS_PUBLICAS } from "@/lib/contato";
 import { LogoImagem, Mascot } from "./ui";
 
 const githubLogin =
@@ -31,7 +33,9 @@ export function LoginHero() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <LogoImagem className="h-12" />
         <nav className="hidden gap-9 text-sm font-medium sm:flex lg:mr-14">
-          {["Produto", "Recursos", "Blog", "Ajuda"].map((i) => <span key={i}>{i}</span>)}
+          {PAGINAS_PUBLICAS.map(({ rotulo, href }) => (
+            <Link key={href} href={href} className="text-ink transition duration-200 hover:text-koda-texto">{rotulo}</Link>
+          ))}
         </nav>
       </div>
 
@@ -127,7 +131,7 @@ export function LoginCard({ erro = false }: { erro?: boolean }) {
           </ul>
           <p className="mt-20 text-center text-sm leading-7 text-body">
             Ao continuar, você concorda com nossos<br />
-            <a href="#" className="underline">Termos de Uso</a> e <a href="#" className="underline">Política de Privacidade.</a>
+            <Link href="/termos" className="underline">Termos de Uso</Link> e <Link href="/privacidade" className="underline">Política de Privacidade.</Link>
           </p>
         </div>
       </div>
