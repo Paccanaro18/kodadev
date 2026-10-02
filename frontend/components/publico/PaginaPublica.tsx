@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import BotaoDeEntrada from "./BotaoDeEntrada";
 import NavegacaoPublica from "./NavegacaoPublica";
 import { LogoImagem, btnPrimary } from "../ui";
 import { DOCUMENTOS_LEGAIS, PAGINAS_PUBLICAS } from "@/lib/contato";
@@ -12,9 +13,7 @@ export default function PaginaPublica({ children }: { children: ReactNode }) {
         <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3.5 sm:px-8">
           <Link href="/" aria-label="Koda, página inicial" className="order-1"><LogoImagem className="h-10" /></Link>
           <div className="order-3 w-full sm:order-2 sm:w-auto"><NavegacaoPublica /></div>
-          <Link href="/" className="order-2 inline-flex h-11 sm:order-3 items-center rounded-2xl bg-koda px-5 text-sm font-bold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-koda-dark hover:text-white active:scale-[.97]">
-            Entrar
-          </Link>
+          <BotaoDeEntrada className="order-2 sm:order-3" />
         </div>
       </header>
 

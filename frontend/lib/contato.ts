@@ -4,6 +4,7 @@ export const EMAIL_DE_CONTATO: string | null = process.env.NEXT_PUBLIC_EMAIL_DE_
 export const PAGINAS_PUBLICAS = [
   { rotulo: "Produto", href: "/produto" },
   { rotulo: "Recursos", href: "/recursos" },
+  { rotulo: "Aprenda aqui", href: "/aprenda" },
   { rotulo: "Blog", href: "/blog" },
   { rotulo: "Ajuda", href: "/ajuda" },
 ] as const;

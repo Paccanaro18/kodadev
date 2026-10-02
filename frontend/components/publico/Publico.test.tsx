@@ -6,6 +6,7 @@ import PaginaPublica from "./PaginaPublica";
 
 const caminho = vi.hoisted(() => ({ atual: "/produto" }));
 vi.mock("next/navigation", () => ({ usePathname: () => caminho.atual }));
+vi.mock("@/lib/api", () => ({ buscarPerfil: vi.fn().mockResolvedValue(null) }));
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -13,12 +14,12 @@ afterEach(() => {
 });
 
 describe("NavegacaoPublica", () => {
-  it("lista as quatro páginas e marca a atual", () => {
+  it("lista as cinco páginas e marca a atual", () => {
     caminho.atual = "/blog/como-a-koda-escreve-um-ticket";
     render(<NavegacaoPublica />);
 
     const menu = screen.getByRole("navigation", { name: "Principal" });
-    expect(within(menu).getAllByRole("link").map((l) => l.textContent)).toEqual(["Produto", "Recursos", "Blog", "Ajuda"]);
+    expect(within(menu).getAllByRole("link").map((l) => l.textContent)).toEqual(["Produto", "Recursos", "Aprenda aqui", "Blog", "Ajuda"]);
     expect(within(menu).getByRole("link", { name: "Blog" })).toHaveAttribute("aria-current", "page");
     expect(within(menu).getByRole("link", { name: "Produto" })).not.toHaveAttribute("aria-current");
   });
