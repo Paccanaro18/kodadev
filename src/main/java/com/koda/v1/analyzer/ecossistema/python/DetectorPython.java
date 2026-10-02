@@ -64,7 +64,15 @@ public class DetectorPython {
             "(\\w{1,60})\\s{0,5}=\\s{0,5}(?:APIRouter|Blueprint)\\s{0,5}\\(([^)]{0,300})\\)");
     private static final Pattern PREFIXO = Pattern.compile("(?:prefix|url_prefix)\\s{0,5}=\\s{0,5}[\"']([^\"']{0,200})[\"']");
     private static final Pattern METODOS_DO_FLASK = Pattern.compile("methods\\s{0,5}=\\s{0,5}[\\[(]([^\\])]{0,100})[\\])]");
-    private static final Pattern ROTA_DO_DJANGO = Pattern.compile("\\bpath\\s{0,5}\\(\\s{0,10}[\"']([^\"']{0,200})[\"']");
+    private static final Pattern ROTA_DO_DJANGO = Pattern.compile(
+            "\\bpath\\s{0,5}\\(\\s{0,10}[\"']([^\"']{0,200})[\"'](?!\\s{0,5},\\s{0,5}include\\b)");
+    private static final Pattern ROTA_COM_REGEX_DO_DJANGO = Pattern.compile(
+            "\\b(?:url|re_path)\\s{0,5}\\(\\s{0,10}r?[\"']([^\"']{0,200})[\"'](?!\\s{0,5},\\s{0,5}include\\b)");
+    private static final Pattern REGISTRO_DO_DRF = Pattern.compile(
+            "\\.register\\s{0,5}\\(\\s{0,10}r?[\"']([^\"']{0,100})[\"']");
+    private static final Pattern GRUPO_NOMEADO = Pattern.compile("\\(\\?P<(\\w{1,40})>[^)]{0,60}\\)");
+    private static final Pattern INCLUSAO_DE_ROUTER = Pattern.compile(
+            "include_router\\s{0,5}\\(\\s{0,10}(\\w{1,60})[^)]{0,300}?prefix\\s{0,5}=\\s{0,5}[\"']([^\"']{0,200})[\"']");
     private static final Pattern PARAMETRO_DO_FLASK = Pattern.compile("<(?:\\w+:)?(\\w+)>");
     private static final Pattern CLASSE = Pattern.compile("(?m)^class\\s+(\\w{1,80})\\s{0,5}(?:\\(([^)]{0,200})\\))?\\s{0,5}:");
 
@@ -133,8 +141,48 @@ public class DetectorPython {
             while (django.find()) {
                 endpoints.add(new Endpoint(METODO_NAO_INFORMADO, normalizar(django.group(1)), nomeDoComponente));
             }
+            Matcher comRegex = ROTA_COM_REGEX_DO_DJANGO.matcher(codigo);
+            while (comRegex.find()) {
+                String rota = rotaDeRegex(comRegex.group(1));
+                if (rota != null) {
+                    endpoints.add(new Endpoint(METODO_NAO_INFORMADO, rota, nomeDoComponente));
+                }
+            }
+            Matcher registro = REGISTRO_DO_DRF.matcher(codigo);
+            while (registro.find()) {
+                endpoints.add(new Endpoint(METODO_NAO_INFORMADO, normalizar(registro.group(1)), nomeDoComponente));
+            }
         }
         return endpoints;
+    }
+
+    /**
+     * Os prefixos com que os routers do FastAPI são incluídos: "include_router(articles.router, prefix='/articles')"
+     * dá "articles" para "/articles". Só vale o que está escrito como texto no código.
+     */
+    public Map<String, String> prefixosDeInclusao(String conteudo) {
+        LimitesAnalise.validarTamanho(conteudo, NOME_ARQUIVO);
+
+        Map<String, String> prefixos = new HashMap<>();
+        Matcher inclusao = INCLUSAO_DE_ROUTER.matcher(semComentarios(conteudo));
+        while (inclusao.find()) {
+            prefixos.putIfAbsent(inclusao.group(1), inclusao.group(2));
+        }
+        return prefixos;
+    }
+
+    public String juntarCaminhos(String prefixo, String caminho) {
+        return normalizar(prefixo + "/" + caminho);
+    }
+
+    /** "^articles/(?P<slug>[-\\w]+)/favorite/?$" vira "/articles/{slug}/favorite". Regex que sobra é recusada. */
+    private String rotaDeRegex(String regex) {
+        String simples = regex.replaceFirst("^\\^", "").replaceFirst("\\$$", "").replace("/?", "");
+        simples = GRUPO_NOMEADO.matcher(simples).replaceAll("{$1}");
+        if (simples.isBlank() || simples.matches(".*[()\\[\\]*+\\\\|?^$].*")) {
+            return null;
+        }
+        return normalizar(simples);
     }
 
     /** Os nomes das classes de um arquivo cujas bases passam no filtro. */

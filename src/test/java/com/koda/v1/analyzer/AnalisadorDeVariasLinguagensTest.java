@@ -295,4 +295,53 @@ class AnalisadorDeVariasLinguagensTest {
     private static final class EcossistemaNodeTestes {
         static final int MAXIMO_ENDPOINTS = 500;
     }
+
+    @Test
+    void soDeveTratarComoControllerOArquivoOndeAsRotasForamAchadas() {
+        arvore(false, "package.json", "src/app/routes/article/article.controller.ts",
+                "src/app/routes/article/article.service.ts", "src/app/routes/article/article.mapper.ts",
+                "src/app/routes/article/article.model.ts", "src/app/models/http-exception.model.ts",
+                "src/app/routes/routes.ts");
+        conteudo("package.json", "{\"dependencies\":{\"express\":\"4.19.2\"}}");
+        conteudo("src/app/routes/article/article.controller.ts", "router.get('/articles', h);");
+        conteudo("src/app/routes/article/article.service.ts", "export const buscar = () => 1;");
+        conteudo("src/app/routes/article/article.mapper.ts", "export const mapear = () => 1;");
+        conteudo("src/app/routes/article/article.model.ts", "export interface Article {}");
+        conteudo("src/app/routes/routes.ts", "export const rotas = [];");
+
+        analisador.analisar(analiseId);
+
+        ResultadoAnalise resultado = resultadoGravado();
+        assertThat(resultado.controllers()).containsExactly("src/app/routes/article/article.controller.ts");
+        assertThat(resultado.services()).containsExactly("src/app/routes/article/article.service.ts");
+        assertThat(resultado.entidades()).containsExactly("src/app/routes/article/article.model.ts");
+    }
+
+    @Test
+    void deveAplicarOsPrefixosDeIncludeRouterDoFastApiNasRotasDosArquivosIncluidos() {
+        arvore(false, "requirements.txt", "app/api/routes/api.py", "app/api/routes/users.py",
+                "app/api/routes/articles/api.py", "app/api/routes/articles/articles_common.py",
+                "app/api/dependencies/database.py", "app/models/domain.py");
+        conteudo("requirements.txt", "fastapi==0.110.0\n");
+        conteudo("app/api/routes/api.py", """
+                router.include_router(users.router, prefix="/user")
+                router.include_router(articles.router)
+                """);
+        conteudo("app/api/routes/users.py", "@router.get(\"\")\ndef atual(): pass\n");
+        conteudo("app/api/routes/articles/api.py", "router.include_router(articles_common.router, prefix=\"/articles\")\n");
+        conteudo("app/api/routes/articles/articles_common.py", "@router.get(\"/{slug}\")\ndef um(): pass\n");
+        conteudo("app/api/dependencies/database.py", "def pegar(): pass\n");
+        conteudo("app/models/domain.py", "class Base:\n    pass\nclass CampoMixin(Base):\n    pass\n"
+                + "class UsuarioManager(Base):\n    pass\nclass Usuario(Base):\n    pass\n");
+
+        analisador.analisar(analiseId);
+
+        ResultadoAnalise resultado = resultadoGravado();
+        assertThat(resultado.endpoints()).containsExactlyInAnyOrder(
+                new Endpoint("GET", "/user", "Users"),
+                new Endpoint("GET", "/articles/{slug}", "ArticlesCommon"));
+        assertThat(resultado.controllers())
+                .containsExactlyInAnyOrder("app/api/routes/users.py", "app/api/routes/articles/articles_common.py");
+        assertThat(resultado.entidades()).containsExactly("app/models/domain.py#Usuario");
+    }
 }

@@ -249,4 +249,52 @@ class DetectorPythonTest {
         assertThat(detector.classes(muitas.toString(), bases -> true))
                 .hasSize(DetectorPython.MAXIMO_CLASSES_POR_ARQUIVO);
     }
+
+    @Test
+    void deveLerRotasComRegexDoDjangoEIgnorarAsQueNaoDaParaSimplificar() {
+        String urls = """
+                urlpatterns = [
+                    url(r'^', include(router.urls)),
+                    url(r'^articles/feed/?$', views.Feed.as_view()),
+                    url(r'^articles/(?P<article_slug>[-\\w]+)/favorite/?$', views.Favorite.as_view()),
+                    re_path(r'^users/(?P<pk>[\\d]+)/?$', views.Usuario.as_view()),
+                    url(r'^(a|b)/outro$', views.Complexa.as_view()),
+                    path('api/', include('app.urls')),
+                    path('admin/', admin.site.urls),
+                ]
+                router.register(r'articles', ArticleViewSet)
+                """;
+
+        assertThat(detector.detectarRotas(urls, "conduit/urls.py", "Urls")).containsExactly(
+                new Endpoint("QUALQUER", "/admin", "Urls"),
+                new Endpoint("QUALQUER", "/articles/feed", "Urls"),
+                new Endpoint("QUALQUER", "/articles/{article_slug}/favorite", "Urls"),
+                new Endpoint("QUALQUER", "/users/{pk}", "Urls"),
+                new Endpoint("QUALQUER", "/articles", "Urls"));
+    }
+
+    @Test
+    void deveLerOsPrefixosDeInclusaoDoFastApi() {
+        Map<String, String> prefixos = detector.prefixosDeInclusao("""
+                router.include_router(authentication.router, tags=["authentication"], prefix="/users")
+                router.include_router(articles.router, tags=["articles"])
+                router.include_router(
+                    comments.router, prefix="/articles/{slug}/comments"
+                )
+                # router.include_router(comentada.router, prefix="/x")
+                """);
+
+        assertThat(prefixos).containsEntry("authentication", "/users")
+                .containsEntry("comments", "/articles/{slug}/comments")
+                .doesNotContainKey("articles")
+                .doesNotContainKey("comentada");
+    }
+
+    @Test
+    void deveJuntarPrefixoECaminhoSemBarrasSobrando() {
+        assertThat(detector.juntarCaminhos("/articles", "/{slug}")).isEqualTo("/articles/{slug}");
+        assertThat(detector.juntarCaminhos("/articles", "/")).isEqualTo("/articles");
+        assertThat(detector.juntarCaminhos("", "/tags")).isEqualTo("/tags");
+        assertThat(detector.juntarCaminhos("", "")).isEqualTo("/");
+    }
 }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import java.util.regex.Pattern;
 public class EcossistemaPython implements Ecossistema {
 
     static final int MAXIMO_ENDPOINTS = 500;
-    static final int MAXIMO_ARQUIVOS_DE_ROTA = 80;
+    static final int MAXIMO_ARQUIVOS_DE_ROTA = 150;
     static final int MAXIMO_ARQUIVOS_DE_CLASSES = 30;
     static final String MENSAGEM_SEM_MANIFESTO =
             "Não encontramos pyproject.toml, requirements.txt ou Pipfile legível na raiz do repositório.";
@@ -85,19 +86,18 @@ public class EcossistemaPython implements Ecossistema {
         List<String> caminhos = arquivos.caminhos();
         List<String> fontes = ConvencaoPython.INSTANCIA.arquivosDeFonte(caminhos);
 
-        List<String> controllers = new ArrayList<>();
         List<String> services = new ArrayList<>();
         List<String> repositories = new ArrayList<>();
         for (String fonte : fontes) {
             switch (PapelNoPython.de(fonte)) {
-                case CONTROLLER -> controllers.add(fonte);
                 case SERVICE -> services.add(fonte);
                 case REPOSITORY -> repositories.add(fonte);
                 default -> { }
             }
         }
 
-        List<String> entidades = classesDosArquivos(arquivos, leitor, fontes, PapelNoPython.MODELO, BASE_DE_MODELO);
+        List<String> entidades = classesDosArquivos(arquivos, leitor, fontes, PapelNoPython.MODELO, BASE_DE_MODELO)
+                .stream().filter(classe -> !ehApoioDeModelo(classe)).toList();
         List<String> dtos = classesDosArquivos(arquivos, leitor, fontes, PapelNoPython.SCHEMA, BASE_DE_SCHEMA);
         List<String> excecoes = classesDosArquivos(arquivos, leitor, fontes, PapelNoPython.EXCECAO, BASE_DE_EXCECAO);
 
@@ -105,7 +105,9 @@ public class EcossistemaPython implements Ecossistema {
                 .filter(caminho -> ConvencaoPython.ehCodigo(caminho) && ConvencaoPython.ehTeste(caminho))
                 .toList();
 
-        List<Endpoint> endpoints = detectarEndpoints(arquivos, leitor, controllers);
+        Rotas rotas = detectarRotas(arquivos, leitor);
+        List<String> controllers = rotas.arquivosComRotas();
+        List<Endpoint> endpoints = rotas.endpoints();
         boolean limitesAplicados = false;
         if (endpoints.size() > MAXIMO_ENDPOINTS) {
             endpoints = List.copyOf(endpoints.subList(0, MAXIMO_ENDPOINTS));
@@ -149,28 +151,71 @@ public class EcossistemaPython implements Ecossistema {
         return new ProdutoDaAnalise(resultado, contexto);
     }
 
-    private List<Endpoint> detectarEndpoints(ArvoreDoRepositorio arquivos, LeitorDeArquivos leitor,
-                                             List<String> controllers) {
-        Set<String> conhecidos = Set.copyOf(controllers);
+    /**
+     * Controllers são os arquivos onde as rotas foram de fato encontradas. Os prefixos de "include_router" de todos os
+     * arquivos lidos são aplicados às rotas dos arquivos que eles incluem.
+     */
+    private Rotas detectarRotas(ArvoreDoRepositorio arquivos, LeitorDeArquivos leitor) {
         List<ArquivoParaAbrir> candidatos = arquivos.escolher(
-                caminho -> conhecidos.contains(caminho) || ehArquivoDeEntrada(caminho), MAXIMO_ARQUIVOS_DE_ROTA);
+                caminho -> ehCodigoDeProducao(caminho)
+                        && (PapelNoPython.de(caminho) == PapelNoPython.CONTROLLER || ehArquivoDeEntrada(caminho)),
+                MAXIMO_ARQUIVOS_DE_ROTA);
+
+        Map<ArquivoParaAbrir, String> conteudos = new LinkedHashMap<>();
+        Map<String, String> prefixos = new HashMap<>();
+        for (ArquivoParaAbrir candidato : candidatos) {
+            leitor.lerEAnalisar(candidato, conteudo -> {
+                prefixos.putAll(detector.prefixosDeInclusao(conteudo));
+                return conteudo;
+            }).ifPresent(conteudo -> conteudos.put(candidato, conteudo));
+        }
 
         List<Endpoint> endpoints = new ArrayList<>();
-        for (ArquivoParaAbrir candidato : candidatos) {
-            String nome = ConvencaoPython.INSTANCIA.nome(candidato.caminho());
-            leitor.lerEAnalisar(candidato, conteudo -> detector.detectarRotas(conteudo, candidato.caminho(), nome))
-                    .ifPresent(endpoints::addAll);
+        List<String> comRotas = new ArrayList<>();
+        for (Map.Entry<ArquivoParaAbrir, String> lido : conteudos.entrySet()) {
+            String caminho = lido.getKey().caminho();
+            String nome = ConvencaoPython.INSTANCIA.nome(caminho);
+            String prefixo = prefixoDoArquivo(caminho, prefixos);
+            List<Endpoint> doArquivo = leitor
+                    .lerEAnalisar(lido.getKey(), ignorado -> detector.detectarRotas(lido.getValue(), caminho, nome))
+                    .orElse(List.of()).stream()
+                    .map(e -> new Endpoint(e.metodoHttp(), detector.juntarCaminhos(prefixo, e.caminho()), e.controller()))
+                    .toList();
+            if (!doArquivo.isEmpty()) {
+                comRotas.add(caminho);
+                endpoints.addAll(doArquivo);
+            }
             if (endpoints.size() > MAXIMO_ENDPOINTS) {
                 break;
             }
         }
-        return endpoints;
+        return new Rotas(endpoints, comRotas);
+    }
+
+    private record Rotas(List<Endpoint> endpoints, List<String> arquivosComRotas) {
+    }
+
+    /** O prefixo da pasta (o pacote incluído) e o do próprio arquivo, nessa ordem. */
+    private String prefixoDoArquivo(String caminho, Map<String, String> prefixos) {
+        String[] partes = caminho.split("/");
+        String arquivo = partes[partes.length - 1];
+        String modulo = arquivo.endsWith(".py") ? arquivo.substring(0, arquivo.length() - 3) : arquivo;
+        String pasta = partes.length >= 2 ? partes[partes.length - 2] : "";
+        String daPasta = pasta.equals(modulo) ? "" : prefixos.getOrDefault(pasta, "");
+        return daPasta + prefixos.getOrDefault(modulo, "");
+    }
+
+    private boolean ehCodigoDeProducao(String caminho) {
+        return ConvencaoPython.ehCodigo(caminho) && !ConvencaoPython.ehTeste(caminho);
+    }
+
+    /** Mixins, managers e a classe base não são entidades do negócio. */
+    private boolean ehApoioDeModelo(String classeComArquivo) {
+        String nome = ConvencaoPython.INSTANCIA.nome(classeComArquivo);
+        return nome.endsWith("Mixin") || nome.endsWith("Manager") || nome.equals("Base");
     }
 
     private boolean ehArquivoDeEntrada(String caminho) {
-        if (!ConvencaoPython.ehCodigo(caminho) || ConvencaoPython.ehTeste(caminho)) {
-            return false;
-        }
         String[] partes = caminho.split("/");
         return partes.length <= 3 && ARQUIVOS_DE_ENTRADA.contains(partes[partes.length - 1]);
     }

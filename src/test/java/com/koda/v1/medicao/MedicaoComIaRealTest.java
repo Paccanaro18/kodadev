@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * </pre>
  *
  * Opções: {@code -Dmedicao.tickets} (padrão 6), {@code -Dmedicao.dicas} de 0 a 3 por ticket (padrão 2),
- * e {@code -Dmedicao.contexto=rico|pagamentos} (padrão rico).
+ * {@code -Dmedicao.contexto=rico|pagamentos|<arquivo.json>} (padrão rico) e {@code -Dmedicao.relatorio=<nome>.md}.
  * O relatório vai para {@code target/medicao/relatorio.md} e só tem números e nomes fixos de motivo.
  * A chave nunca é impressa nem gravada.
  */
@@ -41,17 +41,27 @@ class MedicaoComIaRealTest {
 
         int tickets = Integer.getInteger("medicao.tickets", 6);
         int dicas = Integer.getInteger("medicao.dicas", 2);
-        ContextoProjeto contexto = "pagamentos".equals(System.getProperty("medicao.contexto"))
-                ? ContextosDeMedicao.pagamentos()
-                : ContextosDeMedicao.rico();
+        ContextoProjeto contexto = escolherContexto(System.getProperty("medicao.contexto"));
 
         var provedor = new ProvedorIaCompativelComOpenAi(url, chave, modelo, Duration.ofSeconds(60), 1500, 0.8);
         RelatorioDeMedicao relatorio = new BateriaDeMedicao(provedor).executar(contexto, tickets, dicas);
 
         String texto = relatorio.paraMarkdown(modelo);
-        Path destino = Path.of("target", "medicao", "relatorio.md");
+        Path destino = Path.of("target", "medicao", System.getProperty("medicao.relatorio", "relatorio.md"));
         Files.createDirectories(destino.getParent());
         Files.writeString(destino, texto, StandardCharsets.UTF_8);
         System.out.println("\n" + texto + "\nRelatório salvo em " + destino.toAbsolutePath());
+    }
+
+    /** "rico" (padrão), "pagamentos" ou o caminho de um contexto gravado por AnaliseLocalParaMedicaoTest. */
+    private static ContextoProjeto escolherContexto(String opcao) throws IOException {
+        if ("pagamentos".equals(opcao)) {
+            return ContextosDeMedicao.pagamentos();
+        }
+        if (opcao != null && opcao.endsWith(".json")) {
+            String json = Files.readString(Path.of(opcao), StandardCharsets.UTF_8);
+            return new com.koda.v1.analyzer.contexto.SerializadorContexto().deJson(json);
+        }
+        return ContextosDeMedicao.rico();
     }
 }

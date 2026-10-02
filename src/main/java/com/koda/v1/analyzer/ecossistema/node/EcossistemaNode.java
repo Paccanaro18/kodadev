@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class EcossistemaNode implements Ecossistema {
 
     static final int MAXIMO_ENDPOINTS = 500;
-    static final int MAXIMO_ARQUIVOS_DE_ROTA = 80;
+    static final int MAXIMO_ARQUIVOS_DE_ROTA = 150;
     static final String CAMINHO_PRISMA = "prisma/schema.prisma";
     static final String MENSAGEM_SEM_PACKAGE_JSON = "Não encontramos um package.json legível na raiz do repositório.";
     static final String MENSAGEM_SEM_FRAMEWORK =
@@ -75,17 +75,15 @@ public class EcossistemaNode implements Ecossistema {
         List<String> caminhos = arquivos.caminhos();
         List<String> fontes = ConvencaoNode.INSTANCIA.arquivosDeFonte(caminhos);
 
-        List<String> controllers = new ArrayList<>();
         List<String> services = new ArrayList<>();
         List<String> repositories = new ArrayList<>();
         List<String> entidades = new ArrayList<>();
         for (String fonte : fontes) {
             switch (PapelNoNode.de(fonte)) {
-                case CONTROLLER -> controllers.add(fonte);
                 case SERVICE -> services.add(fonte);
                 case REPOSITORY -> repositories.add(fonte);
                 case ENTIDADE -> entidades.add(fonte);
-                case OUTRO -> { }
+                case CONTROLLER, OUTRO -> { }
             }
         }
         entidades.addAll(modelsDoPrisma(arquivos, leitor));
@@ -95,7 +93,9 @@ public class EcossistemaNode implements Ecossistema {
                 .toList();
 
         boolean limitesAplicados = false;
-        List<Endpoint> endpoints = detectarEndpoints(arquivos, leitor, controllers);
+        Rotas rotas = detectarRotas(arquivos, leitor);
+        List<String> controllers = rotas.arquivosComRotas();
+        List<Endpoint> endpoints = rotas.endpoints();
         if (endpoints.size() > MAXIMO_ENDPOINTS) {
             endpoints = List.copyOf(endpoints.subList(0, MAXIMO_ENDPOINTS));
             limitesAplicados = true;
@@ -134,28 +134,39 @@ public class EcossistemaNode implements Ecossistema {
         return new ProdutoDaAnalise(resultado, contexto);
     }
 
-    private List<Endpoint> detectarEndpoints(ArvoreDoRepositorio arquivos, LeitorDeArquivos leitor,
-                                             List<String> controllers) {
-        Set<String> conhecidos = Set.copyOf(controllers);
+    /** Controllers são os arquivos onde as rotas foram de fato encontradas, não os que só têm nome de controller. */
+    private Rotas detectarRotas(ArvoreDoRepositorio arquivos, LeitorDeArquivos leitor) {
         List<ArquivoParaAbrir> candidatos = arquivos.escolher(
-                caminho -> conhecidos.contains(caminho) || ehArquivoDeEntrada(caminho), MAXIMO_ARQUIVOS_DE_ROTA);
+                caminho -> ehCodigoDeProducao(caminho)
+                        && (PapelNoNode.podeTerRotas(caminho) || ehArquivoDeEntrada(caminho)),
+                MAXIMO_ARQUIVOS_DE_ROTA);
 
         List<Endpoint> endpoints = new ArrayList<>();
+        List<String> comRotas = new ArrayList<>();
         for (ArquivoParaAbrir candidato : candidatos) {
             String nome = ConvencaoNode.INSTANCIA.nome(candidato.caminho());
-            leitor.lerEAnalisar(candidato, conteudo -> detectorRotas.detectar(conteudo, candidato.caminho(), nome))
-                    .ifPresent(endpoints::addAll);
+            List<Endpoint> doArquivo = leitor
+                    .lerEAnalisar(candidato, conteudo -> detectorRotas.detectar(conteudo, candidato.caminho(), nome))
+                    .orElse(List.of());
+            if (!doArquivo.isEmpty()) {
+                comRotas.add(candidato.caminho());
+                endpoints.addAll(doArquivo);
+            }
             if (endpoints.size() > MAXIMO_ENDPOINTS) {
                 break;
             }
         }
-        return endpoints;
+        return new Rotas(endpoints, comRotas);
+    }
+
+    private record Rotas(List<Endpoint> endpoints, List<String> arquivosComRotas) {
+    }
+
+    private boolean ehCodigoDeProducao(String caminho) {
+        return ConvencaoNode.ehCodigo(caminho) && !ConvencaoNode.ehTeste(caminho);
     }
 
     private boolean ehArquivoDeEntrada(String caminho) {
-        if (!ConvencaoNode.ehCodigo(caminho) || ConvencaoNode.ehTeste(caminho)) {
-            return false;
-        }
         String[] partes = caminho.split("/");
         String arquivo = partes[partes.length - 1];
         int ponto = arquivo.lastIndexOf('.');
