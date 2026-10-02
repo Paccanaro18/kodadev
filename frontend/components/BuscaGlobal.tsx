@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FolderGit2, GitBranch, Search } from "lucide-react";
 import { listarAnalises, listarDesafiosRecentes, type AnaliseResumo, type DesafioRecente } from "@/lib/api";
 import { estaGerando } from "@/lib/desafio";
+import SeloDeLinguagem from "./SeloDeLinguagem";
 
 const MAXIMO_POR_GRUPO = 5;
 
@@ -91,7 +92,7 @@ export default function BuscaGlobal() {
               {resultado.repositorios.map((a) => (
                 <Link key={a.id} href={destinoDaAnalise(a)} onClick={() => setAberta(false)}
                   className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink transition duration-200 hover:bg-tint-2 hover:text-ink">
-                  <FolderGit2 className="size-4 shrink-0 text-koda-texto" /><span className="truncate">{a.nome}</span>
+                  <FolderGit2 className="size-4 shrink-0 text-koda-texto" /><span className="min-w-0 flex-1 truncate">{a.nome}</span><SeloDeLinguagem linguagem={a.linguagem} />
                 </Link>
               ))}
             </div>

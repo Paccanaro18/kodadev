@@ -1,4 +1,5 @@
 import { ArrowRight, BarChart3, Code2, Folder, GitBranch, Lock, ShieldCheck, Heart } from "lucide-react";
+import SeloDeLinguagem from "./SeloDeLinguagem";
 import { LogoImagem, Mascot } from "./ui";
 
 const githubLogin =
@@ -21,7 +22,7 @@ const features = [
 ];
 
 const tree = [
-  [0, "src"], [1, "main"], [2, "java"], [3, "com/example"], [4, "controller"], [4, "service"], [4, "repository"], [4, "model"], [4, "dto"], [2, "resources"], [1, "test"],
+  [0, "src"], [1, "controllers"], [1, "services"], [1, "repositories"], [1, "models"], [1, "dto"], [0, "tests"],
 ] as const;
 
 export function LoginHero() {
@@ -60,7 +61,7 @@ export function LoginHero() {
             <div className="overflow-hidden bg-tint p-3.5 text-[11.5px] leading-7 whitespace-nowrap">
               <div className="mb-1 font-semibold">seu-projeto</div>
               {tree.map(([d, n]) => <div key={n} style={{ paddingLeft: d * 10 }}>▸ {n}</div>)}
-              <div>README.md</div><div className="pl-3">pom.xml</div>
+              <div>README.md</div>
             </div>
             <div className="p-5">
               <div className="rounded-2xl p-5 shadow-[0_4px_24px_rgb(102_92_255/0.1)]">
@@ -72,7 +73,7 @@ export function LoginHero() {
                 <div className="text-xs leading-normal text-ink-2">Adicionar paginação no endpoint de listagem de usuários, seguindo o padrão do projeto.</div>
                 <dl className="mt-4 grid gap-2.5 text-[13px]">
                   <div>Critérios de aceite <span className="ml-2 text-xs text-ink-2">4 itens</span></div>
-                  <div>Tecnologias <span className="ml-2 text-xs text-ink-2">Spring Boot, JPA</span></div>
+                  <div>Tecnologias <span className="ml-2 text-xs text-ink-2">as do seu projeto</span></div>
                   <div>Dificuldade <span className="ml-2 text-xs text-koda-texto">Júnior</span></div>
                 </dl>
               </div>
@@ -84,7 +85,11 @@ export function LoginHero() {
         <Mascot name="laptop" className="absolute right-0 -bottom-6 z-10 h-[270px] drop-shadow-[0_18px_24px_rgb(102_92_255/0.25)]" />
       </div>
 
-      <p className="mt-6 text-sm text-ink-2">Junte-se a devs que já estão praticando com a Koda.</p>
+      <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-ink-2">
+        <span>Para projetos em</span>
+        {(["JAVA", "TYPESCRIPT", "PYTHON"] as const).map((l) => <SeloDeLinguagem key={l} linguagem={l} />)}
+      </div>
+      <p className="mt-3 text-sm text-ink-2">Junte-se a devs que já estão praticando com a Koda.</p>
     </section>
   );
 }

@@ -19,6 +19,8 @@ export type StatusAnalise = "PENDENTE" | "EM_ANDAMENTO" | "CONCLUIDA" | "FALHOU"
 
 export type Tecnologia = "POSTGRESQL" | "RABBITMQ" | "REDIS";
 
+export type Linguagem = "JAVA" | "TYPESCRIPT" | "JAVASCRIPT" | "PYTHON";
+
 export type EndpointDetectado = {
   metodoHttp: string;
   caminho: string;
@@ -26,10 +28,12 @@ export type EndpointDetectado = {
 };
 
 export type ResultadoAnalise = {
-  temCodigoJava: boolean;
-  springBoot: boolean;
-  versaoJava: string | null;
-  versaoSpringBoot: string | null;
+  linguagem: Linguagem;
+  framework: string | null;
+  temCodigo: boolean;
+  versaoLinguagem: string | null;
+  versaoFramework: string | null;
+  ferramentaDeBuild: string | null;
   dependencias: string[];
   tecnologias: Tecnologia[];
   imagensDocker: string[];
@@ -46,8 +50,10 @@ export type Arquitetura = "EM_CAMADAS" | "POR_FEATURE" | "HEXAGONAL" | "INDEFINI
 
 export type ContextoProjeto = {
   versaoEsquema: number;
-  versaoJava: string | null;
-  versaoSpringBoot: string | null;
+  linguagem: Linguagem;
+  framework: string | null;
+  versaoLinguagem: string | null;
+  versaoFramework: string | null;
   ferramentaDeBuild: string;
   arquitetura: Arquitetura;
   dominios: string[];
@@ -79,8 +85,9 @@ export type AnaliseResumo = {
   status: StatusAnalise;
   dono: string;
   nome: string;
-  springBoot: boolean;
-  versaoJava: string | null;
+  linguagem: Linguagem | null;
+  framework: string | null;
+  versaoLinguagem: string | null;
   tecnologias: Tecnologia[];
   parcial: boolean;
   mensagemErro: string | null;

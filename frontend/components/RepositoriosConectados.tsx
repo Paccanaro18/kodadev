@@ -6,14 +6,14 @@ import { FolderGit2 } from "lucide-react";
 import { ErroApi, listarAnalises, type AnaliseResumo } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 import { rotuloTecnologia } from "@/lib/projeto";
+import SeloDeLinguagem from "./SeloDeLinguagem";
 
 const card = "rounded-3xl bg-surface shadow-soft";
 const seeAll = "rounded-[10px] border border-line-2 px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft";
 
 function tagsDe(a: AnaliseResumo): string[] {
   const tags: string[] = [];
-  if (a.versaoJava) tags.push(`Java ${a.versaoJava}`);
-  if (a.springBoot) tags.push("Spring Boot");
+  if (a.framework) tags.push(a.framework);
   tags.push(...a.tecnologias.map(rotuloTecnologia));
   return tags;
 }
@@ -98,6 +98,7 @@ export default function RepositoriosConectados() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
+                  <SeloDeLinguagem linguagem={a.linguagem} />
                   {tagsDe(a).map((t) => <span key={t} className="rounded-full border border-line px-2.5 py-0.5 text-[11px]">{t}</span>)}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-body">

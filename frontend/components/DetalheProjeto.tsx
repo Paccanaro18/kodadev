@@ -8,6 +8,7 @@ import ListaDesafios from "./ListaDesafios";
 import { BackLink, btnPrimary, Card, Chip, Eyebrow, Mascot, PageHeader } from "./ui";
 import { listarAnalises, type ResultadoAnalise } from "@/lib/api";
 import { camadasDe, dependenciasDe, stackDe } from "@/lib/projeto";
+import SeloDeLinguagem from "./SeloDeLinguagem";
 import { useAnalise } from "@/lib/useAnalise";
 
 const ENDPOINTS_VISIVEIS = 30;
@@ -95,6 +96,7 @@ function ProjetoAnalisado({ id }: { id: string }) {
         action={<Link href={`/desafio/novo?analise=${encodeURIComponent(id)}`} className={btnPrimary + " hover:text-white"}><Plus className="size-4" /> Novo desafio</Link>}
       >
         <BackLink href="/dashboard">← Repositórios</BackLink>
+        <div className="mt-2"><SeloDeLinguagem linguagem={resultado.linguagem} tamanho="medio" /></div>
       </PageHeader>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
