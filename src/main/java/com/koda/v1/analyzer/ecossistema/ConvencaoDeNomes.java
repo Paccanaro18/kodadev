@@ -22,4 +22,14 @@ public interface ConvencaoDeNomes {
 
     /** O nome do componente que o arquivo representa. Em arquivo de teste, termina com "Test". */
     String nome(String caminho);
+
+    /** Em algumas linguagens um DTO é reconhecido pelo arquivo em que a classe está, não pelo sufixo do nome. */
+    default boolean ehDto(String caminho) {
+        return false;
+    }
+
+    /** Idem para as exceções do projeto. */
+    default boolean ehExcecao(String caminho) {
+        return false;
+    }
 }

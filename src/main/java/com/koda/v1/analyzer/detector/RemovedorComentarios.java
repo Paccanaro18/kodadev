@@ -1,11 +1,11 @@
 package com.koda.v1.analyzer.detector;
 
-final class RemovedorComentarios {
+public final class RemovedorComentarios {
 
     private RemovedorComentarios() {
     }
 
-    static String remover(String codigo) {
+    public static String remover(String codigo) {
         StringBuilder resultado = new StringBuilder(codigo.length());
         int tamanho = codigo.length();
         int i = 0;

@@ -26,10 +26,27 @@ public final class ConvencaoPython implements ConvencaoDeNomes {
         return arquivo.startsWith("test_") || arquivo.endsWith("_test.py") || estaEmPasta(caminho, PASTAS_DE_TESTE);
     }
 
+    /** Aceita também a classe de dentro de um arquivo ("arquivo.py#Classe"). */
     public static boolean ehCodigo(String caminho) {
-        return caminho.endsWith(".py")
-                && !ARQUIVOS_DE_INFRA.contains(arquivoDe(caminho))
-                && !estaEmPasta(caminho, PASTAS_IGNORADAS);
+        String arquivo = semClasse(caminho);
+        return arquivo.endsWith(".py")
+                && !ARQUIVOS_DE_INFRA.contains(arquivoDe(arquivo))
+                && !estaEmPasta(arquivo, PASTAS_IGNORADAS);
+    }
+
+    @Override
+    public boolean ehDto(String caminho) {
+        return caminho.contains("#") && PapelNoPython.de(semClasse(caminho)) == PapelNoPython.SCHEMA;
+    }
+
+    @Override
+    public boolean ehExcecao(String caminho) {
+        return caminho.contains("#") && PapelNoPython.de(semClasse(caminho)) == PapelNoPython.EXCECAO;
+    }
+
+    public static String semClasse(String caminho) {
+        int marca = caminho.indexOf('#');
+        return marca < 0 ? caminho : caminho.substring(0, marca);
     }
 
     @Override

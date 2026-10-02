@@ -27,9 +27,11 @@ public class MontadorContexto {
     private static final List<String> SUFIXOS_DE_DOMINIO =
             List.of("ServiceImpl", "Service", "Controller", "Repository");
     private static final List<String> SUFIXOS_DE_DTO = List.of("Dto", "DTO", "Request", "Response");
-    private static final List<String> SUFIXOS_DE_TRATADOR =
-            List.of("ExceptionHandler", "ControllerAdvice", "ErrorHandler");
+    private static final List<String> SUFIXOS_DE_TRATADOR = List.of(
+            "ExceptionHandler", "ControllerAdvice", "ErrorHandler", "ExceptionFilter", "ErrorFilter",
+            "ErrorMiddleware", "ExceptionMiddleware", "ExceptionHandlers", "ErrorHandlers");
     private static final String SUFIXO_DE_EXCECAO = "Exception";
+    private static final String SUFIXO_DE_ERRO = "Error";
 
     private static final Map<String, String> CAMADA_POR_PASTA = Map.ofEntries(
             Map.entry("controller", "controller"), Map.entry("controllers", "controller"),
@@ -188,9 +190,11 @@ public class MontadorContexto {
                 listar(nomesDeClasses(resultado.services(), convencao), balanco),
                 listar(nomesDeClasses(resultado.repositories(), convencao), balanco),
                 listar(nomesDeClasses(resultado.entidades(), convencao), balanco),
-                listar(comSufixo(nomesDeArquivos, SUFIXOS_DE_DTO), balanco),
-                listar(comSufixo(nomesDeArquivos, List.of(SUFIXO_DE_EXCECAO)), balanco),
-                !comSufixo(nomesDeArquivos, SUFIXOS_DE_TRATADOR).isEmpty());
+                listar(comSufixoOuPelaConvencao(nomesDeArquivos, arquivosDeMain, SUFIXOS_DE_DTO, convencao::ehDto,
+                        convencao), balanco),
+                listar(comSufixoOuPelaConvencao(nomesDeArquivos, arquivosDeMain, List.of(SUFIXO_DE_EXCECAO, SUFIXO_DE_ERRO),
+                        convencao::ehExcecao, convencao), balanco),
+                nomesDeArquivos.stream().anyMatch(nome -> SUFIXOS_DE_TRATADOR.stream().anyMatch(nome::endsWith)));
     }
 
     private TestesContexto testes(ResultadoAnalise resultado, ConvencaoDeNomes convencao, Balanco balanco) {
@@ -227,6 +231,14 @@ public class MontadorContexto {
             temCompose |= NOMES_DE_COMPOSE.contains(caminho);
         }
         return new InfraContexto(temDockerfile, temCompose);
+    }
+
+    private List<String> comSufixoOuPelaConvencao(Collection<String> nomes, List<String> arquivos, List<String> sufixos,
+                                                  java.util.function.Predicate<String> daConvencao,
+                                                  ConvencaoDeNomes convencao) {
+        Set<String> escolhidos = new LinkedHashSet<>(comSufixo(nomes, sufixos));
+        arquivos.stream().filter(daConvencao).map(convencao::nome).forEach(escolhidos::add);
+        return List.copyOf(escolhidos);
     }
 
     private List<String> comSufixo(Collection<String> nomes, List<String> sufixos) {
