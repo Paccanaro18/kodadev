@@ -7,6 +7,10 @@ const ROTULOS: Record<string, string> = {
   typescript: "TypeScript",
   python: "Python",
   bash: "Terminal",
+  sql: "SQL",
+  html: "HTML",
+  http: "HTTP",
+  json: "JSON",
 };
 
 /** Um trecho de código com legenda e botão de copiar. Sem acesso à área de transferência, o botão avisa e o texto segue selecionável. */

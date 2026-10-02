@@ -46,12 +46,23 @@ describe("BlocosDeConteudo", () => {
         { tipo: "lista", itens: ["Item A", "Item B"] },
         { tipo: "codigo", linguagem: "java", texto: "int x = 1;", legenda: "Exemplo.java" },
         { tipo: "dica", titulo: "Atenção", texto: "Leia com calma." },
+        { tipo: "h3", texto: "Um detalhe" },
+        { tipo: "numerada", itens: ["Passo 1", "Passo 2"] },
+        { tipo: "alerta", titulo: "Cuidado", texto: "Isso é perigoso." },
+        { tipo: "tabela", legenda: "Uma tabela", cabecalho: ["Nome", "Valor"], linhas: [["A", "1"], ["B", "2"]] },
       ]} />,
     );
 
     expect(screen.getByRole("heading", { name: "Subtítulo" })).toBeInTheDocument();
     expect(screen.getByText("Um parágrafo.")).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getByRole("heading", { level: 2, name: "Subtítulo" })).toHaveAttribute("id", "subtitulo");
+    expect(screen.getByRole("heading", { level: 3, name: "Um detalhe" })).toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent("Isso é perigoso.");
+    const tabela = screen.getByRole("table");
+    expect(within(tabela).getAllByRole("columnheader").map((c) => c.textContent)).toEqual(["Nome", "Valor"]);
+    expect(within(tabela).getByRole("rowheader", { name: "B" })).toBeInTheDocument();
+    expect(screen.getByText("Uma tabela")).toBeInTheDocument();
     expect(container.querySelector("pre code")).toHaveTextContent("int x = 1;");
     expect(screen.getByText("Exemplo.java")).toBeInTheDocument();
     expect(screen.getByText("Atenção")).toBeInTheDocument();

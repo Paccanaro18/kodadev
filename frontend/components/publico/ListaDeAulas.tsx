@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, ShieldCheck } from "lucide-react";
 import IconeDeTecnologia from "../IconeDeTecnologia";
 import { AULAS, aulasDaTrilha, ORDEM_DAS_TRILHAS, TRILHAS, type Trilha } from "@/lib/conteudoAprenda";
 
 const chip = "rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition duration-200 hover:-translate-y-0.5 active:scale-95";
 
+/** As linguagens têm logo; segurança e carreira usam um ícone próprio. */
 export function iconeDaTrilha(trilha: Trilha): string | null {
-  return trilha === "carreira" ? null : trilha;
+  return trilha === "carreira" || trilha === "seguranca" ? null : trilha;
 }
 
 export default function ListaDeAulas() {
@@ -36,7 +37,9 @@ export default function ListaDeAulas() {
             <li key={aula.slug}>
               <Link href={`/aprenda/${aula.slug}`} className="flex h-full flex-col rounded-[24px] bg-surface p-6 text-ink shadow-soft transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift">
                 <div className="flex items-center gap-2.5 text-xs font-bold tracking-[0.1em] text-koda-texto uppercase">
-                  {icone ? <IconeDeTecnologia icone={icone} /> : <BookOpen className="size-4" aria-hidden="true" />}
+                  {icone ? <IconeDeTecnologia icone={icone} />
+                    : aula.trilha === "seguranca" ? <ShieldCheck className="size-4" aria-hidden="true" />
+                      : <BookOpen className="size-4" aria-hidden="true" />}
                   {TRILHAS[aula.trilha].rotulo}
                 </div>
                 <h2 className="mt-3 text-lg leading-snug font-bold">{aula.titulo}</h2>
