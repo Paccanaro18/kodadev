@@ -5,6 +5,7 @@ import { PY_MODULO_2 } from "./modulo-2-objetos-excecoes-modulos";
 import { PY_MODULO_3 } from "./modulo-3-funcional-iteradores";
 import { PY_MODULO_4 } from "./modulo-4-tipagem-qualidade";
 import { PY_MODULO_5 } from "./modulo-5-fastapi-e-pydantic";
+import { PY_MODULO_6 } from "./modulo-6-testes-com-pytest";
 
 export const TRILHA_PYTHON: Trilha = {
   slug: "python",
@@ -21,11 +22,10 @@ export const TRILHA_PYTHON: Trilha = {
     {
       titulo: "Python idiomático",
       descricao: "Funções como valores, iteradores, geradores e decoradores: o estilo que aparece no código profissional.",
-      itens: [PY_MODULO_3, PY_MODULO_4, PY_MODULO_5],
+      itens: [PY_MODULO_3, PY_MODULO_4, PY_MODULO_5, PY_MODULO_6],
     },
   ],
   planejados: [
-    { titulo: "Testes com pytest", resumo: "Testes unitários, fixtures, parametrização e testes de API." },
     { titulo: "Banco de dados com SQLAlchemy", resumo: "Modelos, consultas, relacionamentos e migrações com Alembic." },
     { titulo: "Programação assíncrona com asyncio", resumo: "async/await, tarefas e concorrência em Python." },
     { titulo: "Segurança em APIs Python", resumo: "Autenticação, autorização e configuração segura." },

@@ -5,6 +5,7 @@ import { TS_MODULO_2 } from "./modulo-2-assincrono";
 import { TS_MODULO_3 } from "./modulo-3-classes-modulos-projeto";
 import { TS_MODULO_4 } from "./modulo-4-api-com-express";
 import { TS_MODULO_5 } from "./modulo-5-validacao-com-zod";
+import { TS_MODULO_6 } from "./modulo-6-testes-com-vitest";
 
 export const TRILHA_TYPESCRIPT: Trilha = {
   slug: "typescript",
@@ -26,12 +27,11 @@ export const TRILHA_TYPESCRIPT: Trilha = {
     {
       titulo: "APIs HTTP",
       descricao: "Da primeira rota às camadas e ao tratamento de erros de uma API em Node.",
-      itens: [TS_MODULO_4, TS_MODULO_5],
+      itens: [TS_MODULO_4, TS_MODULO_5, TS_MODULO_6],
     },
   ],
   planejados: [
     { titulo: "Banco de dados com Prisma", resumo: "Modelagem, migrações, consultas e transações." },
-    { titulo: "Testes com Vitest e Supertest", resumo: "Testes unitários e de integração de uma API." },
     { titulo: "Autenticação e autorização", resumo: "Sessões, tokens e controle de acesso em uma API Node." },
     { titulo: "NestJS: estrutura para projetos grandes", resumo: "Módulos, injeção de dependência e decoradores." },
     { titulo: "Publicando: variáveis de ambiente, logs e Docker", resumo: "Configuração segura e empacotamento." },

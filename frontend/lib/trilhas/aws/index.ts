@@ -2,6 +2,8 @@ import type { Trilha } from "../tipos";
 import { AWS_CHECKPOINT_1 } from "./checkpoint-1";
 import { AWS_MODULO_1 } from "./modulo-1-nuvem-e-responsabilidade";
 import { AWS_MODULO_2 } from "./modulo-2-iam-e-governanca";
+import { AWS_MODULO_3 } from "./modulo-3-computacao";
+import { AWS_MODULO_4 } from "./modulo-4-armazenamento";
 
 export const TRILHA_AWS: Trilha = {
   slug: "aws-cloud-practitioner",
@@ -15,10 +17,13 @@ export const TRILHA_AWS: Trilha = {
       descricao: "A base da prova: o que é a nuvem, como a AWS é organizada, quem protege o quê e como controlar o acesso.",
       itens: [AWS_MODULO_1, AWS_MODULO_2, AWS_CHECKPOINT_1],
     },
+    {
+      titulo: "Computação e armazenamento",
+      descricao: "Onde o código roda e onde os dados vivem: EC2, contêineres, Lambda, S3, EBS e EFS.",
+      itens: [AWS_MODULO_3, AWS_MODULO_4],
+    },
   ],
   planejados: [
-    { titulo: "Computação: EC2, contêineres e Lambda", resumo: "Os modelos de computação, tipos de instância, Auto Scaling e balanceamento de carga." },
-    { titulo: "Armazenamento: S3, EBS, EFS e classes de armazenamento", resumo: "Qual armazenamento escolher e como reduzir o custo dos dados." },
     { titulo: "Redes: VPC, Route 53 e CloudFront", resumo: "Redes privadas, DNS e entrega de conteúdo perto do usuário." },
     { titulo: "Bancos de dados: RDS, Aurora, DynamoDB e outros", resumo: "Relacional, chave-valor, em memória e analíticos." },
     { titulo: "Segurança avançada: Shield, WAF, KMS, GuardDuty, CloudTrail e Config", resumo: "Proteção, criptografia, detecção e auditoria." },
