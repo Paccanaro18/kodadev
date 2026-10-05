@@ -29,7 +29,7 @@ export default async function Page({ params }: Parametros) {
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_240px]">
       <article className="min-w-0 max-w-[780px]">
-        <Link href="/aprenda" className="text-sm font-semibold text-koda-texto">← Aprenda aqui</Link>
+        <Link href="/aprenda/temas" className="text-sm font-semibold text-koda-texto">← Temas e leituras</Link>
         <div className="mt-6 text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">
           {TRILHAS[aula.trilha].rotulo} · {aula.nivel} · {aula.leitura} de leitura
         </div>
@@ -94,7 +94,7 @@ export default async function Page({ params }: Parametros) {
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {proximas.map((proxima) => (
                 <li key={proxima.slug}>
-                  <Link href={`/aprenda/${proxima.slug}`} className="block h-full rounded-2xl bg-surface p-5 text-ink shadow-soft transition duration-200 hover:-translate-y-0.5 hover:text-ink hover:shadow-lift">
+                  <Link href={`/aprenda/temas/${proxima.slug}`} className="block h-full rounded-2xl bg-surface p-5 text-ink shadow-soft transition duration-200 hover:-translate-y-0.5 hover:text-ink hover:shadow-lift">
                     <span className="text-xs font-bold tracking-[0.1em] text-koda-texto uppercase">{TRILHAS[proxima.trilha].rotulo}</span>
                     <span className="mt-1 block font-semibold">{proxima.titulo}</span>
                   </Link>

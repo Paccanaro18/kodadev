@@ -4,7 +4,7 @@
  */
 import { AULAS_INICIAIS } from "./aulas/iniciais";
 import { AULAS_DE_SEGURANCA } from "./aulas/seguranca";
-import type { Aula, Trilha } from "./aulas/tipos";
+import type { Aula, Bloco, Trilha } from "./aulas/tipos";
 
 export type { Aula, Bloco, Referencia, Trilha } from "./aulas/tipos";
 
@@ -38,7 +38,11 @@ export function proximasLeituras(aula: Aula, maximo = 2): Aula[] {
 
 /** Os subtítulos de nível 2 do artigo, com o identificador usado no link do índice. */
 export function indiceDaAula(aula: Aula): { id: string; titulo: string }[] {
-  return aula.blocos.flatMap((bloco) => (bloco.tipo === "h" ? [{ id: idDoTitulo(bloco.texto), titulo: bloco.texto }] : []));
+  return indiceDosBlocos(aula.blocos);
+}
+
+export function indiceDosBlocos(blocos: Bloco[]): { id: string; titulo: string }[] {
+  return blocos.flatMap((bloco) => (bloco.tipo === "h" ? [{ id: idDoTitulo(bloco.texto), titulo: bloco.texto }] : []));
 }
 
 /** "O caminho de uma requisição" vira "o-caminho-de-uma-requisicao". */

@@ -62,7 +62,7 @@ describe("aulas", () => {
   });
 
   it("tem a página de leitura das aulas", () => {
-    expect(existsSync(join(process.cwd(), "app", "(publico)", "aprenda", "[slug]", "page.tsx"))).toBe(true);
+    expect(existsSync(join(process.cwd(), "app", "(publico)", "aprenda", "temas", "[slug]", "page.tsx"))).toBe(true);
   });
 
   it("gera identificadores de subtítulo legíveis", () => {

@@ -35,7 +35,7 @@ export default function ListaDeAulas() {
           const icone = iconeDaTrilha(aula.trilha);
           return (
             <li key={aula.slug}>
-              <Link href={`/aprenda/${aula.slug}`} className="flex h-full flex-col rounded-[24px] bg-surface p-6 text-ink shadow-soft transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift">
+              <Link href={`/aprenda/temas/${aula.slug}`} className="flex h-full flex-col rounded-[24px] bg-surface p-6 text-ink shadow-soft transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift">
                 <div className="flex items-center gap-2.5 text-xs font-bold tracking-[0.1em] text-koda-texto uppercase">
                   {icone ? <IconeDeTecnologia icone={icone} />
                     : aula.trilha === "seguranca" ? <ShieldCheck className="size-4" aria-hidden="true" />

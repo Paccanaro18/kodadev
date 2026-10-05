@@ -33,7 +33,7 @@ describe("ListaDeAulas", () => {
     render(<ListaDeAulas />);
     const primeira = AULAS[0];
     expect(screen.getByRole("link", { name: new RegExp(primeira.titulo.slice(0, 20)) }))
-      .toHaveAttribute("href", `/aprenda/${primeira.slug}`);
+      .toHaveAttribute("href", `/aprenda/temas/${primeira.slug}`);
   });
 });
 
