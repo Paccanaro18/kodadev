@@ -66,6 +66,8 @@ export function resumirTrilha(trilha: Trilha): ResumoDeTrilha {
         titulo: item.titulo,
         resumo: item.resumo,
         detalhe: detalheDe(item),
+        questoes: item.questoes.length,
+        ...(item.tipo === "modulo" ? { nivel: item.nivel, leitura: item.leitura } : {}),
         ...(item.tipo === "checkpoint" ? { notaMinima: item.notaMinima } : {}),
       })),
     })),

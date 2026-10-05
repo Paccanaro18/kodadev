@@ -85,6 +85,10 @@ export type ResumoDeItem = {
   titulo: string;
   resumo: string;
   detalhe: string;
+  questoes: number;
+  /** Só nos módulos: o nível e o tempo de leitura, como estão no módulo. */
+  nivel?: Nivel;
+  leitura?: string;
   /** Só nos checkpoints: a fração de acertos para ser aprovado. */
   notaMinima?: number;
 };

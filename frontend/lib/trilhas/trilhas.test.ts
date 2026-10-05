@@ -125,7 +125,7 @@ describe("trilhas de linguagem", () => {
     expect(resumo.etapas.flatMap((e) => e.itens).map((i) => i.slug)).toEqual(itensDaTrilha(trilha).map((i) => i.slug));
     expect(texto).not.toContain("blocos");
     expect(texto).not.toContain("explicacao");
-    expect(texto.length).toBeLessThan(8000);
+    expect(texto.length).toBeLessThan(12000);
     const itens = resumo.etapas.flatMap((e) => e.itens);
     const checkpoint = itens.find((i) => i.tipo === "checkpoint");
     expect(checkpoint?.notaMinima).toBeGreaterThan(0);

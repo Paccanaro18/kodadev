@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Roteiro from "@/components/trilhas/Roteiro";
-import { Titulo } from "@/components/publico/PaginaPublica";
 import { resumirTrilha, slugsDeTrilha, trilhaPorSlug } from "@/lib/trilhas";
 
 type Parametros = { params: Promise<{ trilha: string }> };
@@ -27,10 +26,9 @@ export default async function Page({ params }: Parametros) {
   return (
     <>
       <Link href="/aprenda" className="text-sm font-semibold text-koda-texto">← Aprenda aqui</Link>
-      <div className="mt-6 mb-10">
-        <Titulo etiqueta="Trilha" titulo={trilha.titulo} texto={`${trilha.descricao} ${trilha.publico}`} />
+      <div className="mt-6">
+        <Roteiro trilha={resumirTrilha(trilha)} />
       </div>
-      <Roteiro trilha={resumirTrilha(trilha)} />
     </>
   );
 }

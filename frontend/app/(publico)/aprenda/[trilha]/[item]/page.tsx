@@ -6,7 +6,7 @@ import BlocosDeConteudo from "@/components/publico/BlocosDeConteudo";
 import AcoesDoModulo from "@/components/trilhas/AcoesDoModulo";
 import CheckpointDaTrilha from "@/components/trilhas/CheckpointDaTrilha";
 import { itemPorSlug, itensDaTrilha, slugsDeTrilha, trilhaPorSlug, vizinhosDoItem } from "@/lib/trilhas";
-import type { Item } from "@/lib/trilhas";
+import type { Item, Trilha } from "@/lib/trilhas";
 import { indiceDosBlocos } from "@/lib/conteudoAprenda";
 
 type Parametros = { params: Promise<{ trilha: string; item: string }> };
@@ -25,6 +25,29 @@ export async function generateMetadata({ params }: Parametros): Promise<Metadata
   const trilha = trilhaPorSlug(slugDaTrilha);
   const item = trilha ? itemPorSlug(trilha, slugDoItem) : undefined;
   return item ? { title: `${item.titulo} | ${trilha?.titulo} | Koda`, description: item.resumo } : {};
+}
+
+function PosicaoNaTrilha({ trilha, atual }: { trilha: Trilha; atual: string }) {
+  const itens = itensDaTrilha(trilha);
+  const posicao = itens.findIndex((item) => item.slug === atual) + 1;
+  return (
+    <nav aria-label="Posição na trilha" className="mt-5">
+      <div className="flex items-center justify-between text-xs font-semibold text-ink-2">
+        <span>Passo {posicao} de {itens.length}</span>
+        <Link href={`/aprenda/${trilha.slug}`} className="text-koda-texto">Ver o roteiro</Link>
+      </div>
+      <ol className="mt-2 flex gap-1.5">
+        {itens.map((item, indice) => (
+          <li key={item.slug} className="flex-1">
+            <Link href={`/aprenda/${trilha.slug}/${item.slug}`} title={item.titulo} aria-current={item.slug === atual ? "step" : undefined}
+              className={`block h-2 rounded-full transition ${item.slug === atual ? "bg-koda" : indice < posicao ? "bg-koda/40 hover:bg-koda/70" : "bg-tint hover:bg-line-2"}`}>
+              <span className="sr-only">{item.titulo}</span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
 }
 
 function Navegacao({ trilha, anterior, proximo }: { trilha: string; anterior: Item | null; proximo: Item | null }) {
@@ -63,6 +86,7 @@ export default async function Page({ params }: Parametros) {
     return (
       <div className="mx-auto max-w-[820px]">
         {voltar}
+        <PosicaoNaTrilha trilha={trilha} atual={item.slug} />
         <div className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1 text-xs font-bold text-warn"><Flag className="size-3.5" aria-hidden="true" />Checkpoint</div>
         <h1 className="mt-3 text-[30px] leading-tight font-extrabold tracking-tight sm:text-[40px]">{item.titulo}</h1>
         <p className="mt-4 text-lg leading-relaxed text-body">{item.resumo}</p>
@@ -79,7 +103,8 @@ export default async function Page({ params }: Parametros) {
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_240px]">
       <article className="min-w-0 max-w-[780px]">
         {voltar}
-        <div className="mt-6 text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">{item.nivel} · {item.leitura} de leitura</div>
+        <PosicaoNaTrilha trilha={trilha} atual={item.slug} />
+        <div className="mt-8 text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">{item.nivel} · {item.leitura} de leitura</div>
         <h1 className="mt-3 text-[30px] leading-tight font-extrabold tracking-tight sm:text-[42px]">{item.titulo}</h1>
         <p className="mt-4 text-lg leading-relaxed text-body">{item.resumo}</p>
 
