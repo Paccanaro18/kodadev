@@ -80,7 +80,7 @@ public class Lambdas {
 11 12
 true true
 [ana, Bruno, Carla]
-ANA BRUNO CARLA
+ANA;BRUNO;CARLA;
 40
 1 1` },
     { tipo: "p", texto: "Duas linhas merecem atenção. Em dobro.andThen(maisUm).apply(5), o dobro é aplicado primeiro (10) e depois o maisUm (11); com compose, é o contrário (6 e depois 12). E o último resultado, \"1 1\", mostra que cada contador criado tem a sua própria variável: a lambda captura o array da chamada onde nasceu, o que se chama fechamento (closure)." },
