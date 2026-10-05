@@ -1,53 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
-  CHAVE_DO_ESTUDO, ESTADO_VAZIO, gravarEstado, lerEstado, marcarDesafio, marcarLicao, progressoDa, registrarNota,
-  type EstadoDeEstudo, type ProgressoDaTrilha,
-} from "@/lib/progressoDeEstudo";
-
-function armazenamento(): Storage | null {
-  try {
-    return typeof window === "undefined" ? null : window.localStorage;
-  } catch {
-    return null;
-  }
-}
+  assinarEstudo, instantaneoDoEstudo, instantaneoInicialDoEstudo, iniciarEstudo, mudarEstudo,
+} from "@/lib/estudoStore";
+import { marcarDesafio, marcarLicao, progressoDa, registrarNota, type ProgressoDaTrilha } from "@/lib/progressoDeEstudo";
 
 /**
- * O progresso de estudo de uma trilha. Começa vazio e carrega do navegador depois da primeira pintura, para o HTML do
- * servidor e o do navegador serem iguais. Mudanças feitas em outra aba chegam pelo evento "storage".
+ * O progresso de estudo de uma trilha. Todos os componentes da página compartilham o mesmo estado. Começa vazio e
+ * carrega do navegador depois da primeira pintura (o HTML do servidor e o do navegador ficam iguais); quem está logado
+ * tem o progresso juntado ao do perfil, e cada mudança é guardada na conta.
  */
 export function useEstudo(trilha: string) {
-  const [estado, setEstado] = useState<EstadoDeEstudo>(ESTADO_VAZIO);
-  const [carregado, setCarregado] = useState(false);
+  const instantaneo = useSyncExternalStore(assinarEstudo, instantaneoDoEstudo, instantaneoInicialDoEstudo);
 
   useEffect(() => {
-    setEstado(lerEstado(armazenamento()));
-    setCarregado(true);
-
-    const aoMudarEmOutraAba = (evento: StorageEvent) => {
-      if (evento.key === CHAVE_DO_ESTUDO) setEstado(lerEstado(armazenamento()));
-    };
-    window.addEventListener("storage", aoMudarEmOutraAba);
-    return () => window.removeEventListener("storage", aoMudarEmOutraAba);
+    iniciarEstudo();
   }, []);
 
-  const aplicar = useCallback((mudar: (atual: EstadoDeEstudo) => EstadoDeEstudo) => {
-    setEstado((atual) => {
-      const novo = mudar(atual);
-      gravarEstado(armazenamento(), novo);
-      return novo;
-    });
-  }, []);
-
-  const progresso: ProgressoDaTrilha = progressoDa(estado, trilha);
+  const progresso: ProgressoDaTrilha = progressoDa(instantaneo.estado, trilha);
 
   return {
     progresso,
-    carregado,
-    marcarLicao: (modulo: string, lida: boolean) => aplicar((e) => marcarLicao(e, trilha, modulo, lida)),
-    marcarDesafio: (modulo: string, concluido: boolean) => aplicar((e) => marcarDesafio(e, trilha, modulo, concluido)),
-    registrarNota: (item: string, nota: number) => aplicar((e) => registrarNota(e, trilha, item, nota)),
+    carregado: instantaneo.carregado,
+    naConta: instantaneo.origem === "conta",
+    falhaAoSalvar: instantaneo.falhaAoSalvar,
+    marcarLicao: (modulo: string, lida: boolean) =>
+      mudarEstudo((e) => marcarLicao(e, trilha, modulo, lida), trilha, modulo, { licaoLida: lida }),
+    marcarDesafio: (modulo: string, concluido: boolean) =>
+      mudarEstudo((e) => marcarDesafio(e, trilha, modulo, concluido), trilha, modulo, { desafioDeclarado: concluido }),
+    registrarNota: (item: string, nota: number) =>
+      mudarEstudo((e) => registrarNota(e, trilha, item, nota), trilha, item, { nota }),
   };
 }

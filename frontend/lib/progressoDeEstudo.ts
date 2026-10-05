@@ -1,6 +1,6 @@
 /**
- * O progresso de estudo fica no navegador (localStorage), sem conta e sem servidor: serve também para quem ainda não
- * entrou. As funções aqui são puras (recebem e devolvem o estado) para serem fáceis de testar.
+ * O progresso de estudo fica no navegador (localStorage), o que serve também para quem ainda não entrou, e é guardado
+ * no perfil de quem está logado. As funções aqui são puras (recebem e devolvem o estado) para serem fáceis de testar.
  */
 
 export const CHAVE_DO_ESTUDO = "koda-estudo-v1";
@@ -124,4 +124,34 @@ function numeros(valor: unknown): Record<string, number> {
     Object.entries(valor).filter((par): par is [string, number] => typeof par[1] === "number" && Number.isFinite(par[1]))
       .map(([chave, nota]) => [chave, Math.min(1, Math.max(0, nota))]),
   );
+}
+
+function uniao(a: string[], b: string[]): string[] {
+  return [...new Set([...a, ...b])].sort();
+}
+
+/** Junta dois estados: lições e desafios de qualquer um dos dois valem, e de cada nota fica a melhor. */
+export function juntarEstados(a: EstadoDeEstudo, b: EstadoDeEstudo): EstadoDeEstudo {
+  const resultado: EstadoDeEstudo = {};
+  for (const trilha of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    const x = progressoDa(a, trilha);
+    const y = progressoDa(b, trilha);
+    const notas: Record<string, number> = { ...x.notas };
+    for (const [item, nota] of Object.entries(y.notas)) notas[item] = Math.max(nota, notas[item] ?? 0);
+    resultado[trilha] = { licoes: uniao(x.licoes, y.licoes), notas, desafios: uniao(x.desafios, y.desafios) };
+  }
+  return resultado;
+}
+
+function normalizado(estado: EstadoDeEstudo): string {
+  const trilhas = Object.keys(estado).sort().map((trilha) => {
+    const progresso = estado[trilha];
+    const notas = Object.keys(progresso.notas).sort().map((item) => [item, progresso.notas[item]]);
+    return [trilha, [...progresso.licoes].sort(), notas, [...progresso.desafios].sort()];
+  });
+  return JSON.stringify(trilhas.filter(([, licoes, notas, desafios]) => (licoes as string[]).length + (notas as unknown[]).length + (desafios as string[]).length > 0));
+}
+
+export function estadosIguais(a: EstadoDeEstudo, b: EstadoDeEstudo): boolean {
+  return normalizado(a) === normalizado(b);
 }

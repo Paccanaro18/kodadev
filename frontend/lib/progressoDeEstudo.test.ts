@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  CHAVE_DO_ESTUDO, ESTADO_VAZIO, checkpointAprovado, gravarEstado, itemConcluido, lerEstado, marcarDesafio, marcarLicao,
+  CHAVE_DO_ESTUDO, ESTADO_VAZIO, checkpointAprovado, estadosIguais, gravarEstado, itemConcluido, juntarEstados, lerEstado, marcarDesafio, marcarLicao,
   moduloConcluido, percentualConcluido, progressoDa, proximoPendente, registrarNota, sanear,
   type EstadoDeEstudo, type ItemParaProgresso,
 } from "@/lib/progressoDeEstudo";
@@ -127,5 +127,34 @@ describe("armazenamento", () => {
     expect(sanear(null)).toEqual(ESTADO_VAZIO);
     expect(sanear("x")).toEqual(ESTADO_VAZIO);
     expect(sanear({ java: { licoes: [], notas: [], desafios: [] } })).toEqual({ java: { licoes: [], notas: {}, desafios: [] } });
+  });
+});
+
+describe("junção de estados", () => {
+  it("junta lições e desafios dos dois lados e fica com a melhor nota", () => {
+    const a = marcarLicao(registrarNota(ESTADO_VAZIO, "java", "m1", 0.6), "java", "m1", true);
+    let b = registrarNota(ESTADO_VAZIO, "java", "m1", 0.9);
+    b = marcarDesafio(marcarLicao(b, "java", "m2", true), "python", "p1", true);
+
+    const juntado = juntarEstados(a, b);
+
+    expect(progressoDa(juntado, "java")).toEqual({ licoes: ["m1", "m2"], notas: { m1: 0.9 }, desafios: [] });
+    expect(progressoDa(juntado, "python").desafios).toEqual(["p1"]);
+  });
+
+  it("não altera os estados de origem e aceita um lado vazio", () => {
+    const a = marcarLicao(ESTADO_VAZIO, "java", "m1", true);
+
+    expect(juntarEstados(a, ESTADO_VAZIO)).toEqual(juntarEstados(ESTADO_VAZIO, a));
+    expect(a).toEqual({ java: { licoes: ["m1"], notas: {}, desafios: [] } });
+  });
+
+  it("compara estados sem se importar com a ordem e ignora trilhas vazias", () => {
+    const a = { java: { licoes: ["b", "a"], notas: { y: 1, x: 0.5 }, desafios: [] } };
+    const b = { java: { licoes: ["a", "b"], notas: { x: 0.5, y: 1 }, desafios: [] }, python: { licoes: [], notas: {}, desafios: [] } };
+
+    expect(estadosIguais(a, b)).toBe(true);
+    expect(estadosIguais(a, marcarDesafio(a, "java", "a", true))).toBe(false);
+    expect(estadosIguais(ESTADO_VAZIO, { java: { licoes: [], notas: {}, desafios: [] } })).toBe(true);
   });
 });

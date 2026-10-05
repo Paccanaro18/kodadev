@@ -35,7 +35,7 @@ export default function AcoesDoModulo({ trilha, modulo, questoes, desafio }: Pro
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="flex items-center gap-3 text-xl font-bold tracking-tight"><span className="grid size-8 place-items-center rounded-full bg-koda text-sm font-extrabold text-white" aria-hidden="true">1</span>Terminou a leitura?</h2>
-            <p className="mt-1 text-sm text-ink-2">Marque a lição como lida para registrar o seu avanço neste navegador.</p>
+            <p className="mt-1 text-sm text-ink-2">{estudo.naConta ? "Marque a lição como lida para registrar o seu avanço no seu perfil." : "Marque a lição como lida para registrar o seu avanço. Entre com o GitHub para guardá-lo no seu perfil."}</p>
           </div>
           <button type="button" aria-pressed={lida} onClick={() => estudo.marcarLicao(modulo, !lida)}
             className={`inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-bold transition duration-200 active:scale-[.97] ${lida ? "bg-ok-soft text-ok" : "bg-koda text-white hover:-translate-y-0.5 hover:bg-koda-dark"}`}>
@@ -87,6 +87,10 @@ export default function AcoesDoModulo({ trilha, modulo, questoes, desafio }: Pro
           {!todosMarcados && !desafioFeito && <span className="text-sm text-ink-2">Marque todos os critérios para liberar.</span>}
         </div>
       </Card>
+
+      {estudo.falhaAoSalvar && (
+        <p role="alert" className="rounded-2xl bg-warn-soft p-4 text-center text-sm font-semibold text-warn">Não foi possível salvar no seu perfil agora. O avanço ficou neste navegador e será enviado na próxima vez.</p>
+      )}
 
       {concluido && (
         <p role="status" className="rounded-2xl bg-ok-soft p-4 text-center font-semibold text-ok">Módulo concluído. Siga para o próximo passo da trilha.</p>

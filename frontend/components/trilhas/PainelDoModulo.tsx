@@ -27,7 +27,7 @@ function Passo({ feito, rotulo, detalhe }: { feito: boolean; rotulo: string; det
 
 /** A barra de leitura no topo da página e, em telas largas, o índice com destaque da seção atual e o andamento do módulo. */
 export default function PainelDoModulo({ trilha, modulo, indice, idDoConteudo }: Props) {
-  const { progresso, carregado } = useEstudo(trilha);
+  const { progresso, carregado, naConta } = useEstudo(trilha);
   const [lido, setLido] = useState(0);
   const [atual, setAtual] = useState<string | null>(null);
 
@@ -102,7 +102,7 @@ export default function PainelDoModulo({ trilha, modulo, indice, idDoConteudo }:
               <Passo feito={carregado && testeFeito} rotulo="Teste rápido" detalhe={carregado && nota !== undefined ? `Melhor nota: ${Math.round(nota * 100)}%` : `Aprovação com ${Math.round(NOTA_MINIMA_DO_TESTE * 100)}%`} />
               <Passo feito={carregado && desafioFeito} rotulo="Desafio prático" detalhe="Opcional, para fixar" />
             </ul>
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-2"><ListChecks className="size-3.5" aria-hidden="true" />Salvo neste navegador</p>
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-2"><ListChecks className="size-3.5" aria-hidden="true" />{naConta ? "Salvo no seu perfil" : "Salvo neste navegador"}</p>
           </section>
         </div>
       </aside>

@@ -90,7 +90,7 @@ function CartaoDoItem({ trilha, item, numero, progresso }: { trilha: string; ite
 
 /** A página de uma trilha: apresentação, o botão de continuar e o mapa das etapas com o progresso da pessoa. */
 export default function Roteiro({ trilha }: { trilha: ResumoDeTrilha }) {
-  const { progresso, carregado } = useEstudo(trilha.slug);
+  const { progresso, carregado, naConta } = useEstudo(trilha.slug);
   const itens = trilha.etapas.flatMap((etapa) => etapa.itens);
   const paraCalculo = itens.map(paraProgresso);
   const percentual = carregado ? percentualConcluido(progresso, paraCalculo) : 0;
@@ -137,7 +137,7 @@ export default function Roteiro({ trilha }: { trilha: ResumoDeTrilha }) {
               </Link>
             )
             : carregado && itens.length > 0 && <p className="mt-5 rounded-2xl bg-ok-soft px-4 py-3 text-sm font-bold text-ok">Tudo concluído por enquanto. Novos módulos chegam em breve.</p>}
-          <p className="mt-4 text-xs leading-relaxed text-ink-2">O progresso fica salvo neste navegador. Um módulo conta como concluído com a lição lida e 60% de acertos no teste.</p>
+          <p className="mt-4 text-xs leading-relaxed text-ink-2">{naConta ? "O progresso fica salvo no seu perfil e acompanha você em qualquer navegador." : "O progresso fica salvo neste navegador. Entre com o GitHub para guardá-lo no seu perfil."} Um módulo conta como concluído com a lição lida e 60% de acertos no teste.</p>
         </aside>
       </header>
 

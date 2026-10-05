@@ -6,8 +6,14 @@ import CartaoDaTrilha from "./CartaoDaTrilha";
 import CheckpointDaTrilha from "./CheckpointDaTrilha";
 import Questionario from "./Questionario";
 import Roteiro from "./Roteiro";
+import { reiniciarEstudoParaTestes } from "@/lib/estudoStore";
 import { CHAVE_DO_ESTUDO } from "@/lib/progressoDeEstudo";
 import { itensDaTrilha, modulosDaTrilha, resumirTrilha, trilhaPorSlug, type Questao } from "@/lib/trilhas";
+
+vi.mock("@/lib/api", async (importarOriginal) => {
+  const original = await importarOriginal<typeof import("@/lib/api")>();
+  return { ...original, buscarPerfil: vi.fn().mockResolvedValue(null) };
+});
 
 const questoes: Questao[] = [
   { enunciado: "Quanto é 1 + 1?", opcoes: ["1", "2", "3"], correta: 1, explicacao: "Um mais um dá dois, e isso não muda." },
@@ -21,6 +27,7 @@ const primeiroModulo = itensDoJava[0];
 
 beforeEach(() => {
   window.localStorage.clear();
+  reiniciarEstudoParaTestes();
 });
 
 describe("Questionario", () => {
