@@ -6,6 +6,8 @@ import { JAVA_MODULO_3 } from "./modulo-3-orientacao-a-objetos";
 import { JAVA_MODULO_4 } from "./modulo-4-heranca-interfaces-polimorfismo";
 import { JAVA_MODULO_5 } from "./modulo-5-colecoes-generics-optional";
 import { JAVA_MODULO_6 } from "./modulo-6-lambdas-e-streams";
+import { JAVA_MODULO_7 } from "./modulo-7-excecoes";
+import { JAVA_CHECKPOINT_2 } from "./checkpoint-2";
 
 export const TRILHA_JAVA: Trilha = {
   slug: "java",
@@ -22,11 +24,10 @@ export const TRILHA_JAVA: Trilha = {
     {
       titulo: "Orientação a objetos",
       descricao: "Modelar o domínio com classes, proteger o estado e escolher bem entre classe, record e enum.",
-      itens: [JAVA_MODULO_3, JAVA_MODULO_4, JAVA_MODULO_5, JAVA_MODULO_6],
+      itens: [JAVA_MODULO_3, JAVA_MODULO_4, JAVA_MODULO_5, JAVA_MODULO_6, JAVA_MODULO_7, JAVA_CHECKPOINT_2],
     },
   ],
   planejados: [
-    { titulo: "Exceções e tratamento de erros", resumo: "Erros previstos e imprevistos, try/catch e exceções próprias." },
     { titulo: "Maven e a estrutura de um projeto", resumo: "Dependências, ciclo de build e organização de pacotes." },
     { titulo: "Spring Boot: injeção de dependência e a primeira API", resumo: "Controllers, services, repositories e configuração." },
     { titulo: "Persistência com JPA e Hibernate", resumo: "Entidades, relacionamentos, transações e o problema do N+1." },

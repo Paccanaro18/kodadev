@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, Flag } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, ExternalLink, Flag, ListChecks, Target } from "lucide-react";
 import BlocosDeConteudo from "@/components/publico/BlocosDeConteudo";
 import AcoesDoModulo from "@/components/trilhas/AcoesDoModulo";
 import CheckpointDaTrilha from "@/components/trilhas/CheckpointDaTrilha";
+import PainelDoModulo from "@/components/trilhas/PainelDoModulo";
 import { itemPorSlug, itensDaTrilha, slugsDeTrilha, trilhaPorSlug, vizinhosDoItem } from "@/lib/trilhas";
 import type { Item, Trilha } from "@/lib/trilhas";
 import { indiceDosBlocos } from "@/lib/conteudoAprenda";
@@ -100,15 +101,20 @@ export default async function Page({ params }: Parametros) {
   const indice = indiceDosBlocos(item.blocos);
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_240px]">
-      <article className="min-w-0 max-w-[780px]">
+    <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <article id="conteudo-do-modulo" className="min-w-0 max-w-[780px]">
         {voltar}
         <PosicaoNaTrilha trilha={trilha} atual={item.slug} />
-        <div className="mt-8 text-xs font-bold tracking-[0.12em] text-koda-texto uppercase">{item.nivel} · {item.leitura} de leitura</div>
-        <h1 className="mt-3 text-[30px] leading-tight font-extrabold tracking-tight sm:text-[42px]">{item.titulo}</h1>
+        <div className="mt-8 flex flex-wrap items-center gap-2.5 text-xs font-semibold text-ink-2">
+          <span className="rounded-full bg-koda-soft px-3 py-1 font-bold text-koda-texto">{item.nivel}</span>
+          <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5" aria-hidden="true" />{item.leitura} de leitura</span>
+          <span className="inline-flex items-center gap-1.5"><ListChecks className="size-3.5" aria-hidden="true" />{item.questoes.length} questões</span>
+          <span className="inline-flex items-center gap-1.5"><Target className="size-3.5" aria-hidden="true" />desafio prático</span>
+        </div>
+        <h1 className="mt-4 text-[30px] leading-[1.1] font-extrabold tracking-tight text-balance sm:text-[44px]">{item.titulo}</h1>
         <p className="mt-4 text-lg leading-relaxed text-body">{item.resumo}</p>
 
-        <section className="mt-8 rounded-2xl border border-line p-5" aria-labelledby="objetivos">
+        <section className="mt-8 rounded-3xl border border-line bg-surface p-6" aria-labelledby="objetivos">
           <h2 id="objetivos" className="text-sm font-bold tracking-[0.1em] text-ink-2 uppercase">Ao final deste módulo você será capaz de</h2>
           <ul className="mt-3 grid gap-2">
             {item.objetivos.map((objetivo) => (
@@ -125,7 +131,7 @@ export default async function Page({ params }: Parametros) {
           )}
         </section>
 
-        <section className="mt-5 rounded-2xl bg-koda-soft p-5" aria-labelledby="pontos-chave">
+        <section className="mt-5 rounded-3xl bg-koda-soft p-6" aria-labelledby="pontos-chave">
           <h2 id="pontos-chave" className="text-sm font-bold tracking-[0.1em] text-koda-texto uppercase">Em resumo</h2>
           <ul className="mt-3 grid gap-2.5">
             {item.pontosChave.map((ponto) => (
@@ -155,18 +161,7 @@ export default async function Page({ params }: Parametros) {
         <Navegacao trilha={trilha.slug} anterior={anterior} proximo={proximo} />
       </article>
 
-      {indice.length > 1 && (
-        <nav aria-label="Neste módulo" className="hidden lg:block">
-          <div className="sticky top-28">
-            <div className="mb-3 text-xs font-bold tracking-[0.12em] text-ink-2/70 uppercase">Neste módulo</div>
-            <ol className="grid gap-2 border-l border-line pl-4 text-sm">
-              {indice.map((entrada) => <li key={entrada.id}><a href={`#${entrada.id}`} className="text-ink-2 hover:text-koda-texto">{entrada.titulo}</a></li>)}
-              <li><a href="#teste-rapido" className="font-semibold text-koda-texto">Teste rápido</a></li>
-              <li><a href="#desafio-pratico" className="font-semibold text-koda-texto">Desafio prático</a></li>
-            </ol>
-          </div>
-        </nav>
-      )}
+      <PainelDoModulo trilha={trilha.slug} modulo={item.slug} indice={indice} idDoConteudo="conteudo-do-modulo" />
     </div>
   );
 }

@@ -34,7 +34,7 @@ export default function AcoesDoModulo({ trilha, modulo, questoes, desafio }: Pro
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Terminou a leitura?</h2>
+            <h2 className="flex items-center gap-3 text-xl font-bold tracking-tight"><span className="grid size-8 place-items-center rounded-full bg-koda text-sm font-extrabold text-white" aria-hidden="true">1</span>Terminou a leitura?</h2>
             <p className="mt-1 text-sm text-ink-2">Marque a lição como lida para registrar o seu avanço neste navegador.</p>
           </div>
           <button type="button" aria-pressed={lida} onClick={() => estudo.marcarLicao(modulo, !lida)}
@@ -46,7 +46,7 @@ export default function AcoesDoModulo({ trilha, modulo, questoes, desafio }: Pro
       </Card>
 
       <Card>
-        <h2 id="teste-rapido" className="text-xl font-bold tracking-tight">Teste rápido</h2>
+        <h2 id="teste-rapido" className="flex scroll-mt-28 items-center gap-3 text-xl font-bold tracking-tight"><span className="grid size-8 place-items-center rounded-full bg-koda text-sm font-extrabold text-white" aria-hidden="true">2</span>Teste rápido</h2>
         <p className="mt-1 mb-5 text-sm text-ink-2">
           {questoes.length} questões para fixar. Cada resposta mostra a explicação. Com {Math.round(NOTA_MINIMA_DO_TESTE * 100)}% de acertos e a lição lida, o módulo conta como concluído.
         </p>
@@ -55,7 +55,7 @@ export default function AcoesDoModulo({ trilha, modulo, questoes, desafio }: Pro
       </Card>
 
       <Card>
-        <h2 id="desafio-pratico" className="text-xl font-bold tracking-tight">Desafio prático: {desafio.titulo}</h2>
+        <h2 id="desafio-pratico" className="flex scroll-mt-28 items-start gap-3 text-xl font-bold tracking-tight"><span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-koda text-sm font-extrabold text-white" aria-hidden="true">3</span><span>Desafio prático: {desafio.titulo}</span></h2>
         <p className="mt-3 leading-relaxed text-body">{desafio.enunciado}</p>
 
         <h3 className="mt-6 text-sm font-bold tracking-[0.1em] text-ink-2 uppercase">O que fazer</h3>

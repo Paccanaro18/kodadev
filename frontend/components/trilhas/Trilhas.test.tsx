@@ -84,7 +84,7 @@ describe("Roteiro", () => {
 
     expect(screen.getByRole("link", { name: /Começar a trilha/ })).toHaveAttribute("href", `/aprenda/java/${primeiroModulo.slug}`);
     expect(screen.getByRole("progressbar", { name: "Seu progresso nesta trilha" })).toHaveAttribute("aria-valuenow", "0");
-    expect(screen.getByText("Checkpoint")).toBeInTheDocument();
+    expect(screen.getAllByText("Checkpoint")).toHaveLength(itensDoJava.filter((item) => item.tipo === "checkpoint").length);
     expect(screen.getAllByText("Em breve").length).toBe(resumoJava.planejados.length);
   });
 
