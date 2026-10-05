@@ -7,7 +7,7 @@ import CheckpointDaTrilha from "./CheckpointDaTrilha";
 import Questionario from "./Questionario";
 import Roteiro from "./Roteiro";
 import { CHAVE_DO_ESTUDO } from "@/lib/progressoDeEstudo";
-import { resumirTrilha, trilhaPorSlug, type Questao } from "@/lib/trilhas";
+import { itensDaTrilha, resumirTrilha, trilhaPorSlug, type Questao } from "@/lib/trilhas";
 
 const questoes: Questao[] = [
   { enunciado: "Quanto é 1 + 1?", opcoes: ["1", "2", "3"], correta: 1, explicacao: "Um mais um dá dois, e isso não muda." },
@@ -16,7 +16,8 @@ const questoes: Questao[] = [
 
 const java = trilhaPorSlug("java")!;
 const resumoJava = resumirTrilha(java);
-const primeiroModulo = java.etapas[0].itens[0];
+const itensDoJava = itensDaTrilha(java);
+const primeiroModulo = itensDoJava[0];
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -94,8 +95,8 @@ describe("Roteiro", () => {
     render(<Roteiro trilha={resumoJava} />);
 
     const continuar = await screen.findByRole("link", { name: /Continuar de onde parou/ });
-    expect(continuar).toHaveAttribute("href", `/aprenda/java/${java.etapas[0].itens[1].slug}`);
-    expect(screen.getByRole("progressbar", { name: "Seu progresso nesta trilha" })).toHaveAttribute("aria-valuenow", "33");
+    expect(continuar).toHaveAttribute("href", `/aprenda/java/${itensDoJava[1].slug}`);
+    expect(screen.getByRole("progressbar", { name: "Seu progresso nesta trilha" })).toHaveAttribute("aria-valuenow", "25");
     expect(screen.getAllByLabelText("Concluído")).toHaveLength(1);
   });
 });
@@ -109,8 +110,8 @@ describe("CartaoDaTrilha", () => {
 
     expect(screen.getByRole("link")).toHaveAttribute("href", "/aprenda/java");
     expect(screen.getByRole("heading", { name: resumoJava.titulo })).toBeInTheDocument();
-    expect(screen.getByText(/2 módulos prontos/)).toBeInTheDocument();
-    expect(await screen.findByRole("progressbar", { name: "Seu progresso" })).toHaveAttribute("aria-valuenow", "33");
+    expect(screen.getByText(/3 módulos prontos/)).toBeInTheDocument();
+    expect(await screen.findByRole("progressbar", { name: "Seu progresso" })).toHaveAttribute("aria-valuenow", "25");
   });
 });
 

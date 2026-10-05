@@ -122,13 +122,14 @@ describe("trilhas de linguagem", () => {
     const resumo = resumirTrilha(trilha);
     const texto = JSON.stringify(resumo);
 
-    expect(resumo.etapas[0].itens.map((i) => i.slug)).toEqual(itensDaTrilha(trilha).map((i) => i.slug));
+    expect(resumo.etapas.flatMap((e) => e.itens).map((i) => i.slug)).toEqual(itensDaTrilha(trilha).map((i) => i.slug));
     expect(texto).not.toContain("blocos");
     expect(texto).not.toContain("explicacao");
-    expect(texto.length).toBeLessThan(6000);
-    const checkpoint = resumo.etapas[0].itens.find((i) => i.tipo === "checkpoint");
+    expect(texto.length).toBeLessThan(8000);
+    const itens = resumo.etapas.flatMap((e) => e.itens);
+    const checkpoint = itens.find((i) => i.tipo === "checkpoint");
     expect(checkpoint?.notaMinima).toBeGreaterThan(0);
-    expect(resumo.etapas[0].itens.find((i) => i.tipo === "modulo")?.notaMinima).toBeUndefined();
+    expect(itens.find((i) => i.tipo === "modulo")?.notaMinima).toBeUndefined();
   });
 
   it("acha o item anterior e o seguinte na ordem da trilha", () => {

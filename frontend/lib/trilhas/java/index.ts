@@ -2,6 +2,7 @@ import type { Trilha } from "../tipos";
 import { JAVA_CHECKPOINT_1 } from "./checkpoint-1";
 import { JAVA_MODULO_1 } from "./modulo-1-primeiros-passos";
 import { JAVA_MODULO_2 } from "./modulo-2-fluxo-metodos-arrays";
+import { JAVA_MODULO_3 } from "./modulo-3-orientacao-a-objetos";
 
 export const TRILHA_JAVA: Trilha = {
   slug: "java",
@@ -14,9 +15,13 @@ export const TRILHA_JAVA: Trilha = {
       descricao: "A base de tudo: como o Java funciona, os tipos, o fluxo do programa, métodos e arrays.",
       itens: [JAVA_MODULO_1, JAVA_MODULO_2, JAVA_CHECKPOINT_1],
     },
+    {
+      titulo: "Orientação a objetos",
+      descricao: "Modelar o domínio com classes, proteger o estado e escolher bem entre classe, record e enum.",
+      itens: [JAVA_MODULO_3],
+    },
   ],
   planejados: [
-    { titulo: "Orientação a objetos: classes, objetos e encapsulamento", resumo: "Modelar o mundo com classes, construtores, atributos e métodos." },
     { titulo: "Herança, interfaces e polimorfismo", resumo: "Reaproveitar e abstrair comportamento sem acoplar o código." },
     { titulo: "Coleções, generics e Optional", resumo: "List, Set e Map, e como lidar com a ausência de valor." },
     { titulo: "Exceções e tratamento de erros", resumo: "Erros previstos e imprevistos, try/catch e exceções próprias." },

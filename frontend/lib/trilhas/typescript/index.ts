@@ -2,6 +2,7 @@ import type { Trilha } from "../tipos";
 import { TS_CHECKPOINT_1 } from "./checkpoint-1";
 import { TS_MODULO_1 } from "./modulo-1-tipos-funcoes-modulos";
 import { TS_MODULO_2 } from "./modulo-2-assincrono";
+import { TS_MODULO_3 } from "./modulo-3-classes-modulos-projeto";
 
 export const TRILHA_TYPESCRIPT: Trilha = {
   slug: "typescript",
@@ -14,9 +15,13 @@ export const TRILHA_TYPESCRIPT: Trilha = {
       descricao: "TypeScript essencial e o modelo assíncrono que define como o Node funciona.",
       itens: [TS_MODULO_1, TS_MODULO_2, TS_CHECKPOINT_1],
     },
+    {
+      titulo: "Organização de um projeto",
+      descricao: "Classes, contratos, módulos e a estrutura de um projeto Node com npm.",
+      itens: [TS_MODULO_3],
+    },
   ],
   planejados: [
-    { titulo: "Classes, módulos e organização de um projeto", resumo: "Orientação a objetos em TypeScript, pacotes npm e a estrutura de pastas." },
     { titulo: "Uma API com Express", resumo: "Rotas, middlewares, camadas e tratamento central de erros." },
     { titulo: "Validação de dados com Zod", resumo: "Garantir em tempo de execução o que os tipos prometem." },
     { titulo: "Banco de dados com Prisma", resumo: "Modelagem, migrações, consultas e transações." },
