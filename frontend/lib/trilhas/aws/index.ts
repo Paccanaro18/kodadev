@@ -1,9 +1,12 @@
 import type { Trilha } from "../tipos";
 import { AWS_CHECKPOINT_1 } from "./checkpoint-1";
+import { AWS_CHECKPOINT_2 } from "./checkpoint-2";
 import { AWS_MODULO_1 } from "./modulo-1-nuvem-e-responsabilidade";
 import { AWS_MODULO_2 } from "./modulo-2-iam-e-governanca";
 import { AWS_MODULO_3 } from "./modulo-3-computacao";
 import { AWS_MODULO_4 } from "./modulo-4-armazenamento";
+import { AWS_MODULO_5 } from "./modulo-5-redes";
+import { AWS_MODULO_6 } from "./modulo-6-bancos-de-dados";
 
 export const TRILHA_AWS: Trilha = {
   slug: "aws-cloud-practitioner",
@@ -22,10 +25,13 @@ export const TRILHA_AWS: Trilha = {
       descricao: "Onde o código roda e onde os dados vivem: EC2, contêineres, Lambda, S3, EBS e EFS.",
       itens: [AWS_MODULO_3, AWS_MODULO_4],
     },
+    {
+      titulo: "Redes e bancos de dados",
+      descricao: "A rede privada na nuvem, a conexão com o mundo e os serviços de banco de dados.",
+      itens: [AWS_MODULO_5, AWS_MODULO_6, AWS_CHECKPOINT_2],
+    },
   ],
   planejados: [
-    { titulo: "Redes: VPC, Route 53 e CloudFront", resumo: "Redes privadas, DNS e entrega de conteúdo perto do usuário." },
-    { titulo: "Bancos de dados: RDS, Aurora, DynamoDB e outros", resumo: "Relacional, chave-valor, em memória e analíticos." },
     { titulo: "Segurança avançada: Shield, WAF, KMS, GuardDuty, CloudTrail e Config", resumo: "Proteção, criptografia, detecção e auditoria." },
     { titulo: "Monitoramento e governança: CloudWatch, Trusted Advisor e Control Tower", resumo: "Observabilidade e boas práticas contínuas." },
     { titulo: "Custos, preços e planos de suporte", resumo: "Modelos de preço, Cost Explorer, Budgets, Pricing Calculator e os planos de suporte." },

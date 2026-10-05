@@ -1,5 +1,6 @@
 import type { Trilha } from "../tipos";
 import { TS_CHECKPOINT_1 } from "./checkpoint-1";
+import { TS_CHECKPOINT_2 } from "./checkpoint-2";
 import { TS_MODULO_1 } from "./modulo-1-tipos-funcoes-modulos";
 import { TS_MODULO_2 } from "./modulo-2-assincrono";
 import { TS_MODULO_3 } from "./modulo-3-classes-modulos-projeto";
@@ -27,7 +28,7 @@ export const TRILHA_TYPESCRIPT: Trilha = {
     {
       titulo: "APIs HTTP",
       descricao: "Da primeira rota às camadas e ao tratamento de erros de uma API em Node.",
-      itens: [TS_MODULO_4, TS_MODULO_5, TS_MODULO_6],
+      itens: [TS_MODULO_4, TS_MODULO_5, TS_MODULO_6, TS_CHECKPOINT_2],
     },
   ],
   planejados: [

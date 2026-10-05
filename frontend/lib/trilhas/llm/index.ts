@@ -5,6 +5,7 @@ import { LLM_MODULO_2 } from "./modulo-2-api-e-ferramentas";
 import { LLM_MODULO_3 } from "./modulo-3-mcp";
 import { LLM_MODULO_4 } from "./modulo-4-rag";
 import { LLM_MODULO_5 } from "./modulo-5-do-problema-ao-mvp";
+import { LLM_MODULO_6 } from "./modulo-6-avaliacao";
 
 export const TRILHA_LLM: Trilha = {
   slug: "llm-mcp-mvp",
@@ -21,11 +22,10 @@ export const TRILHA_LLM: Trilha = {
     {
       titulo: "Seus dados e o seu produto",
       descricao: "Responder com base em documentos próprios (RAG) e transformar a ideia em um MVP medido por números.",
-      itens: [LLM_MODULO_4, LLM_MODULO_5],
+      itens: [LLM_MODULO_4, LLM_MODULO_5, LLM_MODULO_6],
     },
   ],
   planejados: [
-    { titulo: "Avaliando sistemas com LLM", resumo: "Conjuntos de teste, métricas, avaliação com modelos e regressões de prompt." },
     { titulo: "Segurança e privacidade em produtos com IA", resumo: "Injeção de prompt, dados pessoais, LGPD e auditoria." },
     { titulo: "Construindo o MVP: arquitetura, custos e limites", resumo: "Um desenho simples, controle de gastos e plano para falhas." },
     { titulo: "Lançando, medindo e iterando", resumo: "Feedback real, telemetria, custo por usuário e próximos passos." },
