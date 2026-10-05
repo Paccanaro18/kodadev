@@ -3,6 +3,7 @@ import { PY_CHECKPOINT_1 } from "./checkpoint-1";
 import { PY_MODULO_1 } from "./modulo-1-fundamentos";
 import { PY_MODULO_2 } from "./modulo-2-objetos-excecoes-modulos";
 import { PY_MODULO_3 } from "./modulo-3-funcional-iteradores";
+import { PY_MODULO_4 } from "./modulo-4-tipagem-qualidade";
 
 export const TRILHA_PYTHON: Trilha = {
   slug: "python",
@@ -18,11 +19,10 @@ export const TRILHA_PYTHON: Trilha = {
     {
       titulo: "Python idiomático",
       descricao: "Funções como valores, iteradores, geradores e decoradores: o estilo que aparece no código profissional.",
-      itens: [PY_MODULO_3],
+      itens: [PY_MODULO_3, PY_MODULO_4],
     },
   ],
   planejados: [
-    { titulo: "Tipagem e qualidade de código", resumo: "Type hints, mypy, ruff e formatação automática." },
     { titulo: "Uma API com FastAPI e Pydantic", resumo: "Rotas, validação, respostas tipadas e injeção de dependências." },
     { titulo: "Testes com pytest", resumo: "Testes unitários, fixtures, parametrização e testes de API." },
     { titulo: "Banco de dados com SQLAlchemy", resumo: "Modelos, consultas, relacionamentos e migrações com Alembic." },

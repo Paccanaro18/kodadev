@@ -7,7 +7,7 @@ import CheckpointDaTrilha from "./CheckpointDaTrilha";
 import Questionario from "./Questionario";
 import Roteiro from "./Roteiro";
 import { CHAVE_DO_ESTUDO } from "@/lib/progressoDeEstudo";
-import { itensDaTrilha, resumirTrilha, trilhaPorSlug, type Questao } from "@/lib/trilhas";
+import { itensDaTrilha, modulosDaTrilha, resumirTrilha, trilhaPorSlug, type Questao } from "@/lib/trilhas";
 
 const questoes: Questao[] = [
   { enunciado: "Quanto é 1 + 1?", opcoes: ["1", "2", "3"], correta: 1, explicacao: "Um mais um dá dois, e isso não muda." },
@@ -96,7 +96,7 @@ describe("Roteiro", () => {
 
     const continuar = await screen.findByRole("link", { name: /Continuar de onde parou/ });
     expect(continuar).toHaveAttribute("href", `/aprenda/java/${itensDoJava[1].slug}`);
-    expect(screen.getByRole("progressbar", { name: "Seu progresso nesta trilha" })).toHaveAttribute("aria-valuenow", "25");
+    expect(screen.getByRole("progressbar", { name: "Seu progresso nesta trilha" })).toHaveAttribute("aria-valuenow", String(Math.round(100 / itensDoJava.length)));
     expect(screen.getAllByLabelText("Concluído")).toHaveLength(1);
   });
 });
@@ -110,8 +110,8 @@ describe("CartaoDaTrilha", () => {
 
     expect(screen.getByRole("link")).toHaveAttribute("href", "/aprenda/java");
     expect(screen.getByRole("heading", { name: resumoJava.titulo })).toBeInTheDocument();
-    expect(screen.getByText(/3 módulos prontos/)).toBeInTheDocument();
-    expect(await screen.findByRole("progressbar", { name: "Seu progresso" })).toHaveAttribute("aria-valuenow", "25");
+    expect(screen.getByText(new RegExp(`${modulosDaTrilha(java).length} módulos prontos`))).toBeInTheDocument();
+    expect(await screen.findByRole("progressbar", { name: "Seu progresso" })).toHaveAttribute("aria-valuenow", String(Math.round(100 / itensDoJava.length)));
   });
 });
 

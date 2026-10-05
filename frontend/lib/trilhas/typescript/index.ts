@@ -3,6 +3,7 @@ import { TS_CHECKPOINT_1 } from "./checkpoint-1";
 import { TS_MODULO_1 } from "./modulo-1-tipos-funcoes-modulos";
 import { TS_MODULO_2 } from "./modulo-2-assincrono";
 import { TS_MODULO_3 } from "./modulo-3-classes-modulos-projeto";
+import { TS_MODULO_4 } from "./modulo-4-api-com-express";
 
 export const TRILHA_TYPESCRIPT: Trilha = {
   slug: "typescript",
@@ -20,9 +21,13 @@ export const TRILHA_TYPESCRIPT: Trilha = {
       descricao: "Classes, contratos, módulos e a estrutura de um projeto Node com npm.",
       itens: [TS_MODULO_3],
     },
+    {
+      titulo: "APIs HTTP",
+      descricao: "Da primeira rota às camadas e ao tratamento de erros de uma API em Node.",
+      itens: [TS_MODULO_4],
+    },
   ],
   planejados: [
-    { titulo: "Uma API com Express", resumo: "Rotas, middlewares, camadas e tratamento central de erros." },
     { titulo: "Validação de dados com Zod", resumo: "Garantir em tempo de execução o que os tipos prometem." },
     { titulo: "Banco de dados com Prisma", resumo: "Modelagem, migrações, consultas e transações." },
     { titulo: "Testes com Vitest e Supertest", resumo: "Testes unitários e de integração de uma API." },
