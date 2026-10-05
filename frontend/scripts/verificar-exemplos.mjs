@@ -5,6 +5,7 @@
 //
 // Convenção nos módulos:
 //   - um bloco de código cuja legenda termina em .java, .ts ou .py é um programa completo e é executado;
+//   - um bloco cuja legenda termina em .json precisa ser um JSON válido (por exemplo, as políticas do IAM);
 //   - se o bloco seguinte tiver a legenda "Saída", a saída do programa precisa ser igual a ele;
 //   - programas .ts também precisam passar na checagem de tipos do TypeScript em modo estrito;
 //   - uma legenda terminada em .erro.ts marca um exemplo que o compilador TypeScript precisa recusar, e o bloco
@@ -63,7 +64,7 @@ function primeirasLinhas(texto, quantas = 8) {
 }
 
 const filtro = process.argv[2];
-const pastas = ["java", "typescript", "python"].filter((pasta) => !filtro || pasta === filtro);
+const pastas = ["java", "typescript", "python", "aws", "llm"].filter((pasta) => !filtro || pasta === filtro);
 const temporario = mkdtempSync(join(tmpdir(), "koda-exemplos-"));
 let total = 0;
 let comparadas = 0;
@@ -74,8 +75,18 @@ for (const pasta of pastas) {
     const blocos = modulo.blocos;
     blocos.forEach((bloco, indice) => {
       if (bloco.tipo !== "codigo" || !bloco.legenda) return;
-      const extensao = /\.(java|ts|py)$/.exec(bloco.legenda)?.[0];
+      const extensao = /\.(java|ts|py|json)$/.exec(bloco.legenda)?.[0];
       if (!extensao) return;
+
+      if (extensao === ".json") {
+        total += 1;
+        try {
+          JSON.parse(bloco.texto);
+        } catch (erro) {
+          falhas.push(`${pasta}/${modulo.slug} · ${bloco.legenda}: JSON inválido (${erro.message})`);
+        }
+        return;
+      }
 
       total += 1;
       const nomeSeguro = bloco.legenda.replace(/[^A-Za-z0-9_.-]/g, "_");

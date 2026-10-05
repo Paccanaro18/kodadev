@@ -7,6 +7,7 @@ import { TS_MODULO_4 } from "./modulo-4-api-com-express";
 
 export const TRILHA_TYPESCRIPT: Trilha = {
   slug: "typescript",
+  grupo: "linguagem",
   titulo: "TypeScript e Node do zero ao backend",
   descricao: "Da linguagem e do sistema de tipos até uma API em Node com validação, banco de dados, testes e segurança.",
   publico: "Para quem está começando ou vem de outra linguagem. Basta saber usar um terminal e ter o Node instalado.",

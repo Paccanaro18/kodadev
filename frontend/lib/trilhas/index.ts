@@ -1,15 +1,21 @@
+import { TRILHA_AWS } from "./aws";
 import { TRILHA_JAVA } from "./java";
+import { TRILHA_LLM } from "./llm";
 import { TRILHA_PYTHON } from "./python";
 import { TRILHA_TYPESCRIPT } from "./typescript";
-import type { Checkpoint, Item, Modulo, ResumoDeTrilha, SlugDeTrilha, Trilha } from "./tipos";
+import type { Checkpoint, GrupoDeTrilha, Item, Modulo, ResumoDeTrilha, SlugDeTrilha, Trilha } from "./tipos";
 
-export type { Checkpoint, DesafioPratico, Item, Modulo, Questao, ResumoDeItem, ResumoDeTrilha, SlugDeTrilha, Trilha } from "./tipos";
+export type { Checkpoint, DesafioPratico, GrupoDeTrilha, Item, Modulo, Questao, ResumoDeItem, ResumoDeTrilha, SlugDeTrilha, Trilha } from "./tipos";
 
-/** As trilhas por linguagem, na ordem em que aparecem na tela. */
-export const TRILHAS_DE_LINGUAGEM: Trilha[] = [TRILHA_JAVA, TRILHA_TYPESCRIPT, TRILHA_PYTHON];
+/** Todas as trilhas, na ordem em que aparecem na tela. */
+export const TRILHAS: Trilha[] = [TRILHA_JAVA, TRILHA_TYPESCRIPT, TRILHA_PYTHON, TRILHA_AWS, TRILHA_LLM];
+
+export function trilhasDoGrupo(grupo: GrupoDeTrilha): Trilha[] {
+  return TRILHAS.filter((trilha) => trilha.grupo === grupo);
+}
 
 export function trilhaPorSlug(slug: string): Trilha | undefined {
-  return TRILHAS_DE_LINGUAGEM.find((trilha) => trilha.slug === slug);
+  return TRILHAS.find((trilha) => trilha.slug === slug);
 }
 
 /** Todos os itens da trilha em ordem de estudo, sem a divisão em etapas. */
@@ -47,6 +53,7 @@ function detalheDe(item: Item): string {
 export function resumirTrilha(trilha: Trilha): ResumoDeTrilha {
   return {
     slug: trilha.slug,
+    grupo: trilha.grupo,
     titulo: trilha.titulo,
     descricao: trilha.descricao,
     publico: trilha.publico,
@@ -67,5 +74,5 @@ export function resumirTrilha(trilha: Trilha): ResumoDeTrilha {
 }
 
 export function slugsDeTrilha(): SlugDeTrilha[] {
-  return TRILHAS_DE_LINGUAGEM.map((trilha) => trilha.slug);
+  return TRILHAS.map((trilha) => trilha.slug);
 }

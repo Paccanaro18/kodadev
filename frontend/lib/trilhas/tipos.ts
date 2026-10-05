@@ -1,6 +1,9 @@
 import type { Bloco, Referencia } from "@/lib/aulas/tipos";
 
-export type SlugDeTrilha = "java" | "typescript" | "python";
+export type SlugDeTrilha = "java" | "typescript" | "python" | "aws-cloud-practitioner" | "llm-mcp-mvp";
+
+/** Em qual seção da página inicial do Aprenda a trilha aparece. */
+export type GrupoDeTrilha = "linguagem" | "certificacao" | "ia";
 
 /** Uma pergunta de múltipla escolha, com uma única resposta certa e a explicação de cada caso. */
 export type Questao = {
@@ -66,6 +69,7 @@ export type ModuloPlanejado = { titulo: string; resumo: string };
 
 export type Trilha = {
   slug: SlugDeTrilha;
+  grupo: GrupoDeTrilha;
   titulo: string;
   descricao: string;
   /** Para quem é a trilha e o que ela exige de quem começa. */
@@ -87,6 +91,7 @@ export type ResumoDeItem = {
 
 export type ResumoDeTrilha = {
   slug: SlugDeTrilha;
+  grupo: GrupoDeTrilha;
   titulo: string;
   descricao: string;
   publico: string;

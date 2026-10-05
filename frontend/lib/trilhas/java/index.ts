@@ -7,6 +7,7 @@ import { JAVA_MODULO_4 } from "./modulo-4-heranca-interfaces-polimorfismo";
 
 export const TRILHA_JAVA: Trilha = {
   slug: "java",
+  grupo: "linguagem",
   titulo: "Java do zero ao backend",
   descricao: "Da primeira linha de código até uma API REST com Spring Boot, banco de dados, testes e segurança.",
   publico: "Para quem nunca programou ou vem de outra linguagem. Basta saber usar um terminal.",

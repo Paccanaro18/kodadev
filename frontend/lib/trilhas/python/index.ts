@@ -7,6 +7,7 @@ import { PY_MODULO_4 } from "./modulo-4-tipagem-qualidade";
 
 export const TRILHA_PYTHON: Trilha = {
   slug: "python",
+  grupo: "linguagem",
   titulo: "Python do zero ao backend",
   descricao: "Da linguagem até uma API com FastAPI, banco de dados, testes com pytest e segurança.",
   publico: "Para quem está começando ou vem de outra linguagem. Basta saber usar um terminal e ter o Python instalado.",
