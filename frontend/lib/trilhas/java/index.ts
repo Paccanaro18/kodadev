@@ -4,6 +4,7 @@ import { JAVA_MODULO_1 } from "./modulo-1-primeiros-passos";
 import { JAVA_MODULO_2 } from "./modulo-2-fluxo-metodos-arrays";
 import { JAVA_MODULO_3 } from "./modulo-3-orientacao-a-objetos";
 import { JAVA_MODULO_4 } from "./modulo-4-heranca-interfaces-polimorfismo";
+import { JAVA_MODULO_5 } from "./modulo-5-colecoes-generics-optional";
 
 export const TRILHA_JAVA: Trilha = {
   slug: "java",
@@ -20,11 +21,10 @@ export const TRILHA_JAVA: Trilha = {
     {
       titulo: "Orientação a objetos",
       descricao: "Modelar o domínio com classes, proteger o estado e escolher bem entre classe, record e enum.",
-      itens: [JAVA_MODULO_3, JAVA_MODULO_4],
+      itens: [JAVA_MODULO_3, JAVA_MODULO_4, JAVA_MODULO_5],
     },
   ],
   planejados: [
-    { titulo: "Coleções, generics e Optional", resumo: "List, Set e Map, e como lidar com a ausência de valor." },
     { titulo: "Exceções e tratamento de erros", resumo: "Erros previstos e imprevistos, try/catch e exceções próprias." },
     { titulo: "Streams e expressões lambda", resumo: "Processar dados de forma declarativa." },
     { titulo: "Maven e a estrutura de um projeto", resumo: "Dependências, ciclo de build e organização de pacotes." },

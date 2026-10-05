@@ -7,7 +7,7 @@ import type { Bloco } from "@/lib/aulas/tipos";
 
 const HOSTS_PERMITIDOS = [
   "dev.java", "docs.oracle.com", "www.typescriptlang.org", "developer.mozilla.org", "nodejs.org",
-  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
+  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "fastapi.tiangolo.com", "cheatsheetseries.owasp.org", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
 ];
 
 function palavrasDe(blocos: Bloco[]): number {
