@@ -26,6 +26,7 @@ export type Laboratorio = {
   nivel: NivelDoLaboratorio;
   minutos: number;
   conceitos: string[];
+  moduloDaTrilha: string;
   teoria: Bloco[];
   redeInicial: Rede;
   paleta: TipoDeDispositivo[];

@@ -1,6 +1,7 @@
 import { TRILHA_AWS } from "./aws";
 import { TRILHA_JAVA } from "./java";
 import { TRILHA_LLM } from "./llm";
+import { TRILHA_REDES } from "./redes";
 import { TRILHA_SEGURANCA } from "./seguranca";
 import { TRILHA_PYTHON } from "./python";
 import { TRILHA_TYPESCRIPT } from "./typescript";
@@ -9,7 +10,7 @@ import type { Checkpoint, GrupoDeTrilha, Item, Modulo, ResumoDeTrilha, SlugDeTri
 export type { Checkpoint, DesafioPratico, GrupoDeTrilha, Item, Modulo, Questao, ResumoDeItem, ResumoDeTrilha, SlugDeTrilha, Trilha } from "./tipos";
 
 /** Todas as trilhas, na ordem em que aparecem na tela. */
-export const TRILHAS: Trilha[] = [TRILHA_JAVA, TRILHA_TYPESCRIPT, TRILHA_PYTHON, TRILHA_AWS, TRILHA_LLM, TRILHA_SEGURANCA];
+export const TRILHAS: Trilha[] = [TRILHA_JAVA, TRILHA_TYPESCRIPT, TRILHA_PYTHON, TRILHA_AWS, TRILHA_LLM, TRILHA_SEGURANCA, TRILHA_REDES];
 
 export function trilhasDoGrupo(grupo: GrupoDeTrilha): Trilha[] {
   return TRILHAS.filter((trilha) => trilha.grupo === grupo);

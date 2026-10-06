@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, ChevronDown, Circle, Clock, Eye, Lightbulb, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, ChevronDown, Circle, Clock, Eye, Lightbulb, Plus, RotateCcw, Trash2 } from "lucide-react";
 import AppShell from "../AppShell";
 import BlocosDeConteudo from "../publico/BlocosDeConteudo";
 import { BackLink, Card } from "../ui";
@@ -312,9 +312,14 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
         <aside className="grid gap-6">
           <Card className="!p-6">
             <h2 className="text-xl font-bold">{lab.tipo === "aula" ? "A aula" : "O chamado"}</h2>
-            <div className="mt-3 max-h-[420px] overflow-y-auto pr-2 [&>div]:text-[15px]">
+            <div className="mt-3 [&>div]:text-[15px]">
               <BlocosDeConteudo blocos={lab.teoria} />
             </div>
+            <Link href={`/aprenda/redes-de-computadores/${lab.moduloDaTrilha}`}
+              className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-koda-soft px-4 py-3 text-sm font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 hover:text-koda-texto">
+              <span className="inline-flex items-center gap-2.5"><BookOpen className="size-5" aria-hidden="true" />{lab.tipo === "aula" ? "Ler a aula completa" : "Estudar a teoria"}</span>
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </Card>
           <Objetivos lab={lab} resultados={resultados} completo={completo} jaConcluido={jaConcluido} />
           <Ajuda lab={lab} />

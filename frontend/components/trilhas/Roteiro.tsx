@@ -32,6 +32,7 @@ const GRUPOS: Record<ResumoDeTrilha["grupo"], string> = {
   certificacao: "Preparação para certificação",
   ia: "Trilha de inteligência artificial",
   seguranca: "Trilha de segurança",
+  redes: "Trilha de redes",
 };
 
 function minutosDe(leitura?: string): number {

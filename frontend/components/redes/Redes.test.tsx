@@ -48,6 +48,7 @@ describe("ListaDeRedes", () => {
     expect(screen.getByRole("link", { name: /Seu primeiro cabo/ })).toHaveAttribute("href", "/redes/primeiro-cabo");
     expect(screen.getByRole("link", { name: /A filial sem rota/ })).toHaveAttribute("href", "/redes/filial-sem-rota");
     expect(screen.getAllByLabelText("Não concluído")).toHaveLength(6);
+    expect(screen.getByRole("link", { name: /trilha Redes de computadores/ })).toHaveAttribute("href", "/aprenda/redes-de-computadores");
     expect(screen.getByText(/0 de 6 laboratórios concluídos/)).toBeInTheDocument();
   });
 
@@ -150,6 +151,11 @@ describe("LaboratorioDeRedes", () => {
     await usuario.click(screen.getByRole("button", { name: "Cabo cabo-1" }));
     await usuario.click(screen.getByRole("button", { name: "Remover cabo" }));
     expect(screen.queryByRole("button", { name: "Cabo cabo-1" })).not.toBeInTheDocument();
+  });
+
+  it("aponta a aula completa para o módulo da trilha", () => {
+    render(<LaboratorioDeRedes slug="primeiro-cabo" />);
+    expect(screen.getByRole("link", { name: /Ler a aula completa/ })).toHaveAttribute("href", "/aprenda/redes-de-computadores/enderecos-ip-mascaras-e-ping");
   });
 
   it("recomeça o laboratório do zero", async () => {

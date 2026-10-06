@@ -16,6 +16,7 @@ const SECOES: { grupo: GrupoDeTrilha; titulo: string; texto: string }[] = [
   { grupo: "certificacao", titulo: "Certificações", texto: "Roteiros de estudo para as provas, com questões no estilo do exame." },
   { grupo: "ia", titulo: "Inteligência artificial", texto: "Como usar modelos de linguagem, ferramentas e MCP em produtos reais." },
   { grupo: "seguranca", titulo: "Segurança", texto: "Entender como as aplicações são atacadas para construí-las seguras, com desafios para praticar." },
+  { grupo: "redes", titulo: "Redes", texto: "Como os computadores se falam, com um simulador no navegador para montar e consertar redes." },
 ];
 
 export default function Page() {

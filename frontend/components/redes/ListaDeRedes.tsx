@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, Clock, Play, RotateCcw, Swords } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Circle, Clock, Play, RotateCcw, Swords } from "lucide-react";
 import AppShell from "../AppShell";
 import { Mascot } from "../ui";
 import PreviaDaTopologia from "./PreviaDaTopologia";
@@ -118,6 +118,11 @@ export function ConteudoDaListaDeRedes() {
           </div>
         </div>
       </section>
+
+      <Link href="/aprenda/redes-de-computadores" className="mt-6 flex items-center justify-between gap-3 rounded-2xl bg-koda-soft px-5 py-4 text-sm font-semibold text-koda-texto transition duration-200 hover:-translate-y-0.5 hover:text-koda-texto">
+        <span className="flex items-center gap-3"><BookOpen className="size-5" aria-hidden="true" />A teoria de cada laboratório está na trilha Redes de computadores, em Aprenda aqui.</span>
+        <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+      </Link>
 
       <section className="mt-10" aria-labelledby="aulas">
         <h2 id="aulas" className="text-xl font-bold">Aulas interativas</h2>

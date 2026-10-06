@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { adicionarCabo, atualizarDispositivo, atualizarInterface } from "../construcao";
 import type { Rede } from "../tipos";
+import { itemPorSlug, trilhaPorSlug } from "@/lib/trilhas";
 import { AULAS_DE_REDES, DESAFIOS_DE_REDES, LABORATORIOS, avaliarObjetivos, laboratorioPorSlug, tudoCumprido } from "./index";
 
 function cabos(rede: Rede, ligacoes: [string, string, string, string][]): Rede {
@@ -40,6 +41,13 @@ describe("laboratórios de redes", () => {
     for (const slug of slugs) expect(slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
     expect(AULAS_DE_REDES.every((l) => l.tipo === "aula")).toBe(true);
     expect(DESAFIOS_DE_REDES.every((l) => l.tipo === "desafio")).toBe(true);
+  });
+
+  it("liga cada laboratório a um módulo que existe na trilha Redes de computadores", () => {
+    const trilha = trilhaPorSlug("redes-de-computadores")!;
+    for (const lab of LABORATORIOS) {
+      expect(itemPorSlug(trilha, lab.moduloDaTrilha)?.tipo, lab.slug).toBe("modulo");
+    }
   });
 
   it("encontra o laboratório pelo slug", () => {

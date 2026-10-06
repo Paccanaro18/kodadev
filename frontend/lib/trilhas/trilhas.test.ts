@@ -26,7 +26,7 @@ function validarQuestao(questao: Questao, onde: string) {
 
 describe("trilhas de linguagem", () => {
   it("tem uma trilha para cada linguagem, com slug único", () => {
-    expect(slugsDeTrilha()).toEqual(["java", "typescript", "python", "aws-cloud-practitioner", "llm-mcp-mvp", "seguranca-de-aplicacoes"]);
+    expect(slugsDeTrilha()).toEqual(["java", "typescript", "python", "aws-cloud-practitioner", "llm-mcp-mvp", "seguranca-de-aplicacoes", "redes-de-computadores"]);
     for (const trilha of TRILHAS) expect(trilhaPorSlug(trilha.slug)).toBe(trilha);
     expect(trilhaPorSlug("cobol")).toBeUndefined();
   });

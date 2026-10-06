@@ -28,6 +28,7 @@ export const DESAFIO_MASCARA: Laboratorio = {
     { tipo: "ping", de: "pc-1", para: "pc-3", descricao: "O PC1 dá ping no PC3" },
     { tipo: "ping", de: "pc-3", para: "pc-2", descricao: "O PC3 dá ping no PC2" },
   ],
+  moduloDaTrilha: "enderecos-ip-mascaras-e-ping",
   teoria: [
     { tipo: "p", texto: "O chamado: \"o PC1 não alcança ninguém, e o PC3 também some do mapa\". Os cabos estão certos e o switch está funcionando. Tudo o que pode estar errado é a configuração dos computadores." },
     { tipo: "lista", itens: [
@@ -72,6 +73,7 @@ export const DESAFIO_VLAN: Laboratorio = {
     { tipo: "ping", de: "pc-3", para: "pc-4", descricao: "Financeiro: o PC3 dá ping no PC4 (VLAN 20)" },
     { tipo: "ping", de: "pc-1", para: "pc-3", esperado: false, descricao: "Vendas e financeiro continuam isolados: o PC1 não alcança o PC3" },
   ],
+  moduloDaTrilha: "switches-mac-e-vlans",
   teoria: [
     { tipo: "p", texto: "Uma VLAN divide um mesmo switch em redes lógicas separadas. Portas na VLAN 10 só conversam com portas na VLAN 10, mesmo estando no mesmo equipamento. É assim que se separa o financeiro das vendas sem comprar outro switch." },
     { tipo: "p", texto: "Aqui, vendas usa a VLAN 10 (rede 10.10.0.0/24) e o financeiro, a VLAN 20 (rede 10.20.0.0/24). O PC3 e o PC4 são do financeiro e deveriam se enxergar. O isolamento entre os dois departamentos tem que continuar valendo." },
@@ -113,6 +115,7 @@ export const DESAFIO_ROTA: Laboratorio = {
     { tipo: "ping", de: "pc-1", para: "servidor-1", descricao: "O PC da matriz dá ping no servidor da filial" },
     { tipo: "ping", de: "servidor-1", para: "pc-1", descricao: "O servidor da filial responde, e alcança o PC da matriz" },
   ],
+  moduloDaTrilha: "roteadores-gateways-e-rotas",
   teoria: [
     { tipo: "p", texto: "Um roteador só conhece, sozinho, as redes às quais está diretamente conectado. O Roteador1 sabe da 10.1.0.0/24 e da 10.2.0.0/24, e o Roteador2, da 10.2.0.0/24 e da 10.3.0.0/24. Nenhum dos dois sabe como chegar à rede do outro lado." },
     { tipo: "p", texto: "Uma rota estática diz: \"para chegar à rede X, entregue ao roteador vizinho Y\". Cada rota tem a rede de destino, a máscara e o próximo salto, que é o IP do vizinho. A rota padrão (0.0.0.0/0) é uma rota curinga: \"para qualquer coisa que eu não conheça, vá por aqui\"." },
