@@ -6,7 +6,7 @@ import {
   type Edge, type EdgeProps, type InternalNode, type Node, type NodeChange, type NodeProps,
 } from "@xyflow/react";
 import { Cable } from "lucide-react";
-import { IconeDeDispositivo } from "./IconesDeRede";
+import { IlustracaoDeDispositivo } from "./IlustracoesDeRede";
 import { temaAtual } from "@/lib/tema";
 import type { Dispositivo, Passo, Rede } from "@/lib/redes/tipos";
 
@@ -28,13 +28,11 @@ function NoDoDispositivo({ data, selected }: NodeProps<NoDeRede>) {
   return (
     <div
       aria-label={`${dispositivo.nome}, ${ligadas} cabos`}
-      className={`relative w-[132px] rounded-2xl border-2 bg-surface px-3 py-2.5 text-center shadow-soft transition ${selected ? "border-koda" : "border-line"}`}
+      className={`group relative w-[148px] rounded-2xl border-2 bg-surface px-3 pt-2 pb-3 text-center shadow-soft transition ${selected ? "border-koda" : "border-line-2"}`}
     >
-      <div className="mx-auto grid size-12 place-items-center rounded-xl bg-koda-soft text-koda-texto">
-        <IconeDeDispositivo tipo={dispositivo.tipo} className="size-8" />
-      </div>
-      <div className="mt-1.5 text-[13px] font-bold text-ink">{dispositivo.nome}</div>
-      <div className="mt-0.5 min-h-[14px] text-[10px] leading-tight text-ink-2">
+      <IlustracaoDeDispositivo tipo={dispositivo.tipo} className="mx-auto h-[66px] w-[88px]" />
+      <div className="mt-1 text-[15px] leading-tight font-bold text-ink">{dispositivo.nome}</div>
+      <div className="mt-0.5 min-h-[16px] text-[12px] leading-tight text-ink-2">
         {enderecos.map((endereco) => <div key={endereco}>{endereco}</div>)}
       </div>
       <Handle
@@ -52,7 +50,8 @@ function NoDoDispositivo({ data, selected }: NodeProps<NoDeRede>) {
         type="source"
         position={Position.Right}
         title="Arraste até outro dispositivo para ligar um cabo"
-        style={{ width: 22, height: 22, right: -11, top: 22, border: "2px solid var(--c-koda)", background: "var(--c-surface)", cursor: "crosshair" }}
+        className="!opacity-0 transition-opacity group-hover:!opacity-100"
+        style={{ width: 22, height: 22, right: -11, top: 14, border: "2px solid var(--c-koda)", background: "var(--c-surface)", cursor: "crosshair" }}
       >
         <Cable className="pointer-events-none size-3 text-koda-texto" style={{ margin: "3px" }} aria-hidden="true" />
       </Handle>
@@ -84,17 +83,22 @@ function CaboFlutuante({ id, source, target, data }: EdgeProps<CaboDeRede>) {
   const a = pontoNaBorda(origem, destino);
   const b = pontoNaBorda(destino, origem);
   const caminho = `M ${a.x},${a.y} L ${b.x},${b.y}`;
-  const ponto = (t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
-  const perto = ponto(0.16);
-  const longe = ponto(0.84);
-  const estiloDoTexto = { fontSize: 10, fontWeight: 600, fill: "var(--c-ink-2)", paintOrder: "stroke", stroke: "var(--c-cream)", strokeWidth: 4 } as const;
+  const comprimento = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const u = { x: (b.x - a.x) / comprimento, y: (b.y - a.y) / comprimento };
+  const normal = { x: -u.y, y: u.x };
+  const recuo = Math.min(34, comprimento / 3);
+  const rotuloA = { x: a.x + u.x * recuo + normal.x * 14, y: a.y + u.y * recuo + normal.y * 14 };
+  const rotuloB = { x: b.x - u.x * recuo + normal.x * 14, y: b.y - u.y * recuo + normal.y * 14 };
+  const estiloDoTexto = { fontSize: 11, fontWeight: 600, fill: "var(--c-ink-2)", paintOrder: "stroke", stroke: "var(--c-cream)", strokeWidth: 4 } as const;
+  const cor = data.selecionado ? "var(--c-koda)" : "var(--c-ink-3)";
 
   return (
     <>
-      <BaseEdge id={id} path={caminho} interactionWidth={18}
-        style={{ stroke: data.selecionado ? "var(--c-koda)" : "var(--c-ink-3)", strokeWidth: data.selecionado ? 3 : 2 }} />
-      <text x={perto.x} y={perto.y - 5} textAnchor="middle" style={estiloDoTexto}>{data.portaA}</text>
-      <text x={longe.x} y={longe.y - 5} textAnchor="middle" style={estiloDoTexto}>{data.portaB}</text>
+      <BaseEdge id={id} path={caminho} interactionWidth={18} style={{ stroke: cor, strokeWidth: data.selecionado ? 3.5 : 3, strokeLinecap: "round" }} />
+      <circle cx={a.x} cy={a.y} r={6} fill="var(--c-koda)" stroke="var(--c-surface)" strokeWidth={2} />
+      <circle cx={b.x} cy={b.y} r={6} fill="var(--c-koda)" stroke="var(--c-surface)" strokeWidth={2} />
+      <text x={rotuloA.x} y={rotuloA.y} textAnchor="middle" dominantBaseline="middle" style={estiloDoTexto}>{data.portaA}</text>
+      <text x={rotuloB.x} y={rotuloB.y} textAnchor="middle" dominantBaseline="middle" style={estiloDoTexto}>{data.portaB}</text>
       {data.pacote && (
         <circle key={data.pacote.chave} r={7} fill={COR_DO_PACOTE[data.pacote.tipo]} stroke="var(--c-surface)" strokeWidth={2}>
           <animateMotion
@@ -146,8 +150,8 @@ export default function EditorDeRede({
       type: "dispositivo",
       position: posicoes[dispositivo.id] ?? { x: dispositivo.x, y: dispositivo.y },
       selected: dispositivo.id === selecionado,
-      initialWidth: 132,
-      initialHeight: 112,
+      initialWidth: 148,
+      initialHeight: 128,
       data: {
         dispositivo,
         conectando,

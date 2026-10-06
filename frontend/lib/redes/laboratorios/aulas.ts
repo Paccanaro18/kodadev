@@ -57,7 +57,7 @@ export const AULA_SWITCH: Laboratorio = {
   conceitos: ["Switch", "Endereço MAC", "Tabela MAC", "Flooding"],
   paleta: ["pc", "switch"],
   redeInicial: construirRede([
-    { tipo: "switch", numero: 1, x: 260, y: 200 },
+    { tipo: "switch", numero: 1, x: 260, y: 280 },
     { tipo: "pc", numero: 1, x: 40, y: 40, config: { ip: "192.168.10.11" } },
     { tipo: "pc", numero: 2, x: 260, y: 20, config: { ip: "192.168.10.12" } },
     { tipo: "pc", numero: 3, x: 480, y: 40, config: { ip: "192.168.10.13" } },
@@ -106,10 +106,10 @@ export const AULA_ROTEADOR: Laboratorio = {
   redeInicial: construirRede(
     [
       { tipo: "pc", numero: 1, x: 20, y: 60, config: { ip: "10.0.1.10" } },
-      { tipo: "switch", numero: 1, x: 190, y: 60 },
-      { tipo: "roteador", numero: 1, x: 340, y: 150, config: { portas: { "Gi0/0": { ip: "10.0.1.1", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.0.2.1", mascara: "255.255.255.0" } } } },
-      { tipo: "switch", numero: 2, x: 490, y: 60 },
-      { tipo: "servidor", numero: 1, x: 640, y: 60, config: { ip: "10.0.2.10" } },
+      { tipo: "switch", numero: 1, x: 250, y: 60 },
+      { tipo: "roteador", numero: 1, x: 480, y: 230, config: { portas: { "Gi0/0": { ip: "10.0.1.1", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.0.2.1", mascara: "255.255.255.0" } } } },
+      { tipo: "switch", numero: 2, x: 710, y: 60 },
+      { tipo: "servidor", numero: 1, x: 940, y: 60, config: { ip: "10.0.2.10" } },
     ],
     [
       ["pc-1", "eth0", "switch-1", "Fa0/1"],

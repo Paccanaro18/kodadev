@@ -10,8 +10,29 @@ function ipDoDispositivo(rede: Rede, referencia: string): string | null {
   return dispositivo?.interfaces.find((i) => i.ip)?.ip ?? null;
 }
 
+function tituloDe(objetivo: Objetivo, nome: (referencia: string) => string): { titulo: string; subtitulo: string } {
+  switch (objetivo.tipo) {
+    case "cabo":
+      return { titulo: `${nome(objetivo.entre[0])} ↔ ${nome(objetivo.entre[1])}`, subtitulo: "Conectar com um cabo" };
+    case "ip": {
+      const prefixo = prefixoDaMascara(objetivo.naRede.mascara);
+      return { titulo: `Endereço do ${nome(objetivo.dispositivo)}`, subtitulo: `Rede ${objetivo.naRede.rede}/${prefixo}` };
+    }
+    case "ping":
+      return {
+        titulo: `${nome(objetivo.de)} → ${nome(objetivo.para)}`,
+        subtitulo: objetivo.esperado === false ? "Confirmar que o ping não passa" : "Confirmar comunicação com ping",
+      };
+    case "mac-aprendido":
+      return { titulo: `Tabela MAC do ${nome(objetivo.comutador)}`, subtitulo: `Aprender ao menos ${objetivo.minimo} endereços` };
+    case "existe":
+      return { titulo: `Dispositivos na rede`, subtitulo: objetivo.descricao };
+  }
+}
+
 function avaliarUm(rede: Rede, simulador: Simulador, objetivo: Objetivo): ResultadoDoObjetivo {
-  const base = { descricao: objetivo.descricao };
+  const nome = (referencia: string) => rede.dispositivos.find((d) => d.id === referencia)?.nome ?? referencia;
+  const base = { descricao: objetivo.descricao, ...tituloDe(objetivo, nome) };
   switch (objetivo.tipo) {
     case "cabo": {
       const [a, b] = objetivo.entre;

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { X } from "lucide-react";
-import { IconeDeDispositivo, ROTULO_DO_DISPOSITIVO } from "./IconesDeRede";
+import { IlustracaoDeDispositivo, ROTULO_DO_DISPOSITIVO } from "./IlustracoesDeRede";
 import type { Dispositivo } from "@/lib/redes/tipos";
 
 export type AbaDoDispositivo = "config" | "terminal";
@@ -61,7 +61,7 @@ export default function JanelaDoDispositivo({ dispositivo, ancora, aba, aoMudarA
       className="absolute z-30 flex flex-col overflow-hidden rounded-2xl border border-line-2 bg-surface shadow-lift">
       <header onPointerDown={comecar} onPointerMove={mover} onPointerUp={() => { arrasto.current = null; }}
         className="flex cursor-move touch-none items-center gap-3 border-b border-line bg-tint px-4 py-2.5 select-none">
-        <div className="grid size-9 place-items-center rounded-lg bg-koda-soft text-koda-texto"><IconeDeDispositivo tipo={dispositivo.tipo} className="size-6" /></div>
+        <div className="grid h-10 w-12 place-items-center rounded-lg bg-surface"><IlustracaoDeDispositivo tipo={dispositivo.tipo} className="h-8 w-10" /></div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-bold text-ink">{dispositivo.nome}</div>
           <div className="text-[11px] text-ink-2">{ROTULO_DO_DISPOSITIVO[dispositivo.tipo]} · arraste para mover</div>

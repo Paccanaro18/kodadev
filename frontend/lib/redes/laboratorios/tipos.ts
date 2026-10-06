@@ -9,6 +9,8 @@ export type Objetivo =
   | { tipo: "existe"; dispositivo: TipoDeDispositivo; minimo: number; descricao: string };
 
 export type ResultadoDoObjetivo = {
+  titulo: string;
+  subtitulo: string;
   descricao: string;
   cumprido: boolean;
   detalhe?: string;

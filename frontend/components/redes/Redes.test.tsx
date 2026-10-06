@@ -69,9 +69,9 @@ describe("LaboratorioDeRedes", () => {
     render(<LaboratorioDeRedes slug="primeiro-cabo" />);
     const usuario = userEvent.setup();
 
-    expect(screen.getByText(/Objetivos · 0 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("0 de 4")).toBeInTheDocument();
     await usuario.click(screen.getByRole("button", { name: "Ligar PC1 ao PC2" }));
-    expect(screen.getByText(/Objetivos · 1 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("1 de 4")).toBeInTheDocument();
 
     for (const [nome, ip] of [["PC1", "192.168.0.10"], ["PC2", "192.168.0.20"]]) {
       await usuario.click(screen.getByRole("button", { name: `Selecionar ${nome}` }));
@@ -79,7 +79,7 @@ describe("LaboratorioDeRedes", () => {
       await usuario.type(screen.getByLabelText("Máscara"), "255.255.255.0");
     }
 
-    expect(screen.getByText(/Objetivos · 4 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("4 de 4")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Laboratório concluído");
     expect(progressoSalvo().redes.desafios).toContain("primeiro-cabo");
   });
@@ -134,13 +134,14 @@ describe("LaboratorioDeRedes", () => {
     await usuario.clear(porta);
     await usuario.type(porta, "20");
     expect(screen.getByLabelText("VLAN da porta Fa0/4")).toHaveValue(20);
-    expect(screen.getByText(/Objetivos · 3 de 3/)).toBeInTheDocument();
+    expect(screen.getByText("3 de 3")).toBeInTheDocument();
   });
 
   it("remove cabos e mostra a dica e a solução de um desafio", async () => {
     render(<LaboratorioDeRedes slug="mascara-que-nao-fecha" />);
     const usuario = userEvent.setup();
     expect(screen.queryByText(/máscara 255.255.255.252/)).not.toBeInTheDocument();
+    await usuario.click(screen.getByRole("button", { name: /Ver dicas/ }));
     await usuario.click(screen.getByRole("button", { name: /Ver uma dica/ }));
     expect(screen.getByText(/só enxerga quatro endereços/)).toBeInTheDocument();
     await usuario.click(screen.getByRole("button", { name: /Ver a solução/ }));
@@ -155,16 +156,16 @@ describe("LaboratorioDeRedes", () => {
     render(<LaboratorioDeRedes slug="primeiro-cabo" />);
     const usuario = userEvent.setup();
     await usuario.click(screen.getByRole("button", { name: "Ligar PC1 ao PC2" }));
-    expect(screen.getByText(/Objetivos · 1 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("1 de 4")).toBeInTheDocument();
     await usuario.click(screen.getByRole("button", { name: "Recomeçar" }));
-    expect(screen.getByText(/Objetivos · 0 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("0 de 4")).toBeInTheDocument();
   });
 
   it("ignora ligar um dispositivo a ele mesmo e avisa quando não há porta livre", async () => {
     render(<LaboratorioDeRedes slug="primeiro-cabo" />);
     const usuario = userEvent.setup();
     await usuario.click(screen.getByRole("button", { name: "Ligar PC1 a si" }));
-    expect(screen.getByText(/Objetivos · 0 de 4/)).toBeInTheDocument();
+    expect(screen.getByText("0 de 4")).toBeInTheDocument();
     await usuario.click(screen.getByRole("button", { name: "Ligar PC1 ao PC2" }));
     await usuario.click(screen.getByRole("button", { name: "Ligar PC1 ao PC2" }));
     expect(screen.getByRole("alert")).toHaveTextContent("PC1 não tem porta livre.");

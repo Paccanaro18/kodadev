@@ -12,7 +12,7 @@ export const DESAFIO_MASCARA: Laboratorio = {
   paleta: ["pc", "switch"],
   redeInicial: construirRede(
     [
-      { tipo: "switch", numero: 1, x: 260, y: 200 },
+      { tipo: "switch", numero: 1, x: 260, y: 280 },
       { tipo: "pc", numero: 1, x: 40, y: 40, config: { ip: "192.168.1.10", mascara: "255.255.255.252" } },
       { tipo: "pc", numero: 2, x: 260, y: 20, config: { ip: "192.168.1.20", mascara: "255.255.255.0" } },
       { tipo: "pc", numero: 3, x: 480, y: 40, config: { ip: "192.168.2.30", mascara: "255.255.255.0" } },
@@ -54,7 +54,7 @@ export const DESAFIO_VLAN: Laboratorio = {
   paleta: ["pc", "switch"],
   redeInicial: construirRede(
     [
-      { tipo: "switch", numero: 1, x: 260, y: 220, config: { portas: { "Fa0/1": { vlan: 10 }, "Fa0/2": { vlan: 10 }, "Fa0/3": { vlan: 20 }, "Fa0/4": { vlan: 10 } } } },
+      { tipo: "switch", numero: 1, x: 260, y: 280, config: { portas: { "Fa0/1": { vlan: 10 }, "Fa0/2": { vlan: 10 }, "Fa0/3": { vlan: 20 }, "Fa0/4": { vlan: 10 } } } },
       { tipo: "pc", numero: 1, x: 20, y: 40, config: { ip: "10.10.0.11" } },
       { tipo: "pc", numero: 2, x: 180, y: 20, config: { ip: "10.10.0.12" } },
       { tipo: "pc", numero: 3, x: 340, y: 20, config: { ip: "10.20.0.13" } },
@@ -99,9 +99,9 @@ export const DESAFIO_ROTA: Laboratorio = {
   redeInicial: construirRede(
     [
       { tipo: "pc", numero: 1, x: 10, y: 120, config: { ip: "10.1.0.10", gateway: "10.1.0.1" } },
-      { tipo: "roteador", numero: 1, x: 190, y: 120, config: { portas: { "Gi0/0": { ip: "10.1.0.1", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.2.0.1", mascara: "255.255.255.0" } } } },
-      { tipo: "roteador", numero: 2, x: 400, y: 120, config: { portas: { "Gi0/0": { ip: "10.2.0.2", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.3.0.1", mascara: "255.255.255.0" } } } },
-      { tipo: "servidor", numero: 1, x: 600, y: 120, config: { ip: "10.3.0.10", gateway: "10.3.0.1" } },
+      { tipo: "roteador", numero: 1, x: 260, y: 120, config: { portas: { "Gi0/0": { ip: "10.1.0.1", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.2.0.1", mascara: "255.255.255.0" } } } },
+      { tipo: "roteador", numero: 2, x: 510, y: 120, config: { portas: { "Gi0/0": { ip: "10.2.0.2", mascara: "255.255.255.0" }, "Gi0/1": { ip: "10.3.0.1", mascara: "255.255.255.0" } } } },
+      { tipo: "servidor", numero: 1, x: 760, y: 120, config: { ip: "10.3.0.10", gateway: "10.3.0.1" } },
     ],
     [
       ["pc-1", "eth0", "roteador-1", "Gi0/0"],

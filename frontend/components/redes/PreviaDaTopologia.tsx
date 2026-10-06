@@ -1,9 +1,8 @@
-import { Desenho } from "./IconesDeRede";
+import { CorpoDaIlustracao } from "./IlustracoesDeRede";
 import type { Rede } from "@/lib/redes/tipos";
 
-const LARGURA_DO_NO = 108;
-const ALTURA_DO_NO = 108;
-const ICONE = 78;
+const LARGURA_DO_NO = 112;
+const ALTURA_DO_NO = 100;
 
 export default function PreviaDaTopologia({ rede }: { rede: Rede }) {
   const xs = rede.dispositivos.map((d) => d.x);
@@ -29,9 +28,9 @@ export default function PreviaDaTopologia({ rede }: { rede: Rede }) {
         const c = centro(d.id);
         return (
           <g key={d.id}>
-            <rect x={c.x - 54} y={c.y - 54} width={108} height={108} rx={26} fill="var(--c-surface)" stroke="var(--c-line-2)" strokeWidth={3} />
-            <svg x={c.x - ICONE / 2} y={c.y - ICONE / 2} width={ICONE} height={ICONE} viewBox="0 0 48 48" fill="none" stroke="var(--c-koda-texto)" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
-              <Desenho tipo={d.tipo} />
+            <rect x={c.x - 56} y={c.y - 50} width={112} height={100} rx={24} fill="var(--c-surface)" stroke="var(--c-line-2)" strokeWidth={3} />
+            <svg x={c.x - 48} y={c.y - 36} width={96} height={72} viewBox="0 0 120 90">
+              <CorpoDaIlustracao tipo={d.tipo} />
             </svg>
           </g>
         );
