@@ -83,6 +83,7 @@ export default function RepositoriosConectados() {
         <p className="py-6 text-center text-sm text-ink-2">
           Você ainda não conectou nenhum repositório.{" "}
           <Link href="/repositorios/adicionar" className="font-bold text-koda-texto">Conectar o primeiro</Link>
+          {" "}ou, se ainda não tem um projeto, <Link href="/ideias" className="font-bold text-koda-texto">ache ideias aqui</Link>.
         </p>
       )}
 

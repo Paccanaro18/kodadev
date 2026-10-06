@@ -19,6 +19,7 @@ export const MENU: EntradaDoMenu[] = [
       { rotulo: "Meus desafios", href: "/desafios", rotas: ["/desafios", "/projeto", "/desafio"] },
       { rotulo: "Repositórios", href: "/repositorios/adicionar", rotas: ["/repositorios", "/analisando"] },
       { rotulo: "Segurança", href: "/seguranca", rotas: ["/seguranca"] },
+      { rotulo: "Ideias de projetos", href: "/ideias", rotas: ["/ideias"] },
     ],
   },
   {

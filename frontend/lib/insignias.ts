@@ -4,8 +4,9 @@ import type { ResumoDeTrilha } from "@/lib/trilhas";
 import { checkpointAprovado, percentualConcluido, progressoDa, type EstadoDeEstudo, type ItemParaProgresso } from "@/lib/progressoDeEstudo";
 
 const TRILHA_DE_REDES = "redes";
+const TRILHA_DE_IDEIAS = "ideias";
 
-export type CategoriaDeInsignia = "estudo" | "redes" | "seguranca" | "tickets";
+export type CategoriaDeInsignia = "estudo" | "redes" | "seguranca" | "tickets" | "projetos";
 export type NivelDeInsignia = "bronze" | "prata" | "ouro";
 export type IconeDeInsignia = "livro" | "estrela" | "trofeu" | "rede" | "escudo" | "bandeira" | "alvo" | "chave" | "diploma" | "raio" | "mapa";
 
@@ -25,6 +26,7 @@ export type Insignia = {
 export type CatalogoDeInsignias = {
   trilhas: ResumoDeTrilha[];
   laboratoriosDeRedes: { aulas: string[]; desafios: string[] };
+  ideias: { slug: string; nivel: string }[];
 };
 
 export type EntradaDeInsignias = {
@@ -39,6 +41,7 @@ export const CATEGORIAS_DE_INSIGNIA: { valor: CategoriaDeInsignia; rotulo: strin
   { valor: "redes", rotulo: "Redes" },
   { valor: "seguranca", rotulo: "Segurança" },
   { valor: "tickets", rotulo: "Tickets" },
+  { valor: "projetos", rotulo: "Projetos" },
 ];
 
 function marco(
@@ -115,6 +118,18 @@ function insigniasDeSeguranca(desafios: ResumoDeSeguranca[] | null): Insignia[] 
   ];
 }
 
+function insigniasDeProjetos(estudo: EstadoDeEstudo, ideias: CatalogoDeInsignias["ideias"]): Insignia[] {
+  const feitos = new Set(progressoDa(estudo, TRILHA_DE_IDEIAS).desafios);
+  const concluidas = ideias.filter((i) => feitos.has(i.slug));
+  const niveisDistintos = new Set(concluidas.map((i) => i.nivel)).size;
+  return [
+    marco("projetos-primeiro", "projetos", "bronze", "bandeira", "Mãos à obra", "Conclua o seu primeiro projeto das ideias.", concluidas.length, 1),
+    marco("projetos-tres", "projetos", "prata", "mapa", "Portfólio de verdade", "Conclua 3 projetos das ideias.", concluidas.length, 3),
+    marco("projetos-niveis", "projetos", "prata", "raio", "Subindo de nível", "Conclua projetos em 3 níveis diferentes.", niveisDistintos, 3),
+    marco("projetos-avancado", "projetos", "ouro", "trofeu", "Nível avançado", "Conclua um projeto de nível avançado.", concluidas.filter((i) => i.nivel === "Avançado").length, 1),
+  ];
+}
+
 function insigniasDeTickets(concluidos: number | null): Insignia[] {
   const feitos = concluidos ?? 0;
   return [
@@ -130,6 +145,7 @@ export function calcularInsignias(entrada: EntradaDeInsignias): Insignia[] {
     ...insigniasDeRedes(entrada.estudo, entrada.catalogo.laboratoriosDeRedes),
     ...insigniasDeSeguranca(entrada.seguranca),
     ...insigniasDeTickets(entrada.ticketsConcluidos),
+    ...insigniasDeProjetos(entrada.estudo, entrada.catalogo.ideias),
   ];
 }
 

@@ -1,0 +1,98 @@
+import type { Evidencia } from "./tipos";
+
+export const EVIDENCIAS: Evidencia[] = [
+  {
+    id: "isc2-2024",
+    titulo: "ISC2 Cybersecurity Workforce Study 2024",
+    fonte: "ISC2",
+    ano: 2024,
+    url: "https://www.isc2.org/Insights/2024/10/ISC2-2024-Cybersecurity-Workforce-Study",
+    achado: "Em uma pesquisa com 15.852 profissionais, 90% relataram lacunas de habilidades nas equipes. Para vagas de nível iniciante, quem contrata coloca no topo resolução de problemas, trabalho em equipe, curiosidade e comunicação, acima de habilidades técnicas específicas como nuvem ou IA. E 59% dos gestores disseram não saber o bastante sobre IA generativa para definir as habilidades futuras. Segundo a cobertura especializada do mesmo estudo, as maiores lacunas técnicas citadas incluem IA (mais de um terço), computação em nuvem (30%), resposta a incidentes (25%) e segurança de aplicações e testes de intrusão (24% cada). Esses últimos números vêm da imprensa, e não da página oficial.",
+    forca: "pesquisa",
+  },
+  {
+    id: "octoverse-2025",
+    titulo: "GitHub Octoverse 2025",
+    fonte: "GitHub",
+    ano: 2025,
+    url: "https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/",
+    achado: "O GitHub passou de 180 milhões de pessoas desenvolvedoras, com 36,2 milhões de contas novas em 2025: o mercado de iniciantes está lotado, e só aparecer não basta. O relatório também mostra uma lacuna aberta: apenas 63% dos repositórios têm README, 5,5% têm guia de contribuição e 2% têm código de conduta. Projetos de IA dobraram desde 2023, com 1,1 milhão de repositórios públicos importando SDKs de modelos de linguagem.",
+    forca: "relatorio",
+  },
+  {
+    id: "stackoverflow-2025",
+    titulo: "Stack Overflow Developer Survey 2025",
+    fonte: "Stack Overflow",
+    ano: 2025,
+    url: "https://survey.stackoverflow.co/2025/",
+    achado: "84% das pessoas usam ou planejam usar ferramentas de IA, mas 46% desconfiam da precisão delas e só 33% confiam. A maior frustração, citada por 66%, é a solução que está quase certa, mas não está. Saber conferir e avaliar o que a IA entrega virou uma habilidade em si.",
+    forca: "pesquisa",
+  },
+  {
+    id: "osmani-2026",
+    titulo: "The Next Two Years of Software Engineering",
+    fonte: "Addy Osmani",
+    ano: 2026,
+    url: "https://addyosmani.com/blog/next-two-years/",
+    achado: "Segundo o engenheiro do Chrome, os melhores profissionais não serão os que programam mais rápido, e sim os que sabem quando desconfiar da IA. Ele recomenda aprender os fundamentos (estruturas de dados, complexidade) e até implementar um projeto duas vezes, uma com ajuda de IA e outra sem, comparando. Para quem está começando, sugere um portfólio que use APIs de IA e mostre como o resultado foi verificado. É uma opinião de especialista, não uma pesquisa.",
+    forca: "orientacao",
+  },
+  {
+    id: "dbir-2026",
+    titulo: "Verizon Data Breach Investigations Report 2026",
+    fonte: "Verizon",
+    ano: 2026,
+    url: "https://www.verizon.com/business/resources/reports/dbir/",
+    achado: "31% das violações analisadas começam por vulnerabilidades de software, superando senhas roubadas como principal porta de entrada, e 48% envolvem ransomware. Código inseguro e dependências desatualizadas são, hoje, a principal causa de invasão, o que dá valor concreto a quem sabe encontrá-los e corrigi-los.",
+    forca: "relatorio",
+  },
+  {
+    id: "dora",
+    titulo: "Pesquisa DORA (DevOps Research and Assessment)",
+    fonte: "Google Cloud / DORA",
+    ano: 2025,
+    url: "https://dora.dev/research/",
+    achado: "É a pesquisa mais longa e rigorosa sobre o assunto: mostra que práticas de entrega de software (integração contínua, deploys pequenos e frequentes) levam a desempenho melhor da organização e a mais bem-estar das pessoas. As métricas de entrega do DORA (frequência de deploy, tempo de entrega, taxa de falha e tempo de recuperação) são um vocabulário que equipes de engenharia usam, e dá para aplicá-las ao seu próprio repositório.",
+    forca: "pesquisa",
+  },
+  {
+    id: "opensource-guide",
+    titulo: "Open Source Guides: como contribuir",
+    fonte: "GitHub",
+    ano: 2025,
+    url: "https://opensource.guide/pt/how-to-contribute/",
+    achado: "O guia oficial lista o que contribuir para código aberto traz: exemplos públicos das suas habilidades, experiência real em equipe, relacionamentos com quem mantém o projeto e mentoria. Lista também formas de contribuir que não são código novo e que os mantenedores valorizam: documentação, traduções, testes, triagem de issues e revisão.",
+    forca: "relatorio",
+  },
+  {
+    id: "brasscom",
+    titulo: "Demanda de talentos em TIC (Brasscom)",
+    fonte: "Brasscom, via Convergência Digital",
+    ano: 2021,
+    url: "https://convergenciadigital.com.br/carreira/brasil-corre-atrs-de-797-mil-profissionais-de-ti-at-2025",
+    achado: "A Brasscom estimou uma demanda de 797 mil profissionais de tecnologia entre 2021 e 2025 no Brasil, com déficit anual perto de 106 mil, já que se formam cerca de 53 mil por ano em cursos da área. A maior procura é por desenvolvimento mobile e computação em nuvem. O estudo é de 2021 e vale como ordem de grandeza, não como número atual.",
+    forca: "relatorio",
+  },
+  {
+    id: "guias-de-portfolio",
+    titulo: "Guias de portfólio para pessoas desenvolvedoras",
+    fonte: "Codewars e outros guias de mercado",
+    ano: 2025,
+    url: "https://www.codewars.com/post/how-to-create-a-software-engineer-portfolio-to-land-your-first-junior-dev-job",
+    achado: "Guias de mercado repetem o mesmo conselho: poucos projetos bem acabados valem mais do que muitos básicos, com um README que explica o que faz e como rodar, uma demonstração no ar e testes. Não é pesquisa com método, e números como a porcentagem de recrutadores que exigem demonstração, que circulam por aí, não têm fonte confiável. Use como orientação, não como estatística.",
+    forca: "orientacao",
+  },
+  {
+    id: "guias-de-seguranca",
+    titulo: "Guias de portfólio em cibersegurança",
+    fonte: "EC-Council University e outros guias de mercado",
+    ano: 2025,
+    url: "https://www.eccu.edu/blog/cybersecurity-portfolio-bachelors-guide/",
+    achado: "Guias para quem começa em segurança recomendam documentar um laboratório próprio (o que montou, por quê e o que aprendeu) e escrever relatos de desafios do tipo CTF, explicando o que tentou e não funcionou, em texto claro e sem dados sensíveis. É orientação de mercado, e se alinha com o que a pesquisa da ISC2 diz sobre comunicação e resolução de problemas.",
+    forca: "orientacao",
+  },
+];
+
+export function evidenciaPorId(id: string): Evidencia | undefined {
+  return EVIDENCIAS.find((e) => e.id === id);
+}

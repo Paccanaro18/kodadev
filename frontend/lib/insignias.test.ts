@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ResumoDeSeguranca } from "@/lib/api";
 import { calcularInsignias, proximasInsignias, resumirInsignias, type CatalogoDeInsignias, type Insignia } from "./insignias";
+import { IDEIAS } from "./ideias";
 import { AULAS_DE_REDES, DESAFIOS_DE_REDES, LABORATORIOS } from "./redes/laboratorios";
 import { itensDaTrilha, modulosDaTrilha, resumirTrilha, TRILHAS, trilhaPorSlug } from "./trilhas";
 import type { EstadoDeEstudo } from "./progressoDeEstudo";
@@ -8,6 +9,7 @@ import type { EstadoDeEstudo } from "./progressoDeEstudo";
 const catalogo: CatalogoDeInsignias = {
   trilhas: TRILHAS.map(resumirTrilha),
   laboratoriosDeRedes: { aulas: AULAS_DE_REDES.map((l) => l.slug), desafios: DESAFIOS_DE_REDES.map((l) => l.slug) },
+  ideias: IDEIAS.map((i) => ({ slug: i.slug, nivel: i.nivel })),
 };
 const SEM_DADOS = { catalogo, estudo: {} as EstadoDeEstudo, seguranca: null, ticketsConcluidos: null };
 
@@ -104,6 +106,22 @@ describe("insígnias", () => {
     expect(achar(todas, "tickets-primeiro").conquistada).toBe(true);
     expect(achar(todas, "tickets-cinco")).toMatchObject({ atual: 5, conquistada: true });
     expect(achar(todas, "tickets-vinte")).toMatchObject({ atual: 7, conquistada: false });
+  });
+
+  it("dá insígnias pelos projetos das ideias, inclusive por variedade de níveis", () => {
+    const iniciante = IDEIAS.find((i) => i.nivel === "Iniciante")!;
+    const intermediario = IDEIAS.find((i) => i.nivel === "Intermediário")!;
+    const avancado = IDEIAS.find((i) => i.nivel === "Avançado")!;
+    const estudo: EstadoDeEstudo = { ideias: { licoes: [], notas: {}, desafios: [iniciante.slug, intermediario.slug, "ideia-que-nao-existe"] } };
+    const parcial = calcularInsignias({ ...SEM_DADOS, estudo });
+    expect(achar(parcial, "projetos-primeiro").conquistada).toBe(true);
+    expect(achar(parcial, "projetos-tres")).toMatchObject({ atual: 2, conquistada: false });
+    expect(achar(parcial, "projetos-niveis")).toMatchObject({ atual: 2, total: 3, conquistada: false });
+    expect(achar(parcial, "projetos-avancado").conquistada).toBe(false);
+
+    estudo.ideias.desafios.push(avancado.slug);
+    const completo = calcularInsignias({ ...SEM_DADOS, estudo });
+    for (const id of ["projetos-tres", "projetos-niveis", "projetos-avancado"]) expect(achar(completo, id).conquistada, id).toBe(true);
   });
 
   it("resume por nível e sugere as mais próximas de serem conquistadas", () => {

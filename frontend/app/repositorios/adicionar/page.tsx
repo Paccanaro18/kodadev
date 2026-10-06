@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { Lightbulb, Search } from "lucide-react";
 import AppShell from "@/components/AppShell";
 import { BackLink, PageHeader } from "@/components/ui";
 import { ErroApi, iniciarAnalise, listarRepositorios, type Repositorio } from "@/lib/api";
@@ -58,7 +59,10 @@ export default function AddRepo() {
     <AppShell width="max-w-[760px]">
       <BackLink href="/dashboard">← Voltar</BackLink>
       <PageHeader mascot="duvida" title="Adicionar repositório" subtitle="Escolha um dos seus repositórios públicos do GitHub para conectar." />
-      <label className="mt-7 flex h-14 items-center gap-3 rounded-[18px] border-[1.5px] border-line-2 bg-surface px-5 focus-within:border-koda">
+      <Link href="/ideias" className="mt-5 flex items-center gap-3 rounded-2xl bg-koda-soft px-5 py-3.5 text-sm font-semibold text-koda-texto transition duration-200 hover:-translate-y-0.5 hover:text-koda-texto">
+        <Lightbulb className="size-5 shrink-0" aria-hidden="true" />Não tem um projeto ainda? Ache ideias aqui
+      </Link>
+      <label className="mt-5 flex h-14 items-center gap-3 rounded-[18px] border-[1.5px] border-line-2 bg-surface px-5 focus-within:border-koda">
         <Search className="size-5 text-ink-3" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar repositórios..." className="flex-1 bg-transparent text-[15px] outline-none" />
       </label>
