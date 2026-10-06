@@ -1,0 +1,26 @@
+{
+  "slug": "teste-um",
+  "titulo": "Teste um",
+  "categoria": "LOGS",
+  "dificuldade": "FACIL",
+  "resumo": "Resumo de Teste um",
+  "enunciado": [
+    "Enunciado de Teste um"
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "a.txt",
+      "linguagem": "text",
+      "conteudo": "conteudo secreto de teste"
+    }
+  ],
+  "dicas": [
+    "Dica um",
+    "Dica dois"
+  ],
+  "solucao": [
+    "Solução de Teste um"
+  ],
+  "flagHash": "771148e70ce8e04f62e0c10ffa1f3f44670908c1d89cf02b839a8fba25aa9d27"
+}

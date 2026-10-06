@@ -1,0 +1,26 @@
+{
+  "slug": "teste-dois",
+  "titulo": "Teste dois",
+  "categoria": "WEB",
+  "dificuldade": "DIFICIL",
+  "resumo": "Resumo de Teste dois",
+  "enunciado": [
+    "Enunciado de Teste dois"
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "a.txt",
+      "linguagem": "text",
+      "conteudo": "conteudo secreto de teste"
+    }
+  ],
+  "dicas": [
+    "Dica um",
+    "Dica dois"
+  ],
+  "solucao": [
+    "Solução de Teste dois"
+  ],
+  "flagHash": "2a13ffdbf748cde9baf540dd90d5351b83ef32480d745c2e864faa946b7e85a6"
+}
