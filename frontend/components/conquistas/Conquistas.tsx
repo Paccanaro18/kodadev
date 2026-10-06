@@ -5,7 +5,7 @@ import AppShell from "../AppShell";
 import { Card, Mascot } from "../ui";
 import {
   CATEGORIAS_DE_INSIGNIA, proximasInsignias, resumirInsignias,
-  type CategoriaDeInsignia, type IconeDeInsignia, type Insignia, type NivelDeInsignia,
+  type CatalogoDeInsignias, type CategoriaDeInsignia, type IconeDeInsignia, type Insignia, type NivelDeInsignia,
 } from "@/lib/insignias";
 import { useInsignias } from "@/lib/useInsignias";
 
@@ -63,8 +63,8 @@ function Cartao({ insignia }: { insignia: Insignia }) {
   );
 }
 
-export function ConteudoDeConquistas() {
-  const { insignias, carregando, incompleto } = useInsignias();
+export function ConteudoDeConquistas({ catalogo }: { catalogo: CatalogoDeInsignias }) {
+  const { insignias, carregando, incompleto } = useInsignias(catalogo);
   const [categoria, setCategoria] = useState<CategoriaDeInsignia | null>(null);
   const resumo = resumirInsignias(insignias);
   const proximas = proximasInsignias(insignias);
@@ -142,6 +142,6 @@ export function ConteudoDeConquistas() {
   );
 }
 
-export default function Conquistas() {
-  return <AppShell><ConteudoDeConquistas /></AppShell>;
+export default function Conquistas({ catalogo }: { catalogo: CatalogoDeInsignias }) {
+  return <AppShell><ConteudoDeConquistas catalogo={catalogo} /></AppShell>;
 }

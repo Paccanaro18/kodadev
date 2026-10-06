@@ -5,13 +5,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import Conquistas from "./Conquistas";
 import * as api from "@/lib/api";
 import { reiniciarEstudoParaTestes } from "@/lib/estudoStore";
+import type { CatalogoDeInsignias } from "@/lib/insignias";
 import { CHAVE_DO_ESTUDO } from "@/lib/progressoDeEstudo";
+import { AULAS_DE_REDES, DESAFIOS_DE_REDES } from "@/lib/redes/laboratorios";
+import { resumirTrilha, TRILHAS } from "@/lib/trilhas";
 
 vi.mock("../AppShell", () => ({ default: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 vi.mock("@/lib/api", async (importarOriginal) => {
   const original = await importarOriginal<typeof import("@/lib/api")>();
   return { ...original, buscarPerfil: vi.fn().mockResolvedValue(null), listarDesafiosDeSeguranca: vi.fn(), buscarResumoDoProgresso: vi.fn() };
 });
+
+const catalogo: CatalogoDeInsignias = {
+  trilhas: TRILHAS.map(resumirTrilha),
+  laboratoriosDeRedes: { aulas: AULAS_DE_REDES.map((l) => l.slug), desafios: DESAFIOS_DE_REDES.map((l) => l.slug) },
+};
 
 const seguranca = vi.mocked(api.listarDesafiosDeSeguranca);
 const resumo = vi.mocked(api.buscarResumoDoProgresso);
@@ -31,7 +39,7 @@ beforeEach(() => {
 describe("Conquistas", () => {
   it("mostra as conquistas e o progresso vindos do estudo, da segurança e dos tickets", async () => {
     window.localStorage.setItem(CHAVE_DO_ESTUDO, JSON.stringify({ redes: { licoes: [], notas: {}, desafios: ["primeiro-cabo"] } }));
-    render(<Conquistas />);
+    render(<Conquistas catalogo={catalogo} />);
 
     await waitFor(() => expect(screen.queryByText("Calculando…")).not.toBeInTheDocument());
     expect(screen.getByText(/4 de \d+ insígnias conquistadas/)).toBeInTheDocument();
@@ -47,7 +55,7 @@ describe("Conquistas", () => {
   });
 
   it("sugere as insígnias mais próximas e filtra por área", async () => {
-    render(<Conquistas />);
+    render(<Conquistas catalogo={catalogo} />);
     await waitFor(() => expect(screen.queryByText("Calculando…")).not.toBeInTheDocument());
     expect(screen.getByRole("heading", { name: "Quase lá" })).toBeInTheDocument();
 
@@ -62,7 +70,7 @@ describe("Conquistas", () => {
   it("avisa quando parte do histórico não carrega, mas mostra o que tem", async () => {
     seguranca.mockRejectedValue(new Error("falhou"));
     resumo.mockRejectedValue(new Error("falhou"));
-    render(<Conquistas />);
+    render(<Conquistas catalogo={catalogo} />);
     expect(await screen.findByRole("status")).toHaveTextContent("Não foi possível carregar parte do seu histórico");
     expect(screen.getByText(/0 de \d+ insígnias conquistadas/)).toBeInTheDocument();
   });

@@ -1,8 +1,9 @@
 import type { ResumoDeSeguranca } from "@/lib/api";
-import { LABORATORIOS, AULAS_DE_REDES, DESAFIOS_DE_REDES, TRILHA_DE_REDES } from "@/lib/redes/laboratorios";
 import { CATEGORIAS } from "@/lib/seguranca";
-import { checkpointsDaTrilha, itensDaTrilha, modulosDaTrilha, TRILHAS } from "@/lib/trilhas";
+import type { ResumoDeTrilha } from "@/lib/trilhas";
 import { checkpointAprovado, percentualConcluido, progressoDa, type EstadoDeEstudo, type ItemParaProgresso } from "@/lib/progressoDeEstudo";
+
+const TRILHA_DE_REDES = "redes";
 
 export type CategoriaDeInsignia = "estudo" | "redes" | "seguranca" | "tickets";
 export type NivelDeInsignia = "bronze" | "prata" | "ouro";
@@ -20,7 +21,14 @@ export type Insignia = {
   conquistada: boolean;
 };
 
+/** O que existe para ser conquistado. Vem do servidor, para o navegador não carregar o conteúdo das lições. */
+export type CatalogoDeInsignias = {
+  trilhas: ResumoDeTrilha[];
+  laboratoriosDeRedes: { aulas: string[]; desafios: string[] };
+};
+
 export type EntradaDeInsignias = {
+  catalogo: CatalogoDeInsignias;
   estudo: EstadoDeEstudo;
   seguranca: ResumoDeSeguranca[] | null;
   ticketsConcluidos: number | null;
@@ -41,25 +49,24 @@ function marco(
   return { id, titulo, descricao, categoria, nivel, icone, atual: limitado, total, conquistada: limitado >= total };
 }
 
-function insigniasDeEstudo(estudo: EstadoDeEstudo): Insignia[] {
+function insigniasDeEstudo(estudo: EstadoDeEstudo, trilhas: ResumoDeTrilha[]): Insignia[] {
   let licoes = 0;
   let notaMaxima = 0;
   let trilhasIniciadas = 0;
   let checkpoints = 0;
   const porTrilha: Insignia[] = [];
 
-  for (const trilha of TRILHAS) {
+  for (const trilha of trilhas) {
     const progresso = progressoDa(estudo, trilha.slug);
-    const modulos = modulosDaTrilha(trilha).map((m) => m.slug);
+    const todos = trilha.etapas.flatMap((etapa) => etapa.itens);
+    const modulos = todos.filter((item) => item.tipo === "modulo").map((m) => m.slug);
     const lidas = progresso.licoes.filter((slug) => modulos.includes(slug)).length;
     licoes += lidas;
     if (lidas > 0) trilhasIniciadas++;
-    notaMaxima += itensDaTrilha(trilha).filter((item) => progresso.notas[item.slug] === 1).length;
-    checkpoints += checkpointsDaTrilha(trilha).filter((c) => checkpointAprovado(progresso, c.slug, c.notaMinima)).length;
+    notaMaxima += todos.filter((item) => progresso.notas[item.slug] === 1).length;
+    checkpoints += todos.filter((c) => c.tipo === "checkpoint" && checkpointAprovado(progresso, c.slug, c.notaMinima ?? 0)).length;
 
-    const itens: ItemParaProgresso[] = itensDaTrilha(trilha).map((item) => ({
-      tipo: item.tipo, slug: item.slug, notaMinima: item.tipo === "checkpoint" ? item.notaMinima : undefined,
-    }));
+    const itens: ItemParaProgresso[] = todos.map((item) => ({ tipo: item.tipo, slug: item.slug, notaMinima: item.notaMinima }));
     const percentual = percentualConcluido(progresso, itens);
     porTrilha.push(marco(`trilha-${trilha.slug}`, "estudo", "ouro", "diploma", `Trilha completa: ${trilha.titulo}`,
       `Conclua todos os módulos e checkpoints da trilha ${trilha.titulo}.`, percentual, 100));
@@ -76,16 +83,17 @@ function insigniasDeEstudo(estudo: EstadoDeEstudo): Insignia[] {
   ];
 }
 
-function insigniasDeRedes(estudo: EstadoDeEstudo): Insignia[] {
+function insigniasDeRedes(estudo: EstadoDeEstudo, laboratorios: CatalogoDeInsignias["laboratoriosDeRedes"]): Insignia[] {
   const feitos = new Set(progressoDa(estudo, TRILHA_DE_REDES).desafios);
-  const quantos = (laboratorios: { slug: string }[]) => laboratorios.filter((l) => feitos.has(l.slug)).length;
-  const todos = quantos(LABORATORIOS);
+  const quantos = (slugs: string[]) => slugs.filter((slug) => feitos.has(slug)).length;
+  const todosOsLaboratorios = [...laboratorios.aulas, ...laboratorios.desafios];
+  const todos = quantos(todosOsLaboratorios);
   return [
     marco("redes-primeiro-cabo", "redes", "bronze", "rede", "Primeiro cabo", "Conclua o laboratório Seu primeiro cabo.", feitos.has("primeiro-cabo") ? 1 : 0, 1),
     marco("redes-tres-laboratorios", "redes", "prata", "rede", "Pé na rede", "Conclua 3 laboratórios de Redes.", todos, 3),
-    marco("redes-todas-as-aulas", "redes", "ouro", "diploma", "Engenheiro de redes", "Conclua todas as aulas interativas de Redes.", quantos(AULAS_DE_REDES), AULAS_DE_REDES.length),
-    marco("redes-consertador", "redes", "prata", "raio", "Consertador de redes", "Resolva 3 desafios de Redes.", quantos(DESAFIOS_DE_REDES), 3),
-    marco("redes-todos", "redes", "ouro", "trofeu", "Rede completa", "Conclua todos os laboratórios de Redes.", todos, LABORATORIOS.length),
+    marco("redes-todas-as-aulas", "redes", "ouro", "diploma", "Engenheiro de redes", "Conclua todas as aulas interativas de Redes.", quantos(laboratorios.aulas), laboratorios.aulas.length),
+    marco("redes-consertador", "redes", "prata", "raio", "Consertador de redes", "Resolva 3 desafios de Redes.", quantos(laboratorios.desafios), 3),
+    marco("redes-todos", "redes", "ouro", "trofeu", "Rede completa", "Conclua todos os laboratórios de Redes.", todos, todosOsLaboratorios.length),
   ];
 }
 
@@ -118,8 +126,8 @@ function insigniasDeTickets(concluidos: number | null): Insignia[] {
 
 export function calcularInsignias(entrada: EntradaDeInsignias): Insignia[] {
   return [
-    ...insigniasDeEstudo(entrada.estudo),
-    ...insigniasDeRedes(entrada.estudo),
+    ...insigniasDeEstudo(entrada.estudo, entrada.catalogo.trilhas),
+    ...insigniasDeRedes(entrada.estudo, entrada.catalogo.laboratoriosDeRedes),
     ...insigniasDeSeguranca(entrada.seguranca),
     ...insigniasDeTickets(entrada.ticketsConcluidos),
   ];

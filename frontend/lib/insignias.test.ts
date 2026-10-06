@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { ResumoDeSeguranca } from "@/lib/api";
-import { calcularInsignias, proximasInsignias, resumirInsignias, type Insignia } from "./insignias";
-import { LABORATORIOS } from "./redes/laboratorios";
-import { itensDaTrilha, modulosDaTrilha, trilhaPorSlug } from "./trilhas";
+import { calcularInsignias, proximasInsignias, resumirInsignias, type CatalogoDeInsignias, type Insignia } from "./insignias";
+import { AULAS_DE_REDES, DESAFIOS_DE_REDES, LABORATORIOS } from "./redes/laboratorios";
+import { itensDaTrilha, modulosDaTrilha, resumirTrilha, TRILHAS, trilhaPorSlug } from "./trilhas";
 import type { EstadoDeEstudo } from "./progressoDeEstudo";
 
-const SEM_DADOS = { estudo: {} as EstadoDeEstudo, seguranca: null, ticketsConcluidos: null };
+const catalogo: CatalogoDeInsignias = {
+  trilhas: TRILHAS.map(resumirTrilha),
+  laboratoriosDeRedes: { aulas: AULAS_DE_REDES.map((l) => l.slug), desafios: DESAFIOS_DE_REDES.map((l) => l.slug) },
+};
+const SEM_DADOS = { catalogo, estudo: {} as EstadoDeEstudo, seguranca: null, ticketsConcluidos: null };
 
 function achar(insignias: Insignia[], id: string): Insignia {
   const encontrada = insignias.find((i) => i.id === id);
