@@ -1,0 +1,316 @@
+"use client";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Circle, Clock, Eye, Lightbulb, Plus, RotateCcw, Trash2 } from "lucide-react";
+import AppShell from "../AppShell";
+import BlocosDeConteudo from "../publico/BlocosDeConteudo";
+import { BackLink, Card, Eyebrow } from "../ui";
+import PainelDoDispositivo from "./PainelDoDispositivo";
+import TerminalDeRede, { type LinhaDoTerminal } from "./TerminalDeRede";
+import {
+  adicionarCabo, adicionarDispositivo, atualizarDispositivo, atualizarInterface, posicaoLivre, primeiraInterfaceLivre,
+  removerCabo, removerDispositivo,
+} from "@/lib/redes/construcao";
+import { avaliarObjetivos, laboratorioPorSlug, TRILHA_DE_REDES, tudoCumprido, type Laboratorio } from "@/lib/redes/laboratorios";
+import { Simulador } from "@/lib/redes/simulador";
+import { executarComando } from "@/lib/redes/terminal";
+import { TIPOS_DE_DISPOSITIVO, type Passo, type Rede } from "@/lib/redes/tipos";
+import { useEstudo } from "@/lib/useEstudo";
+
+const EditorDeRede = dynamic(() => import("./EditorDeRede"), {
+  ssr: false,
+  loading: () => <div className="h-[520px] animate-pulse rounded-2xl bg-tint" />,
+});
+
+const MS_POR_PASSO = 700;
+
+function prefereMovimentoReduzido(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+}
+
+function Objetivos({ lab, resultados }: { lab: Laboratorio; resultados: ReturnType<typeof avaliarObjetivos> }) {
+  const feitos = resultados.filter((r) => r.cumprido).length;
+  return (
+    <Card className="!p-5">
+      <Eyebrow>Objetivos · {feitos} de {resultados.length}</Eyebrow>
+      <div role="progressbar" aria-label="Objetivos cumpridos" aria-valuemin={0} aria-valuemax={resultados.length} aria-valuenow={feitos} className="mb-4 h-2 overflow-hidden rounded-full bg-track">
+        <div className="h-full rounded-full bg-koda transition-all duration-500" style={{ width: `${resultados.length === 0 ? 0 : (feitos / resultados.length) * 100}%` }} />
+      </div>
+      <ul className="grid gap-3" aria-label={`Objetivos de ${lab.titulo}`}>
+        {resultados.map((resultado) => (
+          <li key={resultado.descricao} className="flex gap-2.5 text-sm leading-snug">
+            {resultado.cumprido
+              ? <CheckCircle2 className="mt-0.5 size-[18px] shrink-0 text-ok" aria-label="Cumprido" />
+              : <Circle className="mt-0.5 size-[18px] shrink-0 text-ink-3" aria-label="Pendente" />}
+            <span>
+              <span className={resultado.cumprido ? "text-ink-2 line-through decoration-ink-3" : "font-semibold text-ink"}>{resultado.descricao}</span>
+              {!resultado.cumprido && resultado.detalhe && <span className="mt-0.5 block text-xs text-ink-2">{resultado.detalhe}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function Ajuda({ lab }: { lab: Laboratorio }) {
+  const [dica, setDica] = useState(false);
+  const [solucao, setSolucao] = useState(false);
+  if (!lab.dica && !lab.solucao) return null;
+  const botao = "inline-flex h-9 items-center gap-2 rounded-xl border-[1.5px] border-koda-texto px-3.5 text-[13px] font-bold text-koda-texto transition duration-200 hover:bg-koda-soft active:scale-95";
+  return (
+    <Card className="!p-5">
+      <Eyebrow>Travou?</Eyebrow>
+      <div className="flex flex-wrap gap-2">
+        {lab.dica && !dica && <button type="button" onClick={() => setDica(true)} className={botao}><Lightbulb className="size-4" aria-hidden="true" />Ver uma dica</button>}
+        {lab.solucao && !solucao && <button type="button" onClick={() => setSolucao(true)} className={botao}><Eye className="size-4" aria-hidden="true" />Ver a solução</button>}
+      </div>
+      {dica && lab.dica && <p className="mt-3 rounded-xl bg-koda-soft p-3 text-sm leading-relaxed">{lab.dica}</p>}
+      {solucao && lab.solucao && (
+        <ol className="mt-3 list-decimal space-y-1.5 rounded-xl bg-tint p-3 pl-7 text-sm leading-relaxed">
+          {lab.solucao.map((passo) => <li key={passo}>{passo}</li>)}
+        </ol>
+      )}
+    </Card>
+  );
+}
+
+function RegistroDePacotes({ rede, passos, visiveis, reproduzindo, aoRepetir }: {
+  rede: Rede; passos: Passo[]; visiveis: number; reproduzindo: boolean; aoRepetir: () => void;
+}) {
+  const nome = (id: string) => rede.dispositivos.find((d) => d.id === id)?.nome ?? id;
+  return (
+    <Card className="!p-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-xs font-bold tracking-[0.12em] text-ink-2/70 uppercase">Pacotes na rede</div>
+        {passos.length > 0 && !reproduzindo && (
+          <button type="button" onClick={aoRepetir} className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-koda-soft px-2.5 text-xs font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 active:scale-95">
+            <RotateCcw className="size-3.5" aria-hidden="true" />Ver de novo
+          </button>
+        )}
+      </div>
+      {passos.length === 0
+        ? <p className="text-sm text-ink-2">Dê um ping no terminal de um dispositivo e acompanhe aqui cada quadro que passa pelos cabos: <span className="font-bold text-warn">ARP</span> para descobrir o endereço físico e <span className="font-bold text-ok">ICMP</span> para o ping em si.</p>
+        : (
+          <ol aria-label="Quadros enviados" className="grid max-h-56 gap-1.5 overflow-y-auto pr-1 text-[13px]">
+            {passos.slice(0, visiveis).map((passo, indice) => (
+              <li key={indice} className="flex items-start gap-2">
+                <span className={`mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-extrabold ${passo.tipo === "arp" ? "bg-warn-soft text-warn" : "bg-ok-soft text-ok"}`}>{passo.tipo === "arp" ? "ARP" : "ICMP"}</span>
+                <span className="min-w-0 leading-snug">
+                  <span className="font-semibold text-ink">{nome(passo.de.dispositivo)} {passo.de.interface} → {nome(passo.para.dispositivo)} {passo.para.interface}</span>
+                  <span className="block text-xs text-ink-2">{passo.rotulo}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+    </Card>
+  );
+}
+
+export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
+  const [rede, setRede] = useState<Rede>(lab.redeInicial);
+  const [posicoes, setPosicoes] = useState<Record<string, { x: number; y: number }>>({});
+  const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [caboSelecionado, setCaboSelecionado] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [aba, setAba] = useState<"config" | "terminal">("config");
+  const [terminais, setTerminais] = useState<Record<string, LinhaDoTerminal[]>>({});
+  const [passos, setPassos] = useState<Passo[]>([]);
+  const [indice, setIndice] = useState(-1);
+  const [execucao, setExecucao] = useState(0);
+  const { progresso, carregado, marcarDesafio } = useEstudo(TRILHA_DE_REDES);
+
+  const simulador = useMemo(() => new Simulador(rede), [rede]);
+  const resultados = useMemo(() => avaliarObjetivos(rede, lab.objetivos), [rede, lab.objetivos]);
+  const completo = tudoCumprido(resultados);
+  const jaConcluido = progresso.desafios.includes(lab.slug);
+
+  useEffect(() => {
+    if (carregado && completo && !jaConcluido) marcarDesafio(lab.slug, true);
+  }, [carregado, completo, jaConcluido, lab.slug, marcarDesafio]);
+
+  useEffect(() => {
+    if (indice < 0) return;
+    const temporizador = setTimeout(() => setIndice((atual) => (atual + 1 < passos.length ? atual + 1 : -1)), MS_POR_PASSO);
+    return () => clearTimeout(temporizador);
+  }, [indice, passos]);
+
+  const dispositivo = rede.dispositivos.find((d) => d.id === selecionado) ?? null;
+  const cabo = rede.cabos.find((c) => c.id === caboSelecionado) ?? null;
+  const reproduzindo = indice >= 0;
+  const passoAtual = reproduzindo && passos[indice] ? { ...passos[indice], chave: `${execucao}-${indice}` } : null;
+
+  function reproduzir(novos: Passo[]) {
+    setPassos(novos);
+    setExecucao((n) => n + 1);
+    setIndice(novos.length > 0 && !prefereMovimentoReduzido() ? 0 : -1);
+  }
+
+  function mudarRede(nova: Rede) {
+    setRede(nova);
+    setAviso(null);
+  }
+
+  function ligar(origem: string, destino: string) {
+    const portaOrigem = primeiraInterfaceLivre(rede, origem);
+    const portaDestino = primeiraInterfaceLivre(rede, destino);
+    const nome = (id: string) => rede.dispositivos.find((d) => d.id === id)?.nome ?? id;
+    if (origem === destino) return;
+    if (!portaOrigem || !portaDestino) {
+      setAviso(`${nome(!portaOrigem ? origem : destino)} não tem porta livre.`);
+      return;
+    }
+    const resultado = adicionarCabo(rede, { dispositivo: origem, interface: portaOrigem }, { dispositivo: destino, interface: portaDestino });
+    if ("erro" in resultado) setAviso(resultado.erro);
+    else mudarRede(resultado.rede);
+  }
+
+  function executar(linha: string) {
+    if (!dispositivo) return;
+    const saida = executarComando(rede, simulador, dispositivo.id, linha);
+    const prompt: LinhaDoTerminal = { tipo: "entrada", texto: `${dispositivo.nome}> ${linha}` };
+    setTerminais((atuais) => ({
+      ...atuais,
+      [dispositivo.id]: saida.limpar ? [] : [...(atuais[dispositivo.id] ?? []), prompt, ...saida.linhas.map((texto) => ({ tipo: "saida" as const, texto }))],
+    }));
+    if (saida.passos.length > 0) reproduzir(saida.passos);
+  }
+
+  function reiniciar() {
+    setRede(lab.redeInicial);
+    setPosicoes({});
+    setSelecionado(null);
+    setCaboSelecionado(null);
+    setTerminais({});
+    setPassos([]);
+    setIndice(-1);
+    setAviso(null);
+  }
+
+  return (
+    <>
+      <BackLink href="/redes">← Todos os laboratórios</BackLink>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span className="rounded-full bg-koda-soft px-3 py-1 text-xs font-bold text-koda-texto">{lab.tipo === "aula" ? "Aula interativa" : "Desafio"}</span>
+        <span className="rounded-full bg-tint px-3 py-1 text-xs font-bold text-ink">{lab.nivel}</span>
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink-2"><Clock className="size-3.5" aria-hidden="true" />{lab.minutos} min</span>
+      </div>
+      <h1 className="mt-2 text-[26px] leading-tight font-bold tracking-tight sm:text-4xl">{lab.titulo}</h1>
+      <p className="mt-2 max-w-3xl text-ink-2">{lab.resumo}</p>
+
+      {(completo || jaConcluido) && (
+        <p role="status" className="mt-5 flex items-center gap-2 rounded-2xl bg-ok-soft px-5 py-3 text-sm font-bold text-ok">
+          <CheckCircle2 className="size-5" aria-hidden="true" />
+          {completo ? "Laboratório concluído! Seu progresso foi salvo." : "Você já concluiu este laboratório. Pode refazê-lo à vontade."}
+        </p>
+      )}
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
+        <div className="grid content-start gap-6">
+          <Objetivos lab={lab} resultados={resultados} />
+          <Card className="!p-5">
+            <Eyebrow>{lab.tipo === "aula" ? "A aula" : "O chamado"}</Eyebrow>
+            <div className="max-h-[560px] overflow-y-auto pr-2 [&>div]:text-[15px]">
+              <BlocosDeConteudo blocos={lab.teoria} />
+            </div>
+          </Card>
+          <Ajuda lab={lab} />
+        </div>
+
+        <div className="grid content-start gap-4">
+          <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Adicionar dispositivos">
+            {TIPOS_DE_DISPOSITIVO.filter((t) => lab.paleta.includes(t.tipo)).map((t) => (
+              <button key={t.tipo} type="button"
+                onClick={() => {
+                  const posicao = posicaoLivre(rede, posicoes);
+                  mudarRede(adicionarDispositivo(rede, t.tipo, posicao.x, posicao.y));
+                }}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-koda-soft px-3.5 text-[13px] font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 active:scale-95">
+                <Plus className="size-3.5" aria-hidden="true" />{t.rotulo}
+              </button>
+            ))}
+            <button type="button" onClick={reiniciar}
+              className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-xl border border-line-2 px-3.5 text-[13px] font-semibold text-ink-2 transition duration-200 hover:bg-tint active:scale-95">
+              <RotateCcw className="size-3.5" aria-hidden="true" />Recomeçar
+            </button>
+          </div>
+
+          <EditorDeRede
+            rede={rede}
+            posicoes={posicoes}
+            selecionado={selecionado}
+            caboSelecionado={caboSelecionado}
+            passoAtual={passoAtual}
+            aoSelecionarDispositivo={(id) => {
+              setSelecionado(id);
+              if (id) setCaboSelecionado(null);
+            }}
+            aoSelecionarCabo={(id) => {
+              setCaboSelecionado(id);
+              if (id) setSelecionado(null);
+            }}
+            aoMover={(id, posicao) => setPosicoes((atuais) => ({ ...atuais, [id]: posicao }))}
+            aoLigar={ligar}
+          />
+          <p className="text-xs text-ink-2">Arraste do círculo com o ícone de cabo de um dispositivo até outro para ligá-los. Clique em um dispositivo para configurá-lo e abrir o terminal. Clique em um cabo para removê-lo.</p>
+          {aviso && <p role="alert" className="rounded-xl bg-warn-soft px-4 py-2.5 text-sm font-semibold text-warn">{aviso}</p>}
+
+          {cabo && (
+            <Card className="!p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm">
+                  <strong>Cabo:</strong> {rede.dispositivos.find((d) => d.id === cabo.a.dispositivo)?.nome} ({cabo.a.interface}) ↔ {rede.dispositivos.find((d) => d.id === cabo.b.dispositivo)?.nome} ({cabo.b.interface})
+                </p>
+                <button type="button" onClick={() => { mudarRede(removerCabo(rede, cabo.id)); setCaboSelecionado(null); }}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border-[1.5px] border-bad px-4 text-sm font-bold text-bad transition duration-200 hover:bg-bad-soft active:scale-95">
+                  <Trash2 className="size-4" aria-hidden="true" />Remover cabo
+                </button>
+              </div>
+            </Card>
+          )}
+
+          {dispositivo && (
+            <Card className="!p-5">
+              <div role="tablist" aria-label="Painel do dispositivo" className="mb-4 flex gap-2">
+                {(["config", "terminal"] as const).map((valor) => (
+                  <button key={valor} role="tab" type="button" aria-selected={aba === valor} onClick={() => setAba(valor)}
+                    className={`h-9 rounded-xl px-4 text-[13px] font-bold transition duration-200 active:scale-95 ${aba === valor ? "bg-koda text-white" : "bg-tint text-ink"}`}>
+                    {valor === "config" ? "Configuração" : "Terminal"}
+                  </button>
+                ))}
+              </div>
+              {aba === "config"
+                ? (
+                  <PainelDoDispositivo
+                    dispositivo={dispositivo}
+                    rede={rede}
+                    aoMudarNome={(nome) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, nome })))}
+                    aoMudarGateway={(gateway) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, gateway })))}
+                    aoMudarInterface={(nome, mudanca) => mudarRede(atualizarInterface(rede, dispositivo.id, nome, mudanca))}
+                    aoMudarRotas={(rotas) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, rotas })))}
+                    aoRemover={() => { mudarRede(removerDispositivo(rede, dispositivo.id)); setSelecionado(null); }}
+                    aoFechar={() => setSelecionado(null)}
+                  />
+                )
+                : <TerminalDeRede nome={dispositivo.nome} linhas={terminais[dispositivo.id] ?? []} aoExecutar={executar} />}
+            </Card>
+          )}
+
+          <RegistroDePacotes rede={rede} passos={passos} visiveis={indice < 0 ? passos.length : indice + 1} reproduzindo={reproduzindo}
+            aoRepetir={() => reproduzir(passos)} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Conteudo({ slug }: { slug: string }) {
+  const lab = laboratorioPorSlug(slug);
+  if (!lab) return <p className="text-ink-2">Laboratório não encontrado.</p>;
+  return <AreaDoLaboratorio key={lab.slug} lab={lab} />;
+}
+
+export default function LaboratorioDeRedes({ slug }: { slug: string }) {
+  return <AppShell width="max-w-[1480px]"><Conteudo slug={slug} /></AppShell>;
+}

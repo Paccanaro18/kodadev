@@ -86,7 +86,7 @@ function Conteudo() {
         <Card className="mt-6">
           <p className="text-sm text-ink-2">
             Nenhum desafio em aberto agora. Abra um projeto e gere um novo desafio, ou veja o que você já fez em{" "}
-            <Link href="/progresso" className="font-bold text-koda-texto">Progresso</Link>.
+            <Link href="/desafios" className="font-bold text-koda-texto">Desafios</Link>.
           </p>
         </Card>
       )}

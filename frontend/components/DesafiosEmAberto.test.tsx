@@ -71,7 +71,7 @@ describe("DesafiosEmAberto", () => {
   it("explica quando não há desafio em aberto", () => {
     exibir([]);
     expect(screen.getByText("Você não tem desafios em aberto.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Progresso" })).toHaveAttribute("href", "/progresso");
+    expect(screen.getByRole("link", { name: "Desafios" })).toHaveAttribute("href", "/desafios");
   });
 
   it("mostra o carregamento enquanto busca", () => {

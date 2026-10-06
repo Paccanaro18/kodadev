@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { BarChart3, BookOpen, Folder, GitBranch, Home, LogOut, Menu, Plus, Settings, ShieldCheck, Users, X } from "lucide-react";
+import { BookOpen, Folder, GitBranch, Home, LogOut, Menu, Network, Plus, Settings, ShieldCheck, Users, X } from "lucide-react";
 import BuscaGlobal from "./BuscaGlobal";
 import AlternarTema from "./AlternarTema";
 import Notificacoes from "./Notificacoes";
@@ -18,7 +18,7 @@ const nav = [
   { label: "Segurança", href: "/seguranca", icon: ShieldCheck, match: ["/seguranca"] },
   { label: "Aprenda aqui", href: "/aprenda", icon: BookOpen, match: ["/aprenda"] },
   { label: "Repositórios", href: "/repositorios/adicionar", icon: Folder, match: ["/repositorios", "/analisando"] },
-  { label: "Progresso", href: "/progresso", icon: BarChart3, match: ["/progresso"] },
+  { label: "Redes", href: "/redes", icon: Network, match: ["/redes"] },
   { label: "Comunidade", href: "/comunidade", icon: Users, match: ["/comunidade"] },
   { label: "Configurações", href: "/configuracoes", icon: Settings, match: ["/configuracoes"] },
 ];

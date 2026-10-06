@@ -12,6 +12,7 @@
     "verificar:exemplos": "node scripts/verificar-exemplos.mjs"
   },
   "dependencies": {
+    "@xyflow/react": "^12.12.0",
     "lucide-react": "^0.469.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

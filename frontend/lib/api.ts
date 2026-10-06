@@ -308,21 +308,6 @@ export type ItemHistorico = {
   finalizadoEm: string | null;
 };
 
-export type PaginaHistorico = {
-  itens: ItemHistorico[];
-  pagina: number;
-  tamanho: number;
-  total: number;
-  totalPaginas: number;
-};
-
-export type FiltrosDoHistorico = {
-  status?: StatusProgresso;
-  tipo?: TipoDesafio;
-  pagina?: number;
-  tamanho?: number;
-};
-
 export type HabilidadePraticada = {
   nome: string;
   total: number;
@@ -362,17 +347,6 @@ export type Notificacoes = {
 /** Todos os desafios que ainda estão em aberto, de todos os projetos. */
 export function listarDesafiosEmAberto(): Promise<ItemHistorico[]> {
   return requisitar<ItemHistorico[]>("/api/historico/abertos");
-}
-
-export function listarHistorico(filtros: FiltrosDoHistorico = {}): Promise<PaginaHistorico> {
-  const parametros = new URLSearchParams();
-  if (filtros.status) parametros.set("status", filtros.status);
-  if (filtros.tipo) parametros.set("tipo", filtros.tipo);
-  if (filtros.pagina !== undefined) parametros.set("pagina", String(filtros.pagina));
-  if (filtros.tamanho !== undefined) parametros.set("tamanho", String(filtros.tamanho));
-  const consulta = parametros.toString();
-
-  return requisitar<PaginaHistorico>(`/api/historico${consulta ? `?${consulta}` : ""}`);
 }
 
 export function buscarResumoDoProgresso(): Promise<ResumoDoProgresso> {

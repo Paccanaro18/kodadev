@@ -138,7 +138,7 @@ function Progresso({ total, resumo }: { total: number; resumo: ResumoDoProgresso
     <section className={card + " p-5.5"}>
       <div className="mb-3.5 flex items-center justify-between">
         <h2 className="text-xs font-bold tracking-[0.12em] text-ink-2">SEU PROGRESSO</h2>
-        <Link href="/progresso" className="rounded-[10px] border border-line-2 px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft">Ver tudo →</Link>
+        <Link href="/desafios" className="rounded-[10px] border border-line-2 px-3 py-1.5 text-xs font-semibold transition duration-200 hover:translate-x-0.5 hover:bg-koda-soft">Ver tudo →</Link>
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         <Numero icone={<CheckCircle2 className="size-4" />} valor={resumo?.concluidos ?? 0} rotulo="concluídos" cor="bg-ok-soft text-ok" />
