@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { ipValido, mascaraValida } from "@/lib/redes/ip";
 import { ehHost, type Dispositivo, type Interface, type Rede, type Rota } from "@/lib/redes/tipos";
 
@@ -100,7 +100,6 @@ export type PropriedadesDoPainel = {
   aoMudarInterface: (nome: string, mudanca: Partial<Interface>) => void;
   aoMudarRotas: (rotas: Rota[]) => void;
   aoRemover: () => void;
-  aoFechar: () => void;
 };
 
 function vizinhoDa(rede: Rede, dispositivo: Dispositivo, porta: string): string | null {
@@ -116,21 +115,15 @@ function vizinhoDa(rede: Rede, dispositivo: Dispositivo, porta: string): string 
 }
 
 export default function PainelDoDispositivo({
-  dispositivo, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover, aoFechar,
+  dispositivo, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover,
 }: PropriedadesDoPainel) {
   const host = ehHost(dispositivo.tipo);
   return (
     <div className="grid gap-4">
-      <div className="flex items-start gap-2">
-        <label className={`${rotulo} flex-1`}>
-          Nome
-          <input value={dispositivo.nome} onChange={(e) => aoMudarNome(e.target.value)} maxLength={24} className={campo} />
-        </label>
-        <button type="button" onClick={aoFechar} aria-label="Fechar o painel"
-          className="mt-5 grid size-9 place-items-center rounded-xl text-ink-2 transition duration-200 hover:bg-tint active:scale-95">
-          <X className="size-4" aria-hidden="true" />
-        </button>
-      </div>
+      <label className={rotulo}>
+        Nome
+        <input value={dispositivo.nome} onChange={(e) => aoMudarNome(e.target.value)} maxLength={24} className={campo} />
+      </label>
 
       {host && (
         <>
