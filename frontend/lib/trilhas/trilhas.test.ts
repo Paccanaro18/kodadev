@@ -7,7 +7,7 @@ import type { Bloco } from "@/lib/aulas/tipos";
 
 const HOSTS_PERMITIDOS = [
   "dev.java", "docs.oracle.com", "www.typescriptlang.org", "developer.mozilla.org", "nodejs.org",
-  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "datatracker.ietf.org", "pages.nist.gov", "docs.sqlalchemy.org", "alembic.sqlalchemy.org", "docs.pytest.org", "vitest.dev", "github.com", "fastapi.tiangolo.com", "cheatsheetseries.owasp.org", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
+  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "cryptography.io", "12factor.net", "docs.github.com", "osv.dev", "datatracker.ietf.org", "pages.nist.gov", "docs.sqlalchemy.org", "alembic.sqlalchemy.org", "docs.pytest.org", "vitest.dev", "github.com", "fastapi.tiangolo.com", "cheatsheetseries.owasp.org", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
 ];
 
 function palavrasDe(blocos: Bloco[]): number {
