@@ -1,0 +1,30 @@
+{
+  "slug": "web-cookie-previsivel",
+  "titulo": "O cookie previsível",
+  "categoria": "WEB",
+  "dificuldade": "FACIL",
+  "resumo": "A sessão do site é só um texto codificado. O que um atacante enxerga?",
+  "enunciado": [
+    "A loja guarda a sessão em um cookie chamado sessao. Em um teste de segurança, você capturou duas requisições: o login de uma cliente e o acesso de um administrador ao painel.",
+    "Analise os cookies. O cookie do administrador carrega, além dos dados de sessão, uma nota deixada pelo desenvolvedor. Qual é a nota?"
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "captura.http",
+      "linguagem": "http",
+      "conteudo": "# Captura 1: login da cliente Ana\nPOST /login HTTP/1.1\nHost: loja.exemplo.dev\nContent-Type: application/x-www-form-urlencoded\n\nusuario=ana&senha=********\n\nHTTP/1.1 302 Found\nSet-Cookie: sessao=dXN1YXJpbz1hbmE7cGVyZmlsPWNsaWVudGU7bm90YT0t; Path=/\nLocation: /conta\n\n# Captura 2: tráfego interceptado de outro usuário na mesma rede\nGET /admin/painel HTTP/1.1\nHost: loja.exemplo.dev\nCookie: sessao=dXN1YXJpbz1hZG1pbjtwZXJmaWw9YWRtaW47bm90YT1LT0RBe2Nvb2tpZV9uYW9fZV9jb2ZyZX0=\n\nHTTP/1.1 200 OK\nContent-Type: text/html\n"
+    }
+  ],
+  "dicas": [
+    "Compare o cookie da Ana com o do administrador: o formato parece o mesmo.",
+    "O valor do cookie parece Base64 (letras, números e sinal de igual no final).",
+    "Decodifique o cookie do administrador e leia o campo nota."
+  ],
+  "solucao": [
+    "O cookie é apenas \"usuario=...;perfil=...;nota=...\" em Base64: não tem assinatura, nem criptografia. Quem o lê enxerga o conteúdo, e quem entende o formato consegue forjar um cookie com perfil=admin.",
+    "Isso é uma falha de integridade de sessão: o servidor confia em um dado que o próprio cliente pode alterar.",
+    "Como se defender: usar identificadores de sessão aleatórios, guardados no servidor, ou tokens assinados (e, se necessário, criptografados), com cookies HttpOnly, Secure e SameSite."
+  ],
+  "flagHash": "72bd5455e2b0d2710bb095e84557b048a7abfe32d2cfe09cdbfaa9027585695c"
+}

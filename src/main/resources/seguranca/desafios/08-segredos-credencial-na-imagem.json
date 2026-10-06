@@ -1,0 +1,40 @@
+{
+  "slug": "segredos-credencial-na-imagem",
+  "titulo": "A credencial na imagem",
+  "categoria": "SEGREDOS",
+  "dificuldade": "MEDIO",
+  "resumo": "Uma imagem Docker publicada carrega mais do que a aplicação.",
+  "enunciado": [
+    "A equipe publicou a imagem Docker da API em um registro público. O Dockerfile copia o arquivo .npmrc para dentro da imagem para instalar pacotes privados, e esqueceu de apagá-lo depois.",
+    "Descubra a senha do usuário de integração (ci-bot) que está dentro do .npmrc. Informe a flag no formato KODA{senha}."
+  ],
+  "formatoDaFlag": "KODA{senha}",
+  "artefatos": [
+    {
+      "nome": "Dockerfile",
+      "linguagem": "text",
+      "conteudo": "FROM node:22-alpine\nWORKDIR /app\nCOPY package*.json ./\nCOPY .npmrc ./\nRUN npm ci --omit=dev\nCOPY . .\nENV NODE_ENV=production\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]\n"
+    },
+    {
+      "nome": "docker-compose.yml",
+      "linguagem": "text",
+      "conteudo": "services:\n  api:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      DATABASE_URL: postgres://loja@db:5432/loja\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_HOST_AUTH_METHOD: trust\n"
+    },
+    {
+      "nome": ".npmrc",
+      "linguagem": "text",
+      "conteudo": "//registry.exemplo.dev/:_auth=Y2ktYm90OktPREF7aW1hZ2VtX25hb19lX2NvZnJlfQ==\nalways-auth=true\n"
+    }
+  ],
+  "dicas": [
+    "No .npmrc, o valor de _auth é uma credencial codificada em Base64.",
+    "O formato da credencial _auth é usuario:senha.",
+    "Decodifique o valor com base64 e leia o que vem depois dos dois-pontos."
+  ],
+  "solucao": [
+    "O valor de _auth é a codificação Base64 de \"ci-bot:senha\". Base64 não protege nada: decodificá-lo revela a senha na hora.",
+    "Como o Dockerfile faz COPY .npmrc, o arquivo fica gravado em uma camada da imagem. Mesmo que um comando posterior o apagasse, a camada anterior continuaria na imagem e qualquer pessoa conseguiria extraí-la.",
+    "Como se defender: usar segredos de build (RUN --mount=type=secret), imagens multi-estágio que não levam o segredo para a imagem final e revogar a credencial exposta."
+  ],
+  "flagHash": "8bdd5c52ea98575bb49c1015ed675c8b1dcdf5cef77d23457eb1a1b2c227ef28"
+}

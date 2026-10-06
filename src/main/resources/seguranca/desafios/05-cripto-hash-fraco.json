@@ -1,0 +1,35 @@
+{
+  "slug": "cripto-hash-fraco",
+  "titulo": "Hash fraco, senha fraca",
+  "categoria": "CRIPTOGRAFIA",
+  "dificuldade": "MEDIO",
+  "resumo": "O banco de uma loja vazou. As senhas estavam em MD5. Descubra a do administrador.",
+  "enunciado": [
+    "Um banco de dados vazou com as senhas guardadas como hash MD5, sem sal. A tabela de usuários e uma lista de senhas comuns usadas pelos clientes estão abaixo.",
+    "Descubra a senha do usuário admin. Informe a flag no formato KODA{senha}."
+  ],
+  "formatoDaFlag": "KODA{senha}",
+  "artefatos": [
+    {
+      "nome": "usuarios.csv",
+      "linguagem": "text",
+      "conteudo": "login,hash_md5\nana,5f4dcc3b5aa765d61d8327deb882cf99\nadmin,050638eafd074635eb5ff9d84cd37ceb\nbruno,e10adc3949ba59abbe56e057f20f883e"
+    },
+    {
+      "nome": "lista-de-senhas.txt",
+      "linguagem": "text",
+      "conteudo": "futebol2024\namigo\npizza\nfloresta\nsenha123\nestrela\npassw0rd\nabc123\npraia2024\ncidade\nsenha\nsamba\ncasa\nfamilia\ncafe\nbemvindo2024\nsamba2024\npraia\nchuva\nteste\nfutebol\ncafe2024\nadmin\ncachorro\nsaudade\nrio\nbrasil\nviolao\nverao2024\nfeijao\ntrabalho\ncarnaval\nsol\nmontanha\nqueijo\narroz\npao\nmudar2024\nmar\nlua\nsenha2024\nverao\nbola\npipoca\nbemvindo\nbrasil2024\nmudar123\nqwerty\ngatinho"
+    }
+  ],
+  "dicas": [
+    "Um hash não se \"desfaz\", mas se pode testar: calcule o MD5 de cada senha da lista e compare com o hash do admin.",
+    "Em Python: hashlib.md5(palavra.encode()).hexdigest()",
+    "Faça um laço sobre as linhas de lista-de-senhas.txt e pare quando o hash for igual ao do admin."
+  ],
+  "solucao": [
+    "Como o MD5 é rápido e não tem sal, é possível testar milhões de senhas por segundo. Com a lista, basta calcular o hash de cada uma e comparar: for p in lista: if md5(p) == alvo.",
+    "Os hashes de ana e de bruno são de senhas famosas (password e 123456), que existem em tabelas prontas na internet. Hashes sem sal são reaproveitados entre usuários e entre sites.",
+    "Como se defender: nunca usar MD5 ou SHA simples para senhas. Use um algoritmo lento e com sal, como Argon2id, bcrypt ou scrypt, e imponha senhas longas e únicas."
+  ],
+  "flagHash": "db6ec76d347195b4ec97ee38e4dd020eda8d953c66c04e1856f9a6b955edae5a"
+}

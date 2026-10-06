@@ -1,0 +1,30 @@
+{
+  "slug": "cripto-camadas",
+  "titulo": "Camadas de cebola",
+  "categoria": "CRIPTOGRAFIA",
+  "dificuldade": "FACIL",
+  "resumo": "Uma mensagem passou por várias codificações. Desfaça todas.",
+  "enunciado": [
+    "Uma mensagem foi codificada três vezes, nesta ordem: primeiro ROT13, depois hexadecimal e, por fim, Base64. O resultado está abaixo.",
+    "Desfaça as codificações na ordem inversa para ler a mensagem original."
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "mensagem.txt",
+      "linguagem": "text",
+      "conteudo": "NTg0MjUxNGU3YjcwNmU3YTZlNzE2ZTY2NWY2MTZlNjI1ZjY2NmU2MjVmNjY3Mjc0Njg2NTZlNjE3MDZlN2Q="
+    }
+  ],
+  "dicas": [
+    "Para desfazer, comece pela última transformação aplicada: Base64.",
+    "O resultado do Base64 é um texto hexadecimal. Converta cada par de dígitos em um caractere.",
+    "No Python: base64.b64decode, bytes.fromhex e codecs.decode(texto, \"rot13\")."
+  ],
+  "solucao": [
+    "Codificar não é criptografar: Base64, hexadecimal e ROT13 são só formas de escrever o mesmo dado, sem nenhum segredo, e qualquer pessoa as desfaz.",
+    "Em Python: codecs.decode(bytes.fromhex(base64.b64decode(texto).decode()).decode(), \"rot13\") devolve a mensagem.",
+    "Lição: nunca use codificação para esconder dados sensíveis. Para proteger de verdade, use criptografia moderna (AES-GCM) com uma chave bem guardada."
+  ],
+  "flagHash": "7165ee7fe10e8b4331c8e7973c93069162a5715a3dee57bf88e10f8a2bad9200"
+}

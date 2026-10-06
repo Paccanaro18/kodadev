@@ -1,0 +1,30 @@
+{
+  "slug": "logs-quem-bateu-a-porta",
+  "titulo": "Quem bateu à porta",
+  "categoria": "LOGS",
+  "dificuldade": "FACIL",
+  "resumo": "Um servidor recebeu centenas de tentativas de login. Descubra quem entrou.",
+  "enunciado": [
+    "O servidor srv-web registrou, em /var/log/auth.log, as tentativas de acesso por SSH durante a madrugada. A equipe suspeita de um ataque de força bruta que terminou com um acesso bem-sucedido.",
+    "Encontre o endereço IP do atacante e o usuário cuja senha ele conseguiu descobrir."
+  ],
+  "formatoDaFlag": "KODA{ip_usuario}",
+  "artefatos": [
+    {
+      "nome": "auth.log",
+      "linguagem": "text",
+      "conteudo": "Oct  5 03:02:11 srv-web sshd[4108]: Accepted publickey for ana from 198.51.100.31 port 49390 ssh2\nOct  5 03:02:13 srv-web sshd[4113]: Accepted publickey for ana from 198.51.100.31 port 47641 ssh2\nOct  5 03:02:14 srv-web sshd[4122]: Accepted publickey for ana from 198.51.100.4 port 40376 ssh2\nOct  5 03:02:15 srv-web sshd[4126]: Accepted publickey for ana from 198.51.100.4 port 48432 ssh2\nOct  5 03:02:19 srv-web sshd[4134]: Accepted publickey for ana from 192.0.2.15 port 47134 ssh2\nOct  5 03:02:20 srv-web sshd[4135]: Failed password for root from 203.0.113.77 port 45357 ssh2\nOct  5 03:02:22 srv-web sshd[4139]: Failed password for admin from 203.0.113.77 port 46951 ssh2\nOct  5 03:02:24 srv-web sshd[4141]: Failed password for ubuntu from 203.0.113.77 port 55001 ssh2\nOct  5 03:02:25 srv-web sshd[4142]: Failed password for invalid user oracle from 203.0.113.77 port 43197 ssh2\nOct  5 03:02:26 srv-web sshd[4146]: Failed password for postgres from 203.0.113.77 port 45984 ssh2\nOct  5 03:02:27 srv-web sshd[4149]: Failed password for invalid user test from 203.0.113.77 port 52686 ssh2\nOct  5 03:02:29 srv-web sshd[4153]: Failed password for git from 203.0.113.77 port 45208 ssh2\nOct  5 03:02:32 srv-web sshd[4154]: Failed password for ana from 198.51.100.4 port 41261 ssh2\nOct  5 03:02:36 srv-web sshd[4159]: Failed password for invalid user ftp from 203.0.113.77 port 40001 ssh2\nOct  5 03:02:38 srv-web sshd[4161]: Failed password for deploy from 203.0.113.77 port 43201 ssh2\nOct  5 03:02:39 srv-web sshd[4162]: Failed password for invalid user guest from 203.0.113.77 port 53460 ssh2\nOct  5 03:02:41 srv-web sshd[4166]: Failed password for root from 203.0.113.77 port 41325 ssh2\nOct  5 03:02:44 srv-web sshd[4170]: Failed password for admin from 203.0.113.77 port 43837 ssh2\nOct  5 03:02:47 srv-web sshd[4175]: Failed password for ubuntu from 203.0.113.77 port 59005 ssh2\nOct  5 03:02:50 srv-web sshd[4176]: Failed password for invalid user oracle from 203.0.113.77 port 49612 ssh2\nOct  5 03:02:54 srv-web sshd[4177]: Failed password for ana from 198.51.100.4 port 58584 ssh2\nOct  5 03:02:56 srv-web sshd[4181]: Failed password for postgres from 203.0.113.77 port 58136 ssh2\nOct  5 03:02:58 srv-web sshd[4182]: Failed password for invalid user test from 203.0.113.77 port 43661 ssh2\nOct  5 03:02:59 srv-web sshd[4186]: Failed password for git from 203.0.113.77 port 57295 ssh2\nOct  5 03:03:03 srv-web sshd[4187]: Failed password for invalid user ftp from 203.0.113.77 port 47519 ssh2\nOct  5 03:03:06 srv-web sshd[4191]: Failed password for deploy from 203.0.113.77 port 44626 ssh2\nOct  5 03:03:07 srv-web sshd[4196]: Failed password for invalid user guest from 203.0.113.77 port 42378 ssh2\nOct  5 03:03:11 srv-web sshd[4197]: Failed password for root from 203.0.113.77 port 59260 ssh2\nOct  5 03:03:12 srv-web sshd[4198]: Failed password for ana from 192.0.2.15 port 45807 ssh2\nOct  5 03:03:15 srv-web sshd[4200]: Failed password for admin from 203.0.113.77 port 43448 ssh2\nOct  5 03:03:16 srv-web sshd[4205]: Failed password for ubuntu from 203.0.113.77 port 53585 ssh2\nOct  5 03:03:17 srv-web sshd[4207]: Failed password for invalid user oracle from 203.0.113.77 port 53196 ssh2\nOct  5 03:03:21 srv-web sshd[4208]: Failed password for postgres from 203.0.113.77 port 43530 ssh2\nOct  5 03:03:22 srv-web sshd[4211]: Failed password for invalid user test from 203.0.113.77 port 55468 ssh2\nOct  5 03:03:23 srv-web sshd[4216]: Failed password for git from 203.0.113.77 port 54166 ssh2\nOct  5 03:03:26 srv-web sshd[4218]: Failed password for invalid user ftp from 203.0.113.77 port 56098 ssh2\nOct  5 03:03:28 srv-web sshd[4219]: Failed password for ana from 198.51.100.31 port 42453 ssh2\nOct  5 03:03:32 srv-web sshd[4223]: Failed password for deploy from 203.0.113.77 port 59417 ssh2\nOct  5 03:03:36 srv-web sshd[4228]: Failed password for invalid user guest from 203.0.113.77 port 51760 ssh2\nOct  5 03:03:37 srv-web sshd[4231]: Accepted password for deploy from 203.0.113.77 port 51022 ssh2\nOct  5 03:03:40 srv-web sshd[4231]: pam_unix(sshd:session): session opened for user deploy(uid=1001) by (uid=0)\nOct  5 03:03:41 srv-web sshd[4238]: Accepted publickey for ana from 198.51.100.4 port 54579 ssh2\nOct  5 03:03:42 srv-web sshd[4240]: Accepted publickey for ana from 198.51.100.31 port 53263 ssh2\nOct  5 03:03:46 srv-web sshd[4245]: Accepted publickey for ana from 192.0.2.15 port 43734 ssh2"
+    }
+  ],
+  "dicas": [
+    "Procure as linhas com \"Failed password\" e conte de qual IP vêm a maioria delas.",
+    "Depois de muitas falhas, uma linha diferente aparece: \"Accepted password\". Veja de qual IP ela vem.",
+    "No terminal: grep \"Accepted password\" auth.log"
+  ],
+  "solucao": [
+    "Um ataque de força bruta tenta muitas senhas até acertar. No log, isso aparece como uma sequência de linhas \"Failed password\" vindas do mesmo IP e, no fim, um \"Accepted password\" desse mesmo IP.",
+    "Filtrando as linhas com \"Accepted password\", há uma que vem de um IP diferente dos acessos normais (que usam chave pública): é o atacante. O usuário comprometido aparece logo depois de \"for\".",
+    "Como se defender: bloqueio temporário por tentativas (fail2ban), autenticação só por chave pública, e desativar o login por senha no SSH."
+  ],
+  "flagHash": "a4f5459b272fe1e2673b4b5b357e0e3520210d6d88534245804cbc7f48bb91cc"
+}

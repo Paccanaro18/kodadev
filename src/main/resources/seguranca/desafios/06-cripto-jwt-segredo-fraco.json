@@ -1,0 +1,35 @@
+{
+  "slug": "cripto-jwt-segredo-fraco",
+  "titulo": "O segredo do token",
+  "categoria": "CRIPTOGRAFIA",
+  "dificuldade": "DIFICIL",
+  "resumo": "Um token JWT foi assinado com uma chave fraca. Descubra a chave.",
+  "enunciado": [
+    "Uma API autentica usuários com tokens JWT assinados com HMAC-SHA256 (HS256). O token de uma usuária comum, capturado em uma requisição, está abaixo, junto com uma lista de segredos que a equipe costuma usar em desenvolvimento.",
+    "Descubra o segredo usado para assinar o token. Com ele, qualquer pessoa poderia forjar um token de administrador."
+  ],
+  "formatoDaFlag": "KODA{segredo}",
+  "artefatos": [
+    {
+      "nome": "token.txt",
+      "linguagem": "text",
+      "conteudo": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmEiLCJyb2xlIjoidXNlciIsImlhdCI6MTc5MDAwMDAwMH0.MCcQZNhJ0sLZbkmq-rcHE_SE0EUTWKQa2YEUKyilDds"
+    },
+    {
+      "nome": "segredos-comuns.txt",
+      "linguagem": "text",
+      "conteudo": "123456\npassword\nsegredo\nsecret\njwtsecret\nchave123\nkoda\nmudar-isto\nadmin\ninverno\noutono\nverao\nprimavera\nchangeme\ndev\nproducao\nteste\nsenha\ntoken\napi-key"
+    }
+  ],
+  "dicas": [
+    "Um JWT tem três partes separadas por pontos: cabeçalho, corpo e assinatura. A assinatura é o HMAC das duas primeiras partes.",
+    "Teste cada segredo da lista: calcule o HMAC-SHA256 de \"cabecalho.corpo\" e compare com a terceira parte (em Base64 URL, sem preenchimento).",
+    "No Python: hmac.new(segredo.encode(), msg.encode(), hashlib.sha256).digest(), e base64.urlsafe_b64encode(...).rstrip(b\"=\")"
+  ],
+  "solucao": [
+    "Se o segredo for fraco, o ataque é um laço: para cada candidato, assine \"cabecalho.corpo\" e compare com a assinatura do token. Quando for igual, achou-se a chave.",
+    "Com a chave, um atacante cria um token novo com {\"role\":\"admin\"} e o assina corretamente. A API aceita, porque a assinatura confere.",
+    "Como se defender: segredos aleatórios com 256 bits ou mais, guardados em um cofre (e nunca no código), rotação periódica e, se possível, algoritmos assimétricos (RS256 ou EdDSA)."
+  ],
+  "flagHash": "759004a998caef7721ed6319accc5e836e9bd8328b65637717bf6a3e6224fbe9"
+}

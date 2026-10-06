@@ -1,0 +1,29 @@
+{
+  "slug": "segredos-commit-esquecido",
+  "titulo": "O commit esquecido",
+  "categoria": "SEGREDOS",
+  "dificuldade": "FACIL",
+  "resumo": "Alguém apagou o arquivo .env do repositório, mas isso resolve?",
+  "enunciado": [
+    "Beatriz percebeu que tinha enviado o arquivo .env ao repositório público e fez um novo commit apagando-o. Ela considera o problema resolvido.",
+    "Abaixo está a saída de git log -p com os dois últimos commits. Encontre a credencial que continua exposta no histórico."
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "git-log.txt",
+      "linguagem": "text",
+      "conteudo": "commit 9c1f3a7d2e84b6a05d3f81c7b2a4e9d601f5c8ab\nAuthor: Beatriz Lima <bia@exemplo.dev>\nDate:   Mon Oct 5 18:42:11 2026 -0300\n\n    Remove arquivo .env do repositório\n\ndiff --git a/.env b/.env\ndeleted file mode 100644\nindex 3b18e51..0000000\n--- a/.env\n+++ /dev/null\n@@ -1,4 +0,0 @@\n-DB_HOST=db.interno.exemplo\n-DB_USER=loja\n-CHAVE_DE_PAGAMENTO=KODA{commit_apagado_continua_no_historico}\n-DEBUG=false\n\ncommit 52e7d0b9a1c3f46e8d02b7a93c15ef4d8a60b7c1\nAuthor: Beatriz Lima <bia@exemplo.dev>\nDate:   Mon Oct 5 18:20:03 2026 -0300\n\n    Adiciona integração de pagamentos\n\ndiff --git a/.env b/.env\nnew file mode 100644\nindex 0000000..3b18e51\n--- /dev/null\n+++ b/.env\n@@ -0,0 +1,4 @@\n+DB_HOST=db.interno.exemplo\n+DB_USER=loja\n+CHAVE_DE_PAGAMENTO=KODA{commit_apagado_continua_no_historico}\n+DEBUG=false\ndiff --git a/src/pagamentos.py b/src/pagamentos.py\nnew file mode 100644\n--- /dev/null\n+++ b/src/pagamentos.py\n@@ -0,0 +1,6 @@\n+import os\n+\n+\n+def chave():\n+    return os.environ[\"CHAVE_DE_PAGAMENTO\"]\n"
+    }
+  ],
+  "dicas": [
+    "O commit que apagou o arquivo mostra, em linhas com \"-\", o que existia antes.",
+    "Procure a variável cujo nome sugere um segredo."
+  ],
+  "solucao": [
+    "Apagar um arquivo em um novo commit não o remove do histórico: git log -p e git show mostram cada versão antiga. Qualquer pessoa que clone o repositório lê o segredo.",
+    "A chave vazou, então precisa ser revogada e substituída imediatamente. Reescrever o histórico (git filter-repo) ajuda, mas não basta, porque cópias e forks podem já existir.",
+    "Como se defender: .env no .gitignore desde o primeiro commit, ferramentas de varredura de segredos (gitleaks, GitHub secret scanning) e um cofre de segredos."
+  ],
+  "flagHash": "972cf081253e4cb5b3634aacf386800adb281fd8a72e2b3a231d926c00e2aee0"
+}

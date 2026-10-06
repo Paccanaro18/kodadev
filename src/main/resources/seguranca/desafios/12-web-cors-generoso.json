@@ -1,0 +1,30 @@
+{
+  "slug": "web-cors-generoso",
+  "titulo": "O CORS generoso",
+  "categoria": "WEB",
+  "dificuldade": "DIFICIL",
+  "resumo": "Qual rota permite que um site malicioso leia dados de uma pessoa logada?",
+  "enunciado": [
+    "O navegador só deixa uma página de outro site ler a resposta de uma API se o servidor autorizar com os cabeçalhos CORS. Abaixo estão requisições feitas a uma API a partir da origem https://evil.example (um site do atacante), com o cookie de uma vítima logada, e as respostas recebidas.",
+    "Encontre a rota em que um site malicioso consegue ler dados autenticados da vítima. Informe a flag no formato KODA{caminho}."
+  ],
+  "formatoDaFlag": "KODA{/caminho}",
+  "artefatos": [
+    {
+      "nome": "cors.jsonl",
+      "linguagem": "json",
+      "conteudo": "{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/publico/precos\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/publico/produtos\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/conta/saldo\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\", \"Access-Control-Allow-Credentials\": \"true\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/conta/perfil\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/conta/perfil\", \"cabecalhos\": {\"Origin\": \"https://app.loja.exemplo\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"https://app.loja.exemplo\", \"Access-Control-Allow-Credentials\": \"true\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/conta/extrato\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"https://evil.example\", \"Access-Control-Allow-Credentials\": \"true\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/conta/extrato\", \"cabecalhos\": {\"Origin\": \"https://app.loja.exemplo\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"https://app.loja.exemplo\", \"Access-Control-Allow-Credentials\": \"true\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/ajuda/faq\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"https://evil.example\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/admin/usuarios\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Vary\": \"Origin\"}}}\n{\"requisicao\": {\"metodo\": \"GET\", \"caminho\": \"/api/pedidos\", \"cabecalhos\": {\"Origin\": \"https://evil.example\", \"Cookie\": \"sessao=<cookie-da-vitima>\"}}, \"resposta\": {\"status\": 200, \"cabecalhos\": {\"Content-Type\": \"application/json\", \"Vary\": \"Origin\"}}}"
+    }
+  ],
+  "dicas": [
+    "Para ler uma resposta com cookie, o servidor precisa devolver Access-Control-Allow-Credentials: true e uma origem específica em Access-Control-Allow-Origin.",
+    "O curinga * não vale quando há credenciais: os navegadores recusam a combinação * com Allow-Credentials true.",
+    "Procure a resposta que devolve a origem do atacante (https://evil.example) e Allow-Credentials true ao mesmo tempo."
+  ],
+  "solucao": [
+    "A rota /api/conta/extrato devolve exatamente a origem do atacante em Access-Control-Allow-Origin e também Access-Control-Allow-Credentials: true. O site malicioso consegue chamar a rota com o cookie da vítima e ler o extrato.",
+    "As outras são pegadinhas: /api/publico/* devolve * sem credenciais (dados públicos, sem risco); /api/conta/saldo combina * com credenciais, o que o navegador bloqueia; /api/ajuda/faq reflete a origem, mas sem credenciais, então não carrega o cookie.",
+    "Como se defender: lista fixa de origens confiáveis (nunca refletir a origem recebida), Allow-Credentials só quando necessário, cookies com SameSite e, nas rotas sensíveis, exigir tokens que o site do atacante não possui."
+  ],
+  "flagHash": "ee4d6e1d55f426de7aa959d0b5c6027ec7a4cf263573b5248c2c6aa9f271d781"
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "segredos-chave-no-bundle",
+  "titulo": "A chave no bundle",
+  "categoria": "SEGREDOS",
+  "dificuldade": "MEDIO",
+  "resumo": "O JavaScript do site vai inteiro para o navegador. Inclusive o que não deveria.",
+  "enunciado": [
+    "O front-end de uma loja chama a API com um cabeçalho Authorization. Um desenvolvedor \"escondeu\" a chave de acesso no código para ninguém ver. O arquivo app.min.js, como qualquer um baixaria do site, está abaixo.",
+    "Recupere a chave de acesso embutida no código."
+  ],
+  "formatoDaFlag": "KODA{...}",
+  "artefatos": [
+    {
+      "nome": "app.min.js",
+      "linguagem": "typescript",
+      "conteudo": "(()=>{\"use strict\";const e=document.getElementById(\"app\"),t={api:\"https://api.exemplo.dev\",timeout:8e3},r=async(n,o={})=>{const a=await fetch(t.api+n,{...o,headers:{Authorization:\"Bearer \"+i()}});return a.json()},i=()=>{const n=[92, 88, 83, 86, 108, 100, 114, 112, 101, 114, 115, 120, 72, 121, 120, 72, 113, 101, 120, 121, 99, 72, 121, 118, 120, 72, 114, 72, 100, 114, 112, 101, 114, 115, 120, 106];return n.map(o=>String.fromCharCode(o^23)).join(\"\")},s=async()=>{const n=await r(\"/produtos\");e.innerHTML=n.map(o=>\"<li>\"+o.nome+\"</li>\").join(\"\")};s()})();"
+    }
+  ],
+  "dicas": [
+    "Procure a função que monta o cabeçalho Authorization: ela chama outra função para obter a chave.",
+    "A chave está em uma lista de números, que a função converte em texto com String.fromCharCode.",
+    "Antes da conversão, cada número passa por um XOR com um valor fixo. Faça o mesmo."
+  ],
+  "solucao": [
+    "Tudo que vai para o navegador pode ser lido por qualquer pessoa: abrir o código, ler a lista de números e aplicar a mesma conta (XOR com 23) revela o texto. Em Python: \"\".join(chr(n ^ 23) for n in lista).",
+    "Ofuscar não é proteger: a chave precisa estar no código para o navegador usá-la, então qualquer visitante a obtém.",
+    "Como se defender: chaves secretas ficam no servidor. O front chama o seu back-end, que usa a chave. Para chaves públicas (como as de mapas), restrinja por domínio e por cota."
+  ],
+  "flagHash": "f2fe192459acf307b2dd3718fd1c0f159d7b0616a3daaa51e4d67ddaea31690b"
+}
