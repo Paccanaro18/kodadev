@@ -412,3 +412,49 @@ export function registrarEstudo(trilha: string, item: string, mudanca: MudancaDe
 export function importarEstudo(estado: EstudoNoServidor): Promise<EstudoNoServidor> {
   return enviar("/api/estudo/importacao", estado);
 }
+
+export type CategoriaDeSeguranca = "LOGS" | "CRIPTOGRAFIA" | "SEGREDOS" | "WEB";
+
+export type DificuldadeDeSeguranca = "FACIL" | "MEDIO" | "DIFICIL";
+
+export type ResumoDeSeguranca = {
+  slug: string;
+  titulo: string;
+  categoria: CategoriaDeSeguranca;
+  dificuldade: DificuldadeDeSeguranca;
+  pontos: number;
+  resumo: string;
+  resolvido: boolean;
+};
+
+export type ArtefatoDeSeguranca = { nome: string; linguagem: string; conteudo: string };
+
+export type DetalheDeSeguranca = ResumoDeSeguranca & {
+  enunciado: string[];
+  formatoDaFlag: string;
+  artefatos: ArtefatoDeSeguranca[];
+  dicas: string[];
+  solucao: string[] | null;
+};
+
+export type ResultadoDaFlag = { correta: boolean; jaResolvido: boolean; pontosGanhos: number };
+
+export type PosicaoNoPlacar = { posicao: number; login: string; pontos: number; resolvidos: number };
+
+export type PlacarDeSeguranca = { melhores: PosicaoNoPlacar[]; voce: PosicaoNoPlacar | null };
+
+export function listarDesafiosDeSeguranca(): Promise<ResumoDeSeguranca[]> {
+  return requisitar<ResumoDeSeguranca[]>("/api/seguranca/desafios");
+}
+
+export function buscarDesafioDeSeguranca(slug: string): Promise<DetalheDeSeguranca> {
+  return requisitar<DetalheDeSeguranca>(`/api/seguranca/desafios/${encodeURIComponent(slug)}`);
+}
+
+export function enviarFlag(slug: string, flag: string): Promise<ResultadoDaFlag> {
+  return enviar(`/api/seguranca/desafios/${encodeURIComponent(slug)}/flag`, { flag });
+}
+
+export function buscarPlacarDeSeguranca(): Promise<PlacarDeSeguranca> {
+  return requisitar<PlacarDeSeguranca>("/api/seguranca/placar");
+}

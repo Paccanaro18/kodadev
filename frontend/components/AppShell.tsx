@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { BarChart3, BookOpen, Folder, GitBranch, Home, LogOut, Menu, Plus, Settings, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Folder, GitBranch, Home, LogOut, Menu, Plus, Settings, ShieldCheck, Users, X } from "lucide-react";
 import BuscaGlobal from "./BuscaGlobal";
 import AlternarTema from "./AlternarTema";
 import Notificacoes from "./Notificacoes";
@@ -15,6 +15,7 @@ import { useSessao } from "@/lib/useSessao";
 const nav = [
   { label: "Home", href: "/dashboard", icon: Home, match: ["/dashboard"] },
   { label: "Desafios", href: "/desafios", icon: GitBranch, match: ["/desafios", "/projeto", "/desafio"] },
+  { label: "Segurança", href: "/seguranca", icon: ShieldCheck, match: ["/seguranca"] },
   { label: "Aprenda aqui", href: "/aprenda", icon: BookOpen, match: ["/aprenda"] },
   { label: "Repositórios", href: "/repositorios/adicionar", icon: Folder, match: ["/repositorios", "/analisando"] },
   { label: "Progresso", href: "/progresso", icon: BarChart3, match: ["/progresso"] },
