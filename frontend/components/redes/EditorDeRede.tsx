@@ -5,9 +5,10 @@ import {
   Background, BackgroundVariant, BaseEdge, Controls, Handle, Position, ReactFlow, useInternalNode,
   type Edge, type EdgeProps, type InternalNode, type Node, type NodeChange, type NodeProps,
 } from "@xyflow/react";
-import { Cable, Monitor, Network, Router, Server } from "lucide-react";
+import { Cable } from "lucide-react";
+import { IconeDeDispositivo } from "./IconesDeRede";
 import { temaAtual } from "@/lib/tema";
-import type { Dispositivo, Passo, Rede, TipoDeDispositivo } from "@/lib/redes/tipos";
+import type { Dispositivo, Passo, Rede } from "@/lib/redes/tipos";
 
 type DadosDoNo = { dispositivo: Dispositivo; conectando: boolean; ligadas: number };
 type NoDeRede = Node<DadosDoNo, "dispositivo">;
@@ -16,8 +17,6 @@ type Pacote = { sentido: "ab" | "ba"; tipo: Passo["tipo"]; chave: string };
 type DadosDoCabo = { portaA: string; portaB: string; pacote: Pacote | null; selecionado: boolean };
 type CaboDeRede = Edge<DadosDoCabo, "cabo">;
 
-const ICONES: Record<TipoDeDispositivo, typeof Monitor> = { pc: Monitor, servidor: Server, switch: Network, roteador: Router };
-
 function resumoDeEnderecos(dispositivo: Dispositivo): string[] {
   if (dispositivo.tipo === "switch") return [];
   return dispositivo.interfaces.filter((i) => i.ip).map((i) => (dispositivo.tipo === "roteador" ? `${i.nome} ${i.ip}` : i.ip));
@@ -25,15 +24,14 @@ function resumoDeEnderecos(dispositivo: Dispositivo): string[] {
 
 function NoDoDispositivo({ data, selected }: NodeProps<NoDeRede>) {
   const { dispositivo, conectando, ligadas } = data;
-  const Icone = ICONES[dispositivo.tipo];
   const enderecos = resumoDeEnderecos(dispositivo);
   return (
     <div
       aria-label={`${dispositivo.nome}, ${ligadas} cabos`}
       className={`relative w-[132px] rounded-2xl border-2 bg-surface px-3 py-2.5 text-center shadow-soft transition ${selected ? "border-koda" : "border-line"}`}
     >
-      <div className="mx-auto grid size-10 place-items-center rounded-xl bg-koda-soft text-koda-texto">
-        <Icone className="size-5" aria-hidden="true" />
+      <div className="mx-auto grid size-12 place-items-center rounded-xl bg-koda-soft text-koda-texto">
+        <IconeDeDispositivo tipo={dispositivo.tipo} className="size-8" />
       </div>
       <div className="mt-1.5 text-[13px] font-bold text-ink">{dispositivo.nome}</div>
       <div className="mt-0.5 min-h-[14px] text-[10px] leading-tight text-ink-2">
@@ -149,7 +147,7 @@ export default function EditorDeRede({
       position: posicoes[dispositivo.id] ?? { x: dispositivo.x, y: dispositivo.y },
       selected: dispositivo.id === selecionado,
       initialWidth: 132,
-      initialHeight: 106,
+      initialHeight: 112,
       data: {
         dispositivo,
         conectando,

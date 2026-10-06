@@ -1,10 +1,8 @@
 "use client";
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
-import { Monitor, Network, Router, Server, X } from "lucide-react";
-import type { Dispositivo, TipoDeDispositivo } from "@/lib/redes/tipos";
-
-const ICONES: Record<TipoDeDispositivo, typeof Monitor> = { pc: Monitor, servidor: Server, switch: Network, roteador: Router };
-const ROTULOS: Record<TipoDeDispositivo, string> = { pc: "Computador", servidor: "Servidor", switch: "Switch", roteador: "Roteador" };
+import { X } from "lucide-react";
+import { IconeDeDispositivo, ROTULO_DO_DISPOSITIVO } from "./IconesDeRede";
+import type { Dispositivo } from "@/lib/redes/tipos";
 
 export type AbaDoDispositivo = "config" | "terminal";
 export type Ancora = { x: number; y: number };
@@ -25,7 +23,6 @@ export default function JanelaDoDispositivo({ dispositivo, ancora, aba, aoMudarA
   aoFechar: () => void;
   children: ReactNode;
 }) {
-  const Icone = ICONES[dispositivo.tipo];
   const janela = useRef<HTMLElement>(null);
   const [posicao, setPosicao] = useState<Ancora>({ x: ancora.x - 12, y: ancora.y - 12 });
   const arrasto = useRef<{ dx: number; dy: number } | null>(null);
@@ -64,10 +61,10 @@ export default function JanelaDoDispositivo({ dispositivo, ancora, aba, aoMudarA
       className="absolute z-30 flex flex-col overflow-hidden rounded-2xl border border-line-2 bg-surface shadow-lift">
       <header onPointerDown={comecar} onPointerMove={mover} onPointerUp={() => { arrasto.current = null; }}
         className="flex cursor-move touch-none items-center gap-3 border-b border-line bg-tint px-4 py-2.5 select-none">
-        <div className="grid size-9 place-items-center rounded-lg bg-koda-soft text-koda-texto"><Icone className="size-[18px]" aria-hidden="true" /></div>
+        <div className="grid size-9 place-items-center rounded-lg bg-koda-soft text-koda-texto"><IconeDeDispositivo tipo={dispositivo.tipo} className="size-6" /></div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-bold text-ink">{dispositivo.nome}</div>
-          <div className="text-[11px] text-ink-2">{ROTULOS[dispositivo.tipo]} · arraste para mover</div>
+          <div className="text-[11px] text-ink-2">{ROTULO_DO_DISPOSITIVO[dispositivo.tipo]} · arraste para mover</div>
         </div>
         <button type="button" onClick={aoFechar} aria-label="Fechar o painel"
           className="grid size-8 place-items-center rounded-lg text-ink-2 transition duration-200 hover:bg-line active:scale-95">

@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, Clock, Eye, Lightbulb, Plus, RotateCcw, Trash2 } 
 import AppShell from "../AppShell";
 import BlocosDeConteudo from "../publico/BlocosDeConteudo";
 import { BackLink, Card, Eyebrow } from "../ui";
+import { IconeDeDispositivo } from "./IconesDeRede";
 import JanelaDoDispositivo from "./JanelaDoDispositivo";
 import PainelDoDispositivo from "./PainelDoDispositivo";
 import TerminalDeRede, { type LinhaDoTerminal } from "./TerminalDeRede";
@@ -229,7 +230,7 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
                   mudarRede(adicionarDispositivo(rede, t.tipo, posicao.x, posicao.y));
                 }}
                 className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-koda-soft px-3.5 text-[13px] font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 active:scale-95">
-                <Plus className="size-3.5" aria-hidden="true" />{t.rotulo}
+                <IconeDeDispositivo tipo={t.tipo} className="size-5" /><Plus className="size-3" aria-hidden="true" />{t.rotulo}
               </button>
             ))}
             <button type="button" onClick={reiniciar}
