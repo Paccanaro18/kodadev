@@ -1,4 +1,4 @@
-import { prefixoDaMascara, redeDe } from "./ip";
+import { ipValido, prefixoDaMascara, redeDe } from "./ip";
 import { Simulador } from "./simulador";
 import { ehHost, type Dispositivo, type Passo, type Rede, type ResultadoDoPing } from "./tipos";
 
@@ -10,8 +10,10 @@ export type SaidaDoTerminal = {
 
 const AJUDA_DE_HOST = [
   "Comandos disponíveis:",
-  "  ipconfig              mostra o endereço IP, a máscara, o gateway e o MAC",
-  "  ping <ip>             envia quatro pedidos de eco (ICMP)",
+  "  ipconfig              mostra o endereço IP, a máscara, o gateway, o DNS e o MAC",
+  "  ipconfig /renew       pede um endereço novo ao servidor DHCP",
+  "  ping <ip ou nome>     envia quatro pedidos de eco (ICMP)",
+  "  nslookup <nome>       pergunta ao servidor DNS qual o IP de um nome",
   "  tracert <ip>          mostra os roteadores no caminho até o destino",
   "  arp -a                mostra a tabela ARP (IP → MAC já descobertos)",
   "  clear                 limpa a tela",
@@ -35,8 +37,8 @@ const AJUDA_DE_SWITCH = [
   "  clear                     limpa a tela",
 ];
 
-function linhasDoPing(simulador: Simulador, origem: Dispositivo, destino: string): SaidaDoTerminal {
-  const linhas = [`Disparando contra ${destino} com 32 bytes de dados:`];
+function linhasDoPing(simulador: Simulador, origem: Dispositivo, destino: string, apelido?: string): SaidaDoTerminal {
+  const linhas = [`Disparando contra ${apelido ? `${apelido} [${destino}]` : destino} com 32 bytes de dados:`];
   let recebidos = 0;
   let passos: Passo[] = [];
   let ultimo: ResultadoDoPing | null = null;
@@ -73,20 +75,62 @@ function linhasDoTraceroute(simulador: Simulador, origem: Dispositivo, destino: 
   return { linhas, passos: resultado.passos.slice(0, 40) };
 }
 
+function pingPorNome(simulador: Simulador, host: Dispositivo, nome: string): SaidaDoTerminal {
+  if (ipValido(nome)) return linhasDoPing(simulador, host, nome);
+  const resolucao = simulador.resolverNome(host.id, nome);
+  if (!resolucao.sucesso || !resolucao.ip) {
+    return {
+      linhas: [`Não foi possível encontrar o host ${nome}. Verifique o nome e tente novamente.`, "", `Diagnóstico: ${resolucao.motivo}`],
+      passos: resolucao.passos,
+    };
+  }
+  const saida = linhasDoPing(simulador, host, resolucao.ip, nome);
+  return { linhas: saida.linhas, passos: [...resolucao.passos, ...saida.passos] };
+}
+
+function linhasDoNslookup(simulador: Simulador, host: Dispositivo, nome: string): SaidaDoTerminal {
+  const resolucao = simulador.resolverNome(host.id, nome);
+  const dns = simulador.configuracaoDe(host.id).dns;
+  if (resolucao.sucesso) {
+    return { linhas: [`Servidor:  ${dns}`, `Endereço:  ${dns}`, "", `Nome:      ${nome}`, `Endereço:  ${resolucao.ip}`], passos: resolucao.passos };
+  }
+  return { linhas: [`*** Não foi possível resolver ${nome}.`, "", `Diagnóstico: ${resolucao.motivo}`], passos: resolucao.passos };
+}
+
 function comandosDeHost(simulador: Simulador, host: Dispositivo, partes: string[]): SaidaDoTerminal | null {
   const [comando, ...argumentos] = partes;
-  const interfaceLocal = host.interfaces[0];
-  if (comando === "ipconfig" || comando === "ifconfig") {
+  const efetivo = simulador.dispositivo(host.id) ?? host;
+  const interfaceLocal = efetivo.interfaces[0];
+  if ((comando === "ipconfig" || comando === "ifconfig") && argumentos[0] === "/renew") {
+    if (!host.usaDhcp) return { linhas: ["Esta interface usa endereço fixo. Ative a opção DHCP na configuração do dispositivo."], passos: [] };
+    const resultado = simulador.resultadoDoDhcp(host.id);
+    if (!resultado) return { linhas: ["Não foi possível renovar a concessão."], passos: [] };
     return {
-      linhas: [
-        "Configuração IP",
-        `   Endereço IPv4 . . . . . : ${interfaceLocal.ip || "(não configurado)"}`,
-        `   Máscara de sub-rede . . : ${interfaceLocal.mascara || "(não configurada)"}`,
-        `   Gateway padrão  . . . . : ${host.gateway || "(não configurado)"}`,
-        `   Endereço físico (MAC) . : ${interfaceLocal.mac}`,
-      ],
-      passos: [],
+      linhas: ["Renovando a concessão de endereço...", resultado.sucesso ? resultado.motivo : `Falha: ${resultado.motivo}`],
+      passos: resultado.passos,
     };
+  }
+  if (comando === "ipconfig" || comando === "ifconfig") {
+    const configuracao = simulador.configuracaoDe(host.id);
+    const linhas = [
+      "Configuração IP",
+      `   DHCP habilitado . . . . : ${host.usaDhcp ? "Sim" : "Não"}`,
+      `   Endereço IPv4 . . . . . : ${interfaceLocal.ip || "(não configurado)"}`,
+      `   Máscara de sub-rede . . : ${interfaceLocal.mascara || "(não configurada)"}`,
+      `   Gateway padrão  . . . . : ${efetivo.gateway || "(não configurado)"}`,
+      `   Servidor DNS  . . . . . : ${configuracao.dns || "(não configurado)"}`,
+      `   Endereço físico (MAC) . : ${interfaceLocal.mac}`,
+    ];
+    if (configuracao.origem === "apipa") linhas.push("", "   Endereço 169.254.x.x: nenhum servidor DHCP respondeu, e o computador se atribuiu um endereço automático.");
+    return { linhas, passos: [] };
+  }
+  if (comando === "nslookup") {
+    if (!argumentos[0]) return { linhas: ["Uso: nslookup <nome>"], passos: [] };
+    return linhasDoNslookup(simulador, host, argumentos[0]);
+  }
+  if (comando === "dhcp" && argumentos[0] === "leases" && host.tipo === "servidor") {
+    const concessoes = simulador.arrendamentosDo(host.id);
+    return { linhas: concessoes.length === 0 ? ["Nenhuma concessão DHCP ativa."] : ["Endereço IP        Endereço físico", ...concessoes.map((c) => `${c.ip.padEnd(18)} ${c.mac}`)], passos: [] };
   }
   if (comando === "arp" && argumentos[0] === "-a") {
     const entradas = simulador.tabelaArp(host.id);
@@ -95,7 +139,7 @@ function comandosDeHost(simulador: Simulador, host: Dispositivo, partes: string[
   }
   if (comando === "ping" || comando === "tracert" || comando === "traceroute") {
     if (!argumentos[0]) return { linhas: [`Uso: ${comando} <endereço ip>`], passos: [] };
-    return comando === "ping" ? linhasDoPing(simulador, host, argumentos[0]) : linhasDoTraceroute(simulador, host, argumentos[0]);
+    return comando === "ping" ? pingPorNome(simulador, host, argumentos[0]) : linhasDoTraceroute(simulador, host, argumentos[0]);
   }
   return null;
 }

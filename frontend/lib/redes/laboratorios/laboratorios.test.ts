@@ -27,6 +27,15 @@ const SOLUCOES: Record<string, (rede: Rede) => Rede> = {
   "gateway-e-roteador": (rede) => ip(ip(rede, "pc-1", "10.0.1.10", "255.255.255.0", "10.0.1.1"), "servidor-1", "10.0.2.10", "255.255.255.0", "10.0.2.1"),
   "mascara-que-nao-fecha": (rede) => ip(ip(rede, "pc-1", "192.168.1.10"), "pc-3", "192.168.1.30"),
   "vlan-trocada": (rede) => atualizarInterface(rede, "switch-1", "Fa0/4", { vlan: 20 }),
+  "dhcp-enderecos-automaticos": (rede) => {
+    const comServico = atualizarDispositivo(rede, "servidor-1", (d) => ({ ...d, servicos: { ...d.servicos!, dhcp: { ...d.servicos!.dhcp, ativo: true } } }));
+    return atualizarDispositivo(atualizarDispositivo(comServico, "pc-1", (d) => ({ ...d, usaDhcp: true })), "pc-2", (d) => ({ ...d, usaDhcp: true }));
+  },
+  "pool-esgotado": (rede) => atualizarDispositivo(rede, "servidor-1", (d) => ({ ...d, servicos: { ...d.servicos!, dhcp: { ...d.servicos!.dhcp, fim: "192.168.50.150" } } })),
+  "nome-que-nao-resolve": (rede) => {
+    const comDns = atualizarDispositivo(rede, "pc-1", (d) => ({ ...d, dnsServidor: "10.0.0.2" }));
+    return atualizarDispositivo(comDns, "servidor-1", (d) => ({ ...d, servicos: { ...d.servicos!, dns: { ...d.servicos!.dns, registros: [{ nome: "loja.koda.local", ip: "10.0.0.30" }] } } }));
+  },
   "filial-sem-rota": (rede) => atualizarDispositivo(
     atualizarDispositivo(rede, "roteador-1", (d) => ({ ...d, rotas: [{ rede: "10.3.0.0", mascara: "255.255.255.0", proximoSalto: "10.2.0.2" }] })),
     "roteador-2",

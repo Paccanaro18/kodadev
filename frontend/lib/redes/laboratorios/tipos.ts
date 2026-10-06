@@ -5,6 +5,8 @@ export type Objetivo =
   | { tipo: "cabo"; entre: [string, string]; descricao: string }
   | { tipo: "ip"; dispositivo: string; naRede: { rede: string; mascara: string }; descricao: string }
   | { tipo: "ping"; de: string; para: string; esperado?: boolean; descricao: string }
+  | { tipo: "dhcp"; dispositivo: string; descricao: string }
+  | { tipo: "dns"; de: string; nome: string; resposta: string; descricao: string }
   | { tipo: "mac-aprendido"; comutador: string; minimo: number; descricao: string }
   | { tipo: "existe"; dispositivo: TipoDeDispositivo; minimo: number; descricao: string };
 

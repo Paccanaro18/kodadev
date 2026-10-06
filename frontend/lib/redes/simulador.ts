@@ -1,13 +1,15 @@
-import { analisarIp, ipValido, mesmaRede, prefixoDaMascara, redeDe } from "./ip";
+import { analisarIp, formatarIp, ipValido, mesmaRede, prefixoDaMascara, redeDe } from "./ip";
 import {
   MAC_DE_TRANSMISSAO, ehHost,
-  type CargaArp, type CargaIp, type Descarte, type Dispositivo, type EntradaDeArp, type EntradaDeMac, type Interface,
+  type CargaArp, type CargaDhcp, type CargaIp, type ConfiguracaoEfetiva, type Descarte, type Dispositivo, type EntradaDeArp, type EntradaDeMac, type Interface,
   type Passo, type Ponta, type Quadro, type Rede, type ResultadoDoPing, type ResultadoDoTraceroute, type SaltoDoTraceroute,
-  type TipoIcmp,
+  type ResultadoDoDhcp, type ResultadoDoDns, type ServicoDhcp, type TipoIcmp,
 } from "./tipos";
 
 const LIMITE_DE_PASSOS = 300;
 const TTL_INICIAL: Record<Dispositivo["tipo"], number> = { pc: 128, servidor: 64, switch: 0, roteador: 255 };
+
+type Concessao = { ip: string; mascara: string; gateway: string; dns: string; servidor: string };
 
 type Entrega = { dispositivo: Dispositivo; interfaceNome: string; quadro: Quadro };
 type Pendente = { interfaceNome: string; pacote: CargaIp };
@@ -20,22 +22,147 @@ type Execucao = {
   pendentes: Map<string, Pendente[]>;
   recebidos: CargaIp[];
   estourou: boolean;
+  concessao: Concessao | null;
 };
 
 type Caminho = { interfaceNome: string; proximoSalto: string } | { erro: string };
 
 function novaExecucao(origemId: string): Execucao {
-  return { origemId, passos: [], descartes: [], fila: [], pendentes: new Map(), recebidos: [], estourou: false };
+  return { origemId, passos: [], descartes: [], fila: [], pendentes: new Map(), recebidos: [], estourou: false, concessao: null };
 }
 
 export class Simulador {
   private readonly dispositivos: Map<string, Dispositivo>;
   private readonly arp = new Map<string, Map<string, string>>();
   private readonly macs = new Map<string, Map<string, string>>();
+  private readonly arrendamentos = new Map<string, Map<string, string>>();
+  private readonly concessoes = new Map<string, Concessao | null>();
+  private readonly resultadosDhcp = new Map<string, ResultadoDoDhcp>();
   private proximoIdentificador = 1;
 
   constructor(private readonly rede: Rede) {
     this.dispositivos = new Map(rede.dispositivos.map((d) => [d.id, d]));
+    this.resolverDhcp();
+  }
+
+  dispositivo(id: string): Dispositivo | undefined {
+    return this.dispositivos.get(id);
+  }
+
+  configuracaoDe(id: string): ConfiguracaoEfetiva {
+    const d = this.dispositivos.get(id);
+    const principal = d?.interfaces.find((i) => i.ip) ?? d?.interfaces[0];
+    const base = { ip: principal?.ip ?? "", mascara: principal?.mascara ?? "", gateway: d?.gateway ?? "", dns: d?.dnsServidor ?? "" };
+    if (!d?.usaDhcp) return { ...base, origem: "estatica", servidorDhcp: null };
+    const concessao = this.concessoes.get(id);
+    return { ...base, origem: concessao ? "dhcp" : "apipa", servidorDhcp: concessao?.servidor ?? null };
+  }
+
+  resultadoDoDhcp(id: string): ResultadoDoDhcp | null {
+    return this.resultadosDhcp.get(id) ?? null;
+  }
+
+  arrendamentosDo(servidorId: string): { mac: string; ip: string }[] {
+    return [...(this.arrendamentos.get(servidorId) ?? new Map()).entries()].map(([mac, ip]) => ({ mac, ip }));
+  }
+
+  resolverNome(origemId: string, nome: string): ResultadoDoDns {
+    const falha = (motivo: string, passos: Passo[] = [], servidor: string | null = null): ResultadoDoDns => ({ sucesso: false, ip: null, servidor, motivo, passos });
+    const origem = this.dispositivos.get(origemId);
+    if (!origem || !ehHost(origem.tipo)) return falha("Este dispositivo não resolve nomes.");
+    const dns = origem.dnsServidor ?? "";
+    if (!dns) return falha(`${origem.nome}: nenhum servidor DNS configurado.`);
+    if (!ipValido(dns)) return falha(`${origem.nome}: o servidor DNS "${dns}" não é um endereço válido.`);
+    const ipDeOrigem = this.ipDeSaida(origem, dns);
+    if (!ipDeOrigem) return falha(`${origem.nome}: sem endereço IP configurado.`);
+
+    const execucao = novaExecucao(origem.id);
+    const identificador = this.proximoIdentificador++;
+    this.enviarPacote(execucao, origem, { tipo: "ip", origem: ipDeOrigem, destino: dns, ttl: TTL_INICIAL[origem.tipo], icmp: "dns-consulta", identificador, nome });
+    this.processarFila(execucao);
+
+    const resposta = execucao.recebidos.find((p) => p.identificador === identificador && p.icmp === "dns-resposta");
+    if (resposta?.resposta) return { sucesso: true, ip: resposta.resposta, servidor: dns, motivo: `${nome} é ${resposta.resposta}.`, passos: execucao.passos };
+    if (resposta) return falha(`O servidor DNS ${dns} respondeu que o nome ${nome} não existe.`, execucao.passos, dns);
+    const descarte = execucao.descartes[0];
+    return falha(descarte ? `${descarte.dispositivo}: ${descarte.motivo}` : `Sem resposta do servidor DNS ${dns}.`, execucao.passos, dns);
+  }
+
+  private resolverDhcp() {
+    for (const cliente of this.rede.dispositivos.filter((d) => ehHost(d.tipo) && d.usaDhcp)) {
+      const execucao = novaExecucao(cliente.id);
+      const local = cliente.interfaces[0];
+      const descobrir: CargaDhcp = { tipo: "dhcp", fase: "discover", macCliente: local.mac };
+      this.transmitir(execucao, cliente, local.nome, { origemMac: local.mac, destinoMac: MAC_DE_TRANSMISSAO, vlan: 0, carga: descobrir });
+      this.processarFila(execucao);
+
+      const concessao = execucao.concessao;
+      this.concessoes.set(cliente.id, concessao);
+      const motivo = concessao
+        ? `Endereço ${concessao.ip} concedido por ${concessao.servidor}.`
+        : execucao.descartes[0] ? `${execucao.descartes[0].dispositivo}: ${execucao.descartes[0].motivo}` : "Nenhum servidor DHCP respondeu.";
+      this.resultadosDhcp.set(cliente.id, { sucesso: concessao !== null, motivo, passos: execucao.passos });
+      this.dispositivos.set(cliente.id, this.comConfiguracao(cliente, concessao));
+    }
+  }
+
+  private comConfiguracao(cliente: Dispositivo, concessao: Concessao | null): Dispositivo {
+    const local = cliente.interfaces[0];
+    if (concessao) {
+      return { ...cliente, gateway: concessao.gateway, dnsServidor: concessao.dns || cliente.dnsServidor, interfaces: [{ ...local, ip: concessao.ip, mascara: concessao.mascara }, ...cliente.interfaces.slice(1)] };
+    }
+    const bytes = local.mac.split(":").map((b) => parseInt(b, 16));
+    const apipa = `169.254.${(bytes[4] % 254) + 1}.${(bytes[5] % 254) + 1}`;
+    return { ...cliente, gateway: "", interfaces: [{ ...local, ip: apipa, mascara: "255.255.0.0" }, ...cliente.interfaces.slice(1)] };
+  }
+
+  private escolherEndereco(servidor: Dispositivo, dhcp: ServicoDhcp, mac: string): string | null {
+    const arrendados = this.arrendamentos.get(servidor.id) ?? new Map<string, string>();
+    const existente = arrendados.get(mac);
+    if (existente) return existente;
+    const inicio = analisarIp(dhcp.inicio);
+    const fim = analisarIp(dhcp.fim);
+    if (inicio === null || fim === null || fim < inicio) return null;
+    const usados = new Set<string>(arrendados.values());
+    for (const d of this.rede.dispositivos) for (const i of d.interfaces) if (i.ip) usados.add(i.ip);
+    for (let valor = inicio; valor <= fim && valor - inicio < 1024; valor++) {
+      const ip = formatarIp(valor);
+      if (!usados.has(ip)) return ip;
+    }
+    return null;
+  }
+
+  private receberDhcp(execucao: Execucao, dispositivo: Dispositivo, interfaceNome: string, carga: CargaDhcp) {
+    const local = dispositivo.interfaces.find((i) => i.nome === interfaceNome);
+    if (!local) return;
+    if (carga.fase === "discover" || carga.fase === "request") {
+      const dhcp = dispositivo.servicos?.dhcp;
+      if (dispositivo.tipo !== "servidor" || !dhcp?.ativo || !local.ip) return;
+      if (carga.fase === "request" && carga.servidor !== local.ip) return;
+      const oferta = this.escolherEndereco(dispositivo, dhcp, carga.macCliente);
+      if (!oferta) {
+        this.descartar(execucao, dispositivo, "o conjunto de endereços DHCP está vazio, mal configurado ou esgotado.");
+        return;
+      }
+      const resposta: CargaDhcp = {
+        tipo: "dhcp", fase: carga.fase === "discover" ? "offer" : "ack", macCliente: carga.macCliente,
+        ipOferecido: oferta, mascara: dhcp.mascara, gateway: dhcp.gateway, dns: dhcp.dns, servidor: local.ip,
+      };
+      if (carga.fase === "request") {
+        const arrendados = this.arrendamentos.get(dispositivo.id) ?? new Map<string, string>();
+        arrendados.set(carga.macCliente, oferta);
+        this.arrendamentos.set(dispositivo.id, arrendados);
+      }
+      this.transmitir(execucao, dispositivo, local.nome, { origemMac: local.mac, destinoMac: carga.macCliente, vlan: 0, carga: resposta });
+      return;
+    }
+    if (!dispositivo.usaDhcp || carga.macCliente !== local.mac) return;
+    if (carga.fase === "offer") {
+      const pedido: CargaDhcp = { tipo: "dhcp", fase: "request", macCliente: local.mac, ipOferecido: carga.ipOferecido, servidor: carga.servidor };
+      this.transmitir(execucao, dispositivo, local.nome, { origemMac: local.mac, destinoMac: MAC_DE_TRANSMISSAO, vlan: 0, carga: pedido });
+    } else if (carga.ipOferecido && carga.servidor) {
+      execucao.concessao = { ip: carga.ipOferecido, mascara: carga.mascara ?? "", gateway: carga.gateway ?? "", dns: carga.dns ?? "", servidor: carga.servidor };
+    }
   }
 
   tabelaArp(dispositivoId: string): EntradaDeArp[] {
@@ -164,7 +291,7 @@ export class Simulador {
     if (!destino) return;
     execucao.passos.push({
       caboId: cabo.id, de: aqui, para: lado,
-      tipo: quadro.carga.tipo === "arp" ? "arp" : "icmp",
+      tipo: quadro.carga.tipo === "arp" ? "arp" : quadro.carga.tipo === "dhcp" ? "dhcp" : quadro.carga.icmp.startsWith("dns") ? "dns" : "icmp",
       rotulo: rotuloDoQuadro(quadro),
     });
     execucao.fila.push({ dispositivo: destino, interfaceNome: lado.interface, quadro });
@@ -174,6 +301,12 @@ export class Simulador {
     const { dispositivo, interfaceNome, quadro } = entrega;
     if (dispositivo.tipo === "switch") {
       this.receberNoSwitch(execucao, dispositivo, interfaceNome, quadro);
+      return;
+    }
+    if (quadro.carga.tipo === "dhcp") {
+      if (quadro.destinoMac === MAC_DE_TRANSMISSAO || dispositivo.interfaces.some((i) => i.mac === quadro.destinoMac)) {
+        this.receberDhcp(execucao, dispositivo, interfaceNome, quadro.carga);
+      }
       return;
     }
     const interfaceLocal = dispositivo.interfaces.find((i) => i.nome === interfaceNome);
@@ -232,6 +365,19 @@ export class Simulador {
   private receberIp(execucao: Execucao, dispositivo: Dispositivo, local: Interface, pacote: CargaIp) {
     const meu = dispositivo.interfaces.some((i) => i.ip === pacote.destino);
     if (meu) {
+      if (pacote.icmp === "dns-consulta") {
+        const dns = dispositivo.servicos?.dns;
+        if (!dns?.ativo) {
+          this.descartar(execucao, dispositivo, "não há serviço DNS ativo neste servidor.");
+          return;
+        }
+        const registro = dns.registros.find((r) => r.nome.trim().toLowerCase() === (pacote.nome ?? "").trim().toLowerCase());
+        this.enviarPacote(execucao, dispositivo, {
+          tipo: "ip", origem: pacote.destino, destino: pacote.origem, ttl: TTL_INICIAL[dispositivo.tipo],
+          icmp: "dns-resposta", identificador: pacote.identificador, nome: pacote.nome, resposta: registro?.ip ?? null,
+        });
+        return;
+      }
       if (pacote.icmp === "echo") {
         this.enviarPacote(execucao, dispositivo, {
           tipo: "ip", origem: pacote.destino, destino: pacote.origem, ttl: TTL_INICIAL[dispositivo.tipo],
@@ -350,8 +496,20 @@ function rotuloDoQuadro(quadro: Quadro): string {
       ? `ARP: quem tem ${carga.ipAlvo}? Diga a ${carga.ipOrigem}`
       : `ARP: ${carga.ipOrigem} está em ${carga.macOrigem}`;
   }
+  if (carga.tipo === "dhcp") {
+    const fases = {
+      discover: "DHCP discover: tem algum servidor DHCP aí? Preciso de um endereço",
+      offer: `DHCP offer: ofereço ${carga.ipOferecido}`,
+      request: `DHCP request: aceito ${carga.ipOferecido}`,
+      ack: `DHCP ack: confirmado, ${carga.ipOferecido} é seu`,
+    };
+    return fases[carga.fase];
+  }
+  if (carga.icmp === "dns-consulta") return `DNS: qual o IP de ${carga.nome}? (${carga.origem} → ${carga.destino})`;
+  if (carga.icmp === "dns-resposta") return carga.resposta ? `DNS: ${carga.nome} é ${carga.resposta}` : `DNS: o nome ${carga.nome} não existe`;
   const nomes: Record<TipoIcmp, string> = {
     echo: "ICMP echo (ping)", resposta: "ICMP resposta", inalcancavel: "ICMP destino inacessível", "ttl-excedido": "ICMP tempo excedido",
+    "dns-consulta": "", "dns-resposta": "",
   };
   return `${nomes[carga.icmp]}: ${carga.origem} → ${carga.destino} (TTL ${carga.ttl})`;
 }

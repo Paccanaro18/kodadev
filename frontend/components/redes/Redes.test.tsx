@@ -47,16 +47,16 @@ describe("ListaDeRedes", () => {
     expect(screen.getByRole("heading", { name: "Redes" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Seu primeiro cabo/ })).toHaveAttribute("href", "/redes/primeiro-cabo");
     expect(screen.getByRole("link", { name: /A filial sem rota/ })).toHaveAttribute("href", "/redes/filial-sem-rota");
-    expect(screen.getAllByLabelText("Não concluído")).toHaveLength(6);
+    expect(screen.getAllByLabelText("Não concluído")).toHaveLength(9);
     expect(screen.getByRole("link", { name: /trilha Redes de computadores/ })).toHaveAttribute("href", "/aprenda/redes-de-computadores");
-    expect(screen.getByText(/0 de 6 laboratórios concluídos/)).toBeInTheDocument();
+    expect(screen.getByText(/0 de 9 laboratórios concluídos/)).toBeInTheDocument();
   });
 
   it("marca como concluídos os laboratórios do progresso salvo", () => {
     window.localStorage.setItem(CHAVE_DO_ESTUDO, JSON.stringify({ redes: { licoes: [], notas: {}, desafios: ["primeiro-cabo"] } }));
     render(<ListaDeRedes />);
     expect(screen.getAllByLabelText("Concluído")).toHaveLength(1);
-    expect(screen.getByText(/1 de 6 laboratórios concluídos/)).toBeInTheDocument();
+    expect(screen.getByText(/1 de 9 laboratórios concluídos/)).toBeInTheDocument();
   });
 });
 
@@ -156,6 +156,39 @@ describe("LaboratorioDeRedes", () => {
   it("aponta a aula completa para o módulo da trilha", () => {
     render(<LaboratorioDeRedes slug="primeiro-cabo" />);
     expect(screen.getByRole("link", { name: /Ler a aula completa/ })).toHaveAttribute("href", "/aprenda/redes-de-computadores/enderecos-ip-mascaras-e-ping");
+  });
+
+  it("conclui a aula de DHCP ligando o serviço e os clientes", async () => {
+    render(<LaboratorioDeRedes slug="dhcp-enderecos-automaticos" />);
+    const usuario = userEvent.setup();
+    expect(screen.getByText("0 de 3")).toBeInTheDocument();
+
+    await usuario.click(screen.getByRole("button", { name: "Selecionar Servidor1" }));
+    await usuario.click(screen.getByRole("switch", { name: /Servidor DHCP ativo/ }));
+    for (const nome of ["PC1", "PC2"]) {
+      await usuario.click(screen.getByRole("button", { name: `Selecionar ${nome}` }));
+      await usuario.click(screen.getByRole("switch", { name: /Obter endereço automaticamente/ }));
+      expect(screen.getByText(/Concedido pelo servidor DHCP 192\.168\.50\.2/)).toBeInTheDocument();
+    }
+    expect(screen.getByText("3 de 3")).toBeInTheDocument();
+    expect(progressoSalvo().redes.desafios).toContain("dhcp-enderecos-automaticos");
+  });
+
+  it("mostra o aviso de endereço automático e o diagnóstico do DNS no terminal", async () => {
+    render(<LaboratorioDeRedes slug="nome-que-nao-resolve" />);
+    const usuario = userEvent.setup();
+    await usuario.click(screen.getByRole("button", { name: "Selecionar PC1" }));
+    await usuario.click(screen.getByRole("tab", { name: "Terminal" }));
+    await usuario.type(screen.getByLabelText("PC1>"), "nslookup loja.koda.local{Enter}");
+    expect(within(screen.getByRole("log", { name: "Terminal de PC1" })).getByText(/nenhum servidor DNS configurado/)).toBeInTheDocument();
+
+    await usuario.click(screen.getByRole("tab", { name: "Configuração" }));
+    await usuario.type(screen.getByLabelText("Servidor DNS"), "10.0.0.2");
+    await usuario.click(screen.getByRole("button", { name: "Selecionar Servidor1" }));
+    const registro = screen.getByPlaceholderText("10.0.0.30");
+    await usuario.clear(registro);
+    await usuario.type(registro, "10.0.0.30");
+    expect(screen.getByText("2 de 2")).toBeInTheDocument();
   });
 
   it("recomeça o laboratório do zero", async () => {

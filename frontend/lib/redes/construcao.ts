@@ -1,4 +1,4 @@
-import { ehHost, type Cabo, type Dispositivo, type Interface, type Ponta, type Rede, type TipoDeDispositivo } from "./tipos";
+import { ehHost, type Cabo, type Dispositivo, type Interface, type Ponta, type Rede, type Servicos, type TipoDeDispositivo } from "./tipos";
 
 const CODIGO_DO_TIPO: Record<TipoDeDispositivo, number> = { pc: 1, servidor: 2, switch: 3, roteador: 4 };
 const ROTULO_DO_TIPO: Record<TipoDeDispositivo, string> = { pc: "PC", servidor: "Servidor", switch: "Switch", roteador: "Roteador" };
@@ -11,6 +11,13 @@ function nomesDasInterfaces(tipo: TipoDeDispositivo): string[] {
   if (ehHost(tipo)) return ["eth0"];
   if (tipo === "switch") return [1, 2, 3, 4, 5, 6].map((n) => `Fa0/${n}`);
   return [0, 1, 2].map((n) => `Gi0/${n}`);
+}
+
+export function servicosPadrao(): Servicos {
+  return {
+    dhcp: { ativo: false, inicio: "", fim: "", mascara: "255.255.255.0", gateway: "", dns: "" },
+    dns: { ativo: false, registros: [] },
+  };
 }
 
 export function criarInterfaces(tipo: TipoDeDispositivo, numero: number): Interface[] {
@@ -38,6 +45,8 @@ export function criarDispositivo(tipo: TipoDeDispositivo, numero: number, x: num
     rotas: [],
     x,
     y,
+    ...(ehHost(tipo) ? { usaDhcp: false, dnsServidor: "" } : {}),
+    ...(tipo === "servidor" ? { servicos: servicosPadrao() } : {}),
   };
 }
 

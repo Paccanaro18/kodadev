@@ -74,7 +74,7 @@ function pontoNaBorda(no: InternalNode, outro: InternalNode): { x: number; y: nu
   return { x: centro.x + dx * escala, y: centro.y + dy * escala };
 }
 
-const COR_DO_PACOTE: Record<Passo["tipo"], string> = { arp: "#f59e0b", icmp: "#22c55e" };
+const COR_DO_PACOTE: Record<Passo["tipo"], string> = { arp: "#f59e0b", icmp: "#22c55e", dhcp: "#38bdf8", dns: "#f472b6" };
 
 function CaboFlutuante({ id, source, target, data }: EdgeProps<CaboDeRede>) {
   const origem = useInternalNode(source);

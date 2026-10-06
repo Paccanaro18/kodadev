@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { ipValido, mascaraValida } from "@/lib/redes/ip";
-import { ehHost, type Dispositivo, type Interface, type Rede, type Rota } from "@/lib/redes/tipos";
+import { ehHost, type ConfiguracaoEfetiva, type Dispositivo, type Interface, type Rede, type RegistroDns, type Rota, type Servicos } from "@/lib/redes/tipos";
 
 const campo = "h-9 w-full rounded-xl border border-line-2 bg-cream px-3 font-mono text-[13px] text-ink outline-none transition duration-200 focus:border-koda";
 const rotulo = "grid gap-1 text-xs font-semibold text-ink-2";
@@ -92,8 +92,84 @@ function VlanDaPorta({ porta, aoMudar }: { porta: Interface; aoMudar: (vlan: num
   );
 }
 
+function Alternador({ rotulo: texto, ligado, aoMudar }: { rotulo: string; ligado: boolean; aoMudar: (ligado: boolean) => void }) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-tint px-3 py-2.5 text-sm font-semibold text-ink">
+      {texto}
+      <input type="checkbox" role="switch" checked={ligado} onChange={(e) => aoMudar(e.target.checked)} className="size-5 accent-[var(--c-koda)]" />
+    </label>
+  );
+}
+
+function EnderecoRecebido({ configuracao }: { configuracao: ConfiguracaoEfetiva }) {
+  const apipa = configuracao.origem === "apipa";
+  const linhas: [string, string][] = [
+    ["Endereço IP", configuracao.ip || "-"],
+    ["Máscara", configuracao.mascara || "-"],
+    ["Gateway", configuracao.gateway || "-"],
+    ["Servidor DNS", configuracao.dns || "-"],
+  ];
+  return (
+    <div className="grid gap-2 rounded-xl border border-line p-3 text-[13px]">
+      <p className={`font-semibold ${apipa ? "text-warn" : "text-ok"}`}>
+        {apipa ? "Nenhum servidor DHCP respondeu: endereço automático 169.254.x.x" : `Concedido pelo servidor DHCP ${configuracao.servidorDhcp}`}
+      </p>
+      {linhas.map(([nome, valor]) => (
+        <div key={nome} className="flex justify-between gap-3"><span className="text-ink-2">{nome}</span><span className="font-mono text-ink">{valor}</span></div>
+      ))}
+    </div>
+  );
+}
+
+function ServicosDoServidor({ servicos, aoMudar }: { servicos: Servicos; aoMudar: (servicos: Servicos) => void }) {
+  const { dhcp, dns } = servicos;
+  const mudarDhcp = (mudanca: Partial<Servicos["dhcp"]>) => aoMudar({ ...servicos, dhcp: { ...dhcp, ...mudanca } });
+  const mudarRegistro = (indice: number, mudanca: Partial<RegistroDns>) =>
+    aoMudar({ ...servicos, dns: { ...dns, registros: dns.registros.map((r, i) => (i === indice ? { ...r, ...mudanca } : r)) } });
+  return (
+    <>
+      <fieldset className="grid gap-3 rounded-xl border border-line p-3">
+        <legend className="px-1 text-xs font-bold tracking-wide text-ink-2 uppercase">Serviço DHCP</legend>
+        <Alternador rotulo="Servidor DHCP ativo" ligado={dhcp.ativo} aoMudar={(ativo) => mudarDhcp({ ativo })} />
+        <div className="grid grid-cols-2 gap-2">
+          <CampoDeTexto nome="Primeiro endereço" valor={dhcp.inicio} placeholder="192.168.0.100" valido={valorOuVazio(dhcp.inicio, ipValido)} aoMudar={(inicio) => mudarDhcp({ inicio })} />
+          <CampoDeTexto nome="Último endereço" valor={dhcp.fim} placeholder="192.168.0.150" valido={valorOuVazio(dhcp.fim, ipValido)} aoMudar={(fim) => mudarDhcp({ fim })} />
+          <CampoDeTexto nome="Máscara" valor={dhcp.mascara} placeholder="255.255.255.0" valido={valorOuVazio(dhcp.mascara, mascaraValida)} aoMudar={(mascara) => mudarDhcp({ mascara })} />
+          <CampoDeTexto nome="Gateway entregue" valor={dhcp.gateway} placeholder="192.168.0.1" valido={valorOuVazio(dhcp.gateway, ipValido)} aoMudar={(gateway) => mudarDhcp({ gateway })} />
+        </div>
+        <CampoDeTexto nome="Servidor DNS entregue" valor={dhcp.dns} placeholder="192.168.0.2" valido={valorOuVazio(dhcp.dns, ipValido)} aoMudar={(dnsEntregue) => mudarDhcp({ dns: dnsEntregue })} />
+      </fieldset>
+
+      <fieldset className="grid gap-3 rounded-xl border border-line p-3">
+        <legend className="px-1 text-xs font-bold tracking-wide text-ink-2 uppercase">Serviço DNS</legend>
+        <Alternador rotulo="Servidor DNS ativo" ligado={dns.ativo} aoMudar={(ativo) => aoMudar({ ...servicos, dns: { ...dns, ativo } })} />
+        {dns.registros.map((registro, indice) => (
+          <div key={indice} className="flex items-end gap-2">
+            <div className="grid flex-1 grid-cols-2 gap-2">
+              <CampoDeTexto nome="Nome" valor={registro.nome} placeholder="loja.koda.local" aoMudar={(nome) => mudarRegistro(indice, { nome })} />
+              <CampoDeTexto nome="Endereço IP" valor={registro.ip} placeholder="10.0.0.30" valido={valorOuVazio(registro.ip, ipValido)} aoMudar={(ip) => mudarRegistro(indice, { ip })} />
+            </div>
+            <button type="button" aria-label={`Remover o registro ${indice + 1}`} onClick={() => aoMudar({ ...servicos, dns: { ...dns, registros: dns.registros.filter((_, i) => i !== indice) } })}
+              className="grid size-9 place-items-center rounded-xl text-bad transition duration-200 hover:bg-bad-soft active:scale-95">
+              <Trash2 className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={() => aoMudar({ ...servicos, dns: { ...dns, registros: [...dns.registros, { nome: "", ip: "" }] } })}
+          className="inline-flex h-8 w-fit items-center gap-1 rounded-lg bg-koda-soft px-2.5 text-xs font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 active:scale-95">
+          <Plus className="size-3.5" aria-hidden="true" />Adicionar registro
+        </button>
+      </fieldset>
+    </>
+  );
+}
+
 export type PropriedadesDoPainel = {
   dispositivo: Dispositivo;
+  configuracao: ConfiguracaoEfetiva;
+  aoMudarDhcp: (usa: boolean) => void;
+  aoMudarDns: (servidor: string) => void;
+  aoMudarServicos: (servicos: Servicos) => void;
   rede: Rede;
   aoMudarNome: (nome: string) => void;
   aoMudarGateway: (gateway: string) => void;
@@ -115,7 +191,7 @@ function vizinhoDa(rede: Rede, dispositivo: Dispositivo, porta: string): string 
 }
 
 export default function PainelDoDispositivo({
-  dispositivo, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover,
+  dispositivo, configuracao, aoMudarDhcp, aoMudarDns, aoMudarServicos, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover,
 }: PropriedadesDoPainel) {
   const host = ehHost(dispositivo.tipo);
   return (
@@ -127,10 +203,20 @@ export default function PainelDoDispositivo({
 
       {host && (
         <>
-          <CamposDeEndereco interfaceDoDispositivo={dispositivo.interfaces[0]} aoMudar={(mudanca) => aoMudarInterface(dispositivo.interfaces[0].nome, mudanca)} />
-          <CampoDeTexto nome="Gateway padrão" valor={dispositivo.gateway} placeholder="192.168.0.1" valido={valorOuVazio(dispositivo.gateway, ipValido)} aoMudar={aoMudarGateway} />
+          <Alternador rotulo="Obter endereço automaticamente (DHCP)" ligado={dispositivo.usaDhcp === true} aoMudar={aoMudarDhcp} />
+          {dispositivo.usaDhcp
+            ? <EnderecoRecebido configuracao={configuracao} />
+            : (
+              <>
+                <CamposDeEndereco interfaceDoDispositivo={dispositivo.interfaces[0]} aoMudar={(mudanca) => aoMudarInterface(dispositivo.interfaces[0].nome, mudanca)} />
+                <CampoDeTexto nome="Gateway padrão" valor={dispositivo.gateway} placeholder="192.168.0.1" valido={valorOuVazio(dispositivo.gateway, ipValido)} aoMudar={aoMudarGateway} />
+                <CampoDeTexto nome="Servidor DNS" valor={dispositivo.dnsServidor ?? ""} placeholder="192.168.0.2" valido={valorOuVazio(dispositivo.dnsServidor ?? "", ipValido)} aoMudar={aoMudarDns} />
+              </>
+            )}
         </>
       )}
+
+      {dispositivo.tipo === "servidor" && dispositivo.servicos && <ServicosDoServidor servicos={dispositivo.servicos} aoMudar={aoMudarServicos} />}
 
       {dispositivo.tipo === "roteador" && (
         <>

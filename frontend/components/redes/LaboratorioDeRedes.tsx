@@ -99,6 +99,13 @@ function Ajuda({ lab }: { lab: Laboratorio }) {
   );
 }
 
+const ESTILO_DO_PASSO: Record<Passo["tipo"], string> = {
+  arp: "bg-warn-soft text-warn",
+  icmp: "bg-ok-soft text-ok",
+  dhcp: "bg-[#38bdf8]/15 text-[#38bdf8]",
+  dns: "bg-[#f472b6]/15 text-[#f472b6]",
+};
+
 function RegistroDePacotes({ rede, passos, visiveis, reproduzindo, aoRepetir }: {
   rede: Rede; passos: Passo[]; visiveis: number; reproduzindo: boolean; aoRepetir: () => void;
 }) {
@@ -114,12 +121,12 @@ function RegistroDePacotes({ rede, passos, visiveis, reproduzindo, aoRepetir }: 
         )}
       </div>
       {passos.length === 0
-        ? <p className="text-sm text-ink-2">Dê um ping no terminal de um dispositivo e acompanhe aqui cada quadro que passa pelos cabos: <span className="font-bold text-warn">ARP</span> para descobrir o endereço físico e <span className="font-bold text-ok">ICMP</span> para o ping em si.</p>
+        ? <p className="text-sm text-ink-2">Dê um ping no terminal de um dispositivo e acompanhe aqui cada quadro que passa pelos cabos: <span className="font-bold text-warn">ARP</span> para descobrir o endereço físico e <span className="font-bold text-ok">ICMP</span> para o ping em si, e também <span className="font-bold text-[#38bdf8]">DHCP</span> e <span className="font-bold text-[#f472b6]">DNS</span>.</p>
         : (
           <ol aria-label="Quadros enviados" className="grid max-h-56 gap-1.5 overflow-y-auto pr-1 text-[13px]">
             {passos.slice(0, visiveis).map((passo, indice) => (
               <li key={indice} className="flex items-start gap-2">
-                <span className={`mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-extrabold ${passo.tipo === "arp" ? "bg-warn-soft text-warn" : "bg-ok-soft text-ok"}`}>{passo.tipo === "arp" ? "ARP" : "ICMP"}</span>
+                <span className={`mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-extrabold ${ESTILO_DO_PASSO[passo.tipo]}`}>{passo.tipo.toUpperCase()}</span>
                 <span className="min-w-0 leading-snug">
                   <span className="font-semibold text-ink">{nome(passo.de.dispositivo)} {passo.de.interface} → {nome(passo.para.dispositivo)} {passo.para.interface}</span>
                   <span className="block text-xs text-ink-2">{passo.rotulo}</span>
@@ -148,6 +155,10 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
 
   const simulador = useMemo(() => new Simulador(rede), [rede]);
   const resultados = useMemo(() => avaliarObjetivos(rede, lab.objetivos), [rede, lab.objetivos]);
+  const redeEfetiva = useMemo(
+    () => ({ ...rede, dispositivos: rede.dispositivos.map((d) => simulador.dispositivo(d.id) ?? d) }),
+    [rede, simulador],
+  );
   const completo = tudoCumprido(resultados);
   const jaConcluido = progresso.desafios.includes(lab.slug);
 
@@ -254,7 +265,7 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
 
             <div className="relative">
               <EditorDeRede
-                rede={rede}
+                rede={redeEfetiva}
                 posicoes={posicoes}
                 selecionado={selecionado}
                 caboSelecionado={caboSelecionado}
@@ -277,6 +288,10 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
                 ? (
                   <PainelDoDispositivo
                     dispositivo={dispositivo}
+                    configuracao={simulador.configuracaoDe(dispositivo.id)}
+                    aoMudarDhcp={(usaDhcp) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, usaDhcp })))}
+                    aoMudarDns={(dnsServidor) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, dnsServidor })))}
+                    aoMudarServicos={(servicos) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, servicos })))}
                     rede={rede}
                     aoMudarNome={(nome) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, nome })))}
                     aoMudarGateway={(gateway) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, gateway })))}

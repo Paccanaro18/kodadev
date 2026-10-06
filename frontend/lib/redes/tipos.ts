@@ -14,6 +14,30 @@ export type Rota = {
   proximoSalto: string;
 };
 
+export type ServicoDhcp = {
+  ativo: boolean;
+  inicio: string;
+  fim: string;
+  mascara: string;
+  gateway: string;
+  dns: string;
+};
+
+export type RegistroDns = {
+  nome: string;
+  ip: string;
+};
+
+export type ServicoDns = {
+  ativo: boolean;
+  registros: RegistroDns[];
+};
+
+export type Servicos = {
+  dhcp: ServicoDhcp;
+  dns: ServicoDns;
+};
+
 export type Dispositivo = {
   id: string;
   nome: string;
@@ -23,6 +47,9 @@ export type Dispositivo = {
   rotas: Rota[];
   x: number;
   y: number;
+  usaDhcp?: boolean;
+  dnsServidor?: string;
+  servicos?: Servicos;
 };
 
 export type Ponta = {
@@ -51,7 +78,7 @@ export type CargaArp = {
   ipAlvo: string;
 };
 
-export type TipoIcmp = "echo" | "resposta" | "inalcancavel" | "ttl-excedido";
+export type TipoIcmp = "echo" | "resposta" | "inalcancavel" | "ttl-excedido" | "dns-consulta" | "dns-resposta";
 
 export type CargaIp = {
   tipo: "ip";
@@ -60,20 +87,33 @@ export type CargaIp = {
   ttl: number;
   icmp: TipoIcmp;
   identificador: number;
+  nome?: string;
+  resposta?: string | null;
+};
+
+export type CargaDhcp = {
+  tipo: "dhcp";
+  fase: "discover" | "offer" | "request" | "ack";
+  macCliente: string;
+  ipOferecido?: string;
+  mascara?: string;
+  gateway?: string;
+  dns?: string;
+  servidor?: string;
 };
 
 export type Quadro = {
   origemMac: string;
   destinoMac: string;
   vlan: number;
-  carga: CargaArp | CargaIp;
+  carga: CargaArp | CargaIp | CargaDhcp;
 };
 
 export type Passo = {
   caboId: string;
   de: Ponta;
   para: Ponta;
-  tipo: "arp" | "icmp";
+  tipo: "arp" | "icmp" | "dhcp" | "dns";
   rotulo: string;
 };
 
@@ -101,6 +141,29 @@ export type SaltoDoTraceroute = {
 export type ResultadoDoTraceroute = {
   saltos: SaltoDoTraceroute[];
   chegou: boolean;
+  passos: Passo[];
+};
+
+export type ConfiguracaoEfetiva = {
+  ip: string;
+  mascara: string;
+  gateway: string;
+  dns: string;
+  origem: "estatica" | "dhcp" | "apipa";
+  servidorDhcp: string | null;
+};
+
+export type ResultadoDoDhcp = {
+  sucesso: boolean;
+  motivo: string;
+  passos: Passo[];
+};
+
+export type ResultadoDoDns = {
+  sucesso: boolean;
+  ip: string | null;
+  servidor: string | null;
+  motivo: string;
   passos: Passo[];
 };
 
