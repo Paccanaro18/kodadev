@@ -1,6 +1,6 @@
 "use client";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Background, BackgroundVariant, BaseEdge, Controls, Handle, Position, ReactFlow, useInternalNode,
   type Edge, type EdgeProps, type InternalNode, type Node, type NodeChange, type NodeProps,
@@ -122,7 +122,7 @@ export type PropriedadesDoEditor = {
   selecionado: string | null;
   caboSelecionado: string | null;
   passoAtual: (Passo & { chave: string }) | null;
-  aoSelecionarDispositivo: (id: string | null) => void;
+  aoSelecionarDispositivo: (id: string | null, ancora?: { x: number; y: number }) => void;
   aoSelecionarCabo: (id: string | null) => void;
   aoMover: (id: string, posicao: { x: number; y: number }) => void;
   aoLigar: (origem: string, destino: string) => void;
@@ -131,6 +131,7 @@ export type PropriedadesDoEditor = {
 export default function EditorDeRede({
   rede, posicoes, selecionado, caboSelecionado, passoAtual, aoSelecionarDispositivo, aoSelecionarCabo, aoMover, aoLigar,
 }: PropriedadesDoEditor) {
+  const raiz = useRef<HTMLDivElement>(null);
   const [conectando, setConectando] = useState(false);
   const [modoEscuro, setModoEscuro] = useState(true);
 
@@ -186,7 +187,7 @@ export default function EditorDeRede({
   }
 
   return (
-    <div className="h-[520px] overflow-hidden rounded-2xl border border-line" data-testid="editor-de-rede">
+    <div ref={raiz} className="h-[520px] overflow-hidden rounded-2xl border border-line" data-testid="editor-de-rede">
       <ReactFlow<NoDeRede, CaboDeRede>
         nodes={nos}
         edges={cabos}
@@ -194,7 +195,11 @@ export default function EditorDeRede({
         edgeTypes={TIPOS_DE_CABO}
         colorMode={modoEscuro ? "dark" : "light"}
         onNodesChange={aoMudarNos}
-        onNodeClick={(_, no) => aoSelecionarDispositivo(no.id)}
+        onNodeClick={(evento, no) => {
+          const no_ = (evento.currentTarget as HTMLElement).getBoundingClientRect();
+          const base = raiz.current?.getBoundingClientRect();
+          aoSelecionarDispositivo(no.id, base ? { x: no_.x - base.x, y: no_.y - base.y } : undefined);
+        }}
         onEdgeClick={(_, cabo) => aoSelecionarCabo(cabo.id)}
         onPaneClick={() => {
           aoSelecionarDispositivo(null);

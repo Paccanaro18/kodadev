@@ -41,7 +41,7 @@ export default function TerminalDeRede({ nome, linhas, aoExecutar }: {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-[#0b0b10] font-mono text-[13px] text-[#e4e4ee]">
-      <div role="log" aria-label={`Terminal de ${nome}`} className="h-[calc(100vh-20rem)] min-h-56 overflow-y-auto px-4 py-3">
+      <div role="log" aria-label={`Terminal de ${nome}`} className="h-48 overflow-y-auto px-4 py-3">
         {linhas.length === 0 && <p className="text-[#8b8ba0]">Digite help para ver os comandos.</p>}
         {linhas.map((linha, indice) => (
           <pre key={indice} className={`whitespace-pre-wrap ${linha.tipo === "entrada" ? "text-[#a7a1ff]" : ""}`}>{linha.texto}</pre>

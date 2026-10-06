@@ -5,7 +5,7 @@ import { CheckCircle2, Circle, Clock, Eye, Lightbulb, Plus, RotateCcw, Trash2 } 
 import AppShell from "../AppShell";
 import BlocosDeConteudo from "../publico/BlocosDeConteudo";
 import { BackLink, Card, Eyebrow } from "../ui";
-import GavetaDoDispositivo from "./GavetaDoDispositivo";
+import JanelaDoDispositivo from "./JanelaDoDispositivo";
 import PainelDoDispositivo from "./PainelDoDispositivo";
 import TerminalDeRede, { type LinhaDoTerminal } from "./TerminalDeRede";
 import {
@@ -113,6 +113,7 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
   const [rede, setRede] = useState<Rede>(lab.redeInicial);
   const [posicoes, setPosicoes] = useState<Record<string, { x: number; y: number }>>({});
   const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [ancora, setAncora] = useState({ x: 20, y: 20 });
   const [caboSelecionado, setCaboSelecionado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [aba, setAba] = useState<"config" | "terminal">("config");
@@ -207,7 +208,7 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
         </p>
       )}
 
-      <div className={`mt-6 grid gap-6 transition-[padding] duration-200 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] ${dispositivo ? "lg:pr-[500px]" : ""}`}>
+      <div className={`mt-6 grid gap-6 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]`}>
         <div className="grid content-start gap-6">
           <Objetivos lab={lab} resultados={resultados} />
           <Card className="!p-5">
@@ -237,14 +238,16 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
             </button>
           </div>
 
+          <div className="relative">
           <EditorDeRede
             rede={rede}
             posicoes={posicoes}
             selecionado={selecionado}
             caboSelecionado={caboSelecionado}
             passoAtual={passoAtual}
-            aoSelecionarDispositivo={(id) => {
+            aoSelecionarDispositivo={(id, posicao) => {
               setSelecionado(id);
+              if (posicao) setAncora(posicao);
               if (id) setCaboSelecionado(null);
             }}
             aoSelecionarCabo={(id) => {
@@ -254,6 +257,25 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
             aoMover={(id, posicao) => setPosicoes((atuais) => ({ ...atuais, [id]: posicao }))}
             aoLigar={ligar}
           />
+          {dispositivo && (
+            <JanelaDoDispositivo dispositivo={dispositivo} ancora={ancora} aba={aba} aoMudarAba={setAba} aoFechar={() => setSelecionado(null)}>
+              {aba === "config"
+                ? (
+                  <PainelDoDispositivo
+                    dispositivo={dispositivo}
+                    rede={rede}
+                    aoMudarNome={(nome) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, nome })))}
+                    aoMudarGateway={(gateway) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, gateway })))}
+                    aoMudarInterface={(nome, mudanca) => mudarRede(atualizarInterface(rede, dispositivo.id, nome, mudanca))}
+                    aoMudarRotas={(rotas) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, rotas })))}
+                    aoRemover={() => { mudarRede(removerDispositivo(rede, dispositivo.id)); setSelecionado(null); }}
+                  />
+                )
+                : <TerminalDeRede nome={dispositivo.nome} linhas={terminais[dispositivo.id] ?? []} aoExecutar={executar} />}
+            </JanelaDoDispositivo>
+          )}
+
+          </div>
           <p className="text-xs text-ink-2">Arraste do círculo com o ícone de cabo de um dispositivo até outro para ligá-los. Clique em um dispositivo para configurá-lo e abrir o terminal. Clique em um cabo para removê-lo.</p>
           {aviso && <p role="alert" className="rounded-xl bg-warn-soft px-4 py-2.5 text-sm font-semibold text-warn">{aviso}</p>}
 
@@ -276,23 +298,6 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
         </div>
       </div>
 
-      {dispositivo && (
-        <GavetaDoDispositivo dispositivo={dispositivo} aba={aba} aoMudarAba={setAba} aoFechar={() => setSelecionado(null)}>
-          {aba === "config"
-            ? (
-              <PainelDoDispositivo
-                dispositivo={dispositivo}
-                rede={rede}
-                aoMudarNome={(nome) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, nome })))}
-                aoMudarGateway={(gateway) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, gateway })))}
-                aoMudarInterface={(nome, mudanca) => mudarRede(atualizarInterface(rede, dispositivo.id, nome, mudanca))}
-                aoMudarRotas={(rotas) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, rotas })))}
-                aoRemover={() => { mudarRede(removerDispositivo(rede, dispositivo.id)); setSelecionado(null); }}
-              />
-            )
-            : <TerminalDeRede nome={dispositivo.nome} linhas={terminais[dispositivo.id] ?? []} aoExecutar={executar} />}
-        </GavetaDoDispositivo>
-      )}
     </>
   );
 }
