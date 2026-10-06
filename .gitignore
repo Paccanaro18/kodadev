@@ -32,3 +32,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Claude (somente local) ###
+CLAUDE.md
+CLAUDE.local.md
+.claude/
