@@ -7,7 +7,7 @@ import type { Bloco } from "@/lib/aulas/tipos";
 
 const HOSTS_PERMITIDOS = [
   "dev.java", "docs.oracle.com", "www.typescriptlang.org", "developer.mozilla.org", "nodejs.org",
-  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "docs.sqlalchemy.org", "alembic.sqlalchemy.org", "docs.pytest.org", "vitest.dev", "github.com", "fastapi.tiangolo.com", "cheatsheetseries.owasp.org", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
+  "docs.python.org", "peps.python.org", "expressjs.com", "docs.aws.amazon.com", "aws.amazon.com", "modelcontextprotocol.io", "docs.anthropic.com", "platform.claude.com", "owasp.org", "fastapi.tiangolo.com", "docs.pydantic.dev", "zod.dev", "datatracker.ietf.org", "pages.nist.gov", "docs.sqlalchemy.org", "alembic.sqlalchemy.org", "docs.pytest.org", "vitest.dev", "github.com", "fastapi.tiangolo.com", "cheatsheetseries.owasp.org", "mypy.readthedocs.io", "docs.astral.sh", "typing.python.org",
 ];
 
 function palavrasDe(blocos: Bloco[]): number {
@@ -26,7 +26,7 @@ function validarQuestao(questao: Questao, onde: string) {
 
 describe("trilhas de linguagem", () => {
   it("tem uma trilha para cada linguagem, com slug único", () => {
-    expect(slugsDeTrilha()).toEqual(["java", "typescript", "python", "aws-cloud-practitioner", "llm-mcp-mvp"]);
+    expect(slugsDeTrilha()).toEqual(["java", "typescript", "python", "aws-cloud-practitioner", "llm-mcp-mvp", "seguranca-de-aplicacoes"]);
     for (const trilha of TRILHAS) expect(trilhaPorSlug(trilha.slug)).toBe(trilha);
     expect(trilhaPorSlug("cobol")).toBeUndefined();
   });

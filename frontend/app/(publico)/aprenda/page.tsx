@@ -15,6 +15,7 @@ const SECOES: { grupo: GrupoDeTrilha; titulo: string; texto: string }[] = [
   { grupo: "linguagem", titulo: "Linguagens", texto: "Do primeiro programa até uma API de verdade, com exemplos que rodam." },
   { grupo: "certificacao", titulo: "Certificações", texto: "Roteiros de estudo para as provas, com questões no estilo do exame." },
   { grupo: "ia", titulo: "Inteligência artificial", texto: "Como usar modelos de linguagem, ferramentas e MCP em produtos reais." },
+  { grupo: "seguranca", titulo: "Segurança", texto: "Entender como as aplicações são atacadas para construí-las seguras, com desafios para praticar." },
 ];
 
 export default function Page() {

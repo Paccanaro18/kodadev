@@ -64,7 +64,7 @@ function primeirasLinhas(texto, quantas = 8) {
 }
 
 const filtro = process.argv[2];
-const pastas = ["java", "typescript", "python", "aws", "llm"].filter((pasta) => !filtro || pasta === filtro);
+const pastas = ["java", "typescript", "python", "aws", "llm", "seguranca"].filter((pasta) => !filtro || pasta === filtro);
 const temporario = mkdtempSync(join(tmpdir(), "koda-exemplos-"));
 let total = 0;
 let comparadas = 0;

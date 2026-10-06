@@ -55,6 +55,7 @@ describe("ListaDeSeguranca", () => {
 
     expect(await screen.findByText("1 de 3 resolvidos · 100 pontos")).toBeInTheDocument();
     expect(screen.getByText(/fictícios/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Estude a trilha Segurança de aplicações/ })).toHaveAttribute("href", "/aprenda/seguranca-de-aplicacoes");
     expect(screen.getByText("100", { selector: "p" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /O cookie previsível/ })).toHaveAttribute("href", "/seguranca/web-um");
     expect(screen.getByLabelText("Resolvido")).toBeInTheDocument();

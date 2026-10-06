@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Circle, Crown, ShieldAlert, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Circle, Crown, ShieldAlert, Trophy } from "lucide-react";
 import AppShell from "../AppShell";
 import { Card, Eyebrow, PageHeader } from "../ui";
 import type { CategoriaDeSeguranca, DificuldadeDeSeguranca, ResumoDeSeguranca } from "@/lib/api";
@@ -101,6 +101,11 @@ function Conteudo() {
         <ShieldAlert className="mt-0.5 size-5 shrink-0 text-warn" aria-hidden="true" />
         <p>Todos os dados, servidores e credenciais destes desafios são <strong>fictícios</strong>, criados para estudo. Use o que aprender só para se defender e para testar sistemas seus ou com autorização por escrito: acessar sistemas alheios sem permissão é crime.</p>
       </div>
+
+      <Link href="/aprenda/seguranca-de-aplicacoes" className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-koda-soft px-5 py-4 text-sm font-semibold text-koda-texto transition duration-200 hover:-translate-y-0.5 hover:text-koda-texto">
+        <span className="flex items-center gap-3"><BookOpen className="size-5" aria-hidden="true" />Quer entender cada ataque antes? Estude a trilha Segurança de aplicações.</span>
+        <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+      </Link>
 
       {erro && (
         <div role="alert" className="mt-6 rounded-2xl bg-bad-soft px-5 py-4 text-sm text-bad">
