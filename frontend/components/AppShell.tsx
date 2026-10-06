@@ -3,27 +3,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Award, BookOpen, Folder, GitBranch, Home, LogOut, Menu, Network, Plus, Settings, ShieldCheck, Users, Wrench, X } from "lucide-react";
+import { LogOut, Menu, Plus, X } from "lucide-react";
 import BuscaGlobal from "./BuscaGlobal";
 import AlternarTema from "./AlternarTema";
+import MenuLateral from "./MenuLateral";
 import Notificacoes from "./Notificacoes";
 import { Logo, Mascot } from "./ui";
 import { sair } from "@/lib/api";
 import { SessaoContext } from "@/lib/SessaoContext";
 import { useSessao } from "@/lib/useSessao";
-
-const nav = [
-  { label: "Home", href: "/dashboard", icon: Home, match: ["/dashboard"] },
-  { label: "Desafios", href: "/desafios", icon: GitBranch, match: ["/desafios", "/projeto", "/desafio"] },
-  { label: "Segurança", href: "/seguranca", icon: ShieldCheck, match: ["/seguranca"] },
-  { label: "Aprenda aqui", href: "/aprenda", icon: BookOpen, match: ["/aprenda"] },
-  { label: "Repositórios", href: "/repositorios/adicionar", icon: Folder, match: ["/repositorios", "/analisando"] },
-  { label: "Redes", href: "/redes", icon: Network, match: ["/redes"] },
-  { label: "Ferramentas", href: "/ferramentas", icon: Wrench, match: ["/ferramentas"] },
-  { label: "Conquistas", href: "/conquistas", icon: Award, match: ["/conquistas"] },
-  { label: "Comunidade", href: "/comunidade", icon: Users, match: ["/comunidade"] },
-  { label: "Configurações", href: "/configuracoes", icon: Settings, match: ["/configuracoes"] },
-];
 
 export default function AppShell({ children, width = "max-w-[1360px]" }: { children: ReactNode; width?: string }) {
   const path = usePathname();
@@ -73,17 +61,7 @@ export default function AppShell({ children, width = "max-w-[1360px]" }: { child
           <Logo className="h-11" />
           <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Fechar menu"><X className="size-5" /></button>
         </div>
-        <nav className="grid gap-1.5">
-          {nav.map(({ label, href, icon: Icon, match }) => {
-            const active = match.some((m) => path.startsWith(m));
-            return (
-              <Link key={label} href={href} onClick={() => setOpen(false)}
-                className={`group flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[15px] font-medium transition duration-200 ease-out hover:translate-x-1 ${active ? "bg-koda-soft text-koda-texto" : "text-ink hover:bg-tint-2 hover:text-ink"}`}>
-                <Icon className={`size-5.5 transition-transform duration-200 group-hover:scale-110 ${active ? "text-koda-texto" : "text-body group-hover:text-koda-texto"}`} />{label}
-              </Link>
-            );
-          })}
-        </nav>
+        <MenuLateral caminho={path} aoNavegar={() => setOpen(false)} />
         <div className="mt-auto flex items-center gap-3 rounded-2xl bg-tint p-3">
           <Image src={perfil.avatarUrl} alt={perfil.login} width={40} height={40} className="size-10 rounded-full" />
           <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{perfil.nome ?? perfil.login}</div><div className="truncate text-xs text-ink-2">@{perfil.login}</div></div>
