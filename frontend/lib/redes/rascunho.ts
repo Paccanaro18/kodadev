@@ -1,5 +1,5 @@
 import { adicionarCabo, criarDispositivo } from "./construcao";
-import type { RegistroDns, Rede, ServicoDhcp, TipoDeDispositivo } from "./tipos";
+import type { RegistroDns, RegraDeAcl, Rede, ServicoDhcp, TipoDeDispositivo } from "./tipos";
 
 type Config = {
   ip?: string;
@@ -11,6 +11,7 @@ type Config = {
   dns?: string;
   servicoDhcp?: Partial<ServicoDhcp> & { ativo: boolean };
   servicoDns?: { ativo: boolean; registros: RegistroDns[] };
+  acl?: Record<string, RegraDeAcl[]>;
 };
 
 export type DispositivoDoRascunho = {
@@ -32,6 +33,7 @@ export function construirRede(dispositivos: DispositivoDoRascunho[], cabos: Cabo
         ...base,
         gateway: config.gateway ?? "",
         rotas: config.rotas ?? [],
+        ...(d.tipo === "roteador" && config.acl ? { aclDeEntrada: config.acl } : {}),
         ...(d.tipo === "pc" || d.tipo === "servidor" ? { usaDhcp: config.dhcp ?? false, dnsServidor: config.dns ?? "" } : {}),
         ...(d.tipo === "servidor" ? {
           servicos: {

@@ -36,6 +36,22 @@ const SOLUCOES: Record<string, (rede: Rede) => Rede> = {
     const comDns = atualizarDispositivo(rede, "pc-1", (d) => ({ ...d, dnsServidor: "10.0.0.2" }));
     return atualizarDispositivo(comDns, "servidor-1", (d) => ({ ...d, servicos: { ...d.servicos!, dns: { ...d.servicos!.dns, registros: [{ nome: "loja.koda.local", ip: "10.0.0.30" }] } } }));
   },
+  "acl-filtrando-trafego": (rede) => atualizarDispositivo(rede, "roteador-1", (d) => ({
+    ...d,
+    aclDeEntrada: {
+      "Gi0/0": [
+        { acao: "negar", protocolo: "icmp", origem: "10.0.1.20", destino: "10.0.2.10" },
+        { acao: "permitir", protocolo: "qualquer", origem: "qualquer", destino: "qualquer" },
+      ],
+    },
+  })),
+  "acl-que-bloqueou-a-volta": (rede) => atualizarDispositivo(rede, "roteador-1", (d) => ({
+    ...d,
+    aclDeEntrada: {
+      ...d.aclDeEntrada,
+      "Gi0/1": [{ acao: "permitir", protocolo: "icmp", origem: "10.0.2.10", destino: "10.0.1.10" }],
+    },
+  })),
   "filial-sem-rota": (rede) => atualizarDispositivo(
     atualizarDispositivo(rede, "roteador-1", (d) => ({ ...d, rotas: [{ rede: "10.3.0.0", mascara: "255.255.255.0", proximoSalto: "10.2.0.2" }] })),
     "roteador-2",

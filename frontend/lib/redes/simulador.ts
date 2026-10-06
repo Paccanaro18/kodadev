@@ -1,9 +1,9 @@
-import { analisarIp, formatarIp, ipValido, mesmaRede, prefixoDaMascara, redeDe } from "./ip";
+import { analisarIp, formatarIp, ipValido, mesmaRede, pertenceACidr, prefixoDaMascara, redeDe } from "./ip";
 import {
   MAC_DE_TRANSMISSAO, ehHost,
   type CargaArp, type CargaDhcp, type CargaIp, type ConfiguracaoEfetiva, type Descarte, type Dispositivo, type EntradaDeArp, type EntradaDeMac, type Interface,
   type Passo, type Ponta, type Quadro, type Rede, type ResultadoDoPing, type ResultadoDoTraceroute, type SaltoDoTraceroute,
-  type ResultadoDoDhcp, type ResultadoDoDns, type ServicoDhcp, type TipoIcmp,
+  type RegraDeAcl, type ResultadoDoDhcp, type ResultadoDoDns, type ServicoDhcp, type TipoIcmp,
 } from "./tipos";
 
 const LIMITE_DE_PASSOS = 300;
@@ -235,7 +235,8 @@ export class Simulador {
       if (resposta.icmp === "ttl-excedido") {
         return { ...base, sucesso: false, tipo: "ttl-excedido", de: resposta.origem, ttl: resposta.ttl, motivo: `Tempo de vida excedido em ${resposta.origem}.` };
       }
-      return { ...base, sucesso: false, tipo: "inalcancavel", de: resposta.origem, ttl: resposta.ttl, motivo: `Host de destino inacessível (resposta de ${resposta.origem}).` };
+      const causa = execucao.descartes[0];
+      return { ...base, sucesso: false, tipo: "inalcancavel", de: resposta.origem, ttl: resposta.ttl, motivo: `Host de destino inacessível (resposta de ${resposta.origem}).${causa ? ` ${causa.dispositivo}: ${causa.motivo}` : ""}` };
     }
     if (execucao.estourou) {
       return { ...base, sucesso: false, tipo: "sem-resposta", de: null, ttl: null, motivo: "Os pacotes não pararam de circular: provável laço na rede (sem STP, dois caminhos entre switches formam um laço)." };
@@ -362,7 +363,29 @@ export class Simulador {
     }
   }
 
+  private avaliarAcl(dispositivo: Dispositivo, interfaceNome: string, pacote: CargaIp): { negado: false } | { negado: true; motivo: string } {
+    const regras = dispositivo.aclDeEntrada?.[interfaceNome] ?? [];
+    if (regras.length === 0) return { negado: false };
+    const protocolo = pacote.icmp.startsWith("dns") ? "dns" : "icmp";
+    for (let i = 0; i < regras.length; i++) {
+      const regra = regras[i];
+      const casa = (regra.protocolo === "qualquer" || regra.protocolo === protocolo)
+        && pertenceACidr(pacote.origem, regra.origem) && pertenceACidr(pacote.destino, regra.destino);
+      if (!casa) continue;
+      return regra.acao === "permitir" ? { negado: false } : { negado: true, motivo: `a ACL de entrada de ${interfaceNome} negou o pacote ${pacote.origem} → ${pacote.destino} (regra ${i + 1}: ${descreverRegra(regra)}).` };
+    }
+    return { negado: true, motivo: `a ACL de entrada de ${interfaceNome} negou o pacote ${pacote.origem} → ${pacote.destino}: nenhuma regra o permite, e toda ACL termina com um negar implícito.` };
+  }
+
   private receberIp(execucao: Execucao, dispositivo: Dispositivo, local: Interface, pacote: CargaIp) {
+    if (dispositivo.tipo === "roteador") {
+      const veredito = this.avaliarAcl(dispositivo, local.nome, pacote);
+      if (veredito.negado) {
+        this.descartar(execucao, dispositivo, veredito.motivo);
+        this.responderErro(execucao, dispositivo, local, pacote, "inalcancavel");
+        return;
+      }
+    }
     const meu = dispositivo.interfaces.some((i) => i.ip === pacote.destino);
     if (meu) {
       if (pacote.icmp === "dns-consulta") {
@@ -487,6 +510,10 @@ export class Simulador {
     if (!local) return;
     this.transmitir(execucao, dispositivo, interfaceNome, { origemMac: local.mac, destinoMac: macDestino, vlan: 0, carga: pacote });
   }
+}
+
+export function descreverRegra(regra: RegraDeAcl): string {
+  return `${regra.acao} ${regra.protocolo} ${regra.origem} → ${regra.destino}`;
 }
 
 function rotuloDoQuadro(quadro: Quadro): string {

@@ -47,16 +47,16 @@ describe("ListaDeRedes", () => {
     expect(screen.getByRole("heading", { name: "Redes" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Seu primeiro cabo/ })).toHaveAttribute("href", "/redes/primeiro-cabo");
     expect(screen.getByRole("link", { name: /A filial sem rota/ })).toHaveAttribute("href", "/redes/filial-sem-rota");
-    expect(screen.getAllByLabelText("Não concluído")).toHaveLength(9);
+    expect(screen.getAllByLabelText("Não concluído")).toHaveLength(11);
     expect(screen.getByRole("link", { name: /trilha Redes de computadores/ })).toHaveAttribute("href", "/aprenda/redes-de-computadores");
-    expect(screen.getByText(/0 de 9 laboratórios concluídos/)).toBeInTheDocument();
+    expect(screen.getByText(/0 de 11 laboratórios concluídos/)).toBeInTheDocument();
   });
 
   it("marca como concluídos os laboratórios do progresso salvo", () => {
     window.localStorage.setItem(CHAVE_DO_ESTUDO, JSON.stringify({ redes: { licoes: [], notas: {}, desafios: ["primeiro-cabo"] } }));
     render(<ListaDeRedes />);
     expect(screen.getAllByLabelText("Concluído")).toHaveLength(1);
-    expect(screen.getByText(/1 de 9 laboratórios concluídos/)).toBeInTheDocument();
+    expect(screen.getByText(/1 de 11 laboratórios concluídos/)).toBeInTheDocument();
   });
 });
 
@@ -189,6 +189,28 @@ describe("LaboratorioDeRedes", () => {
     await usuario.clear(registro);
     await usuario.type(registro, "10.0.0.30");
     expect(screen.getByText("2 de 2")).toBeInTheDocument();
+  });
+
+  it("monta uma ACL no roteador e conclui a aula de filtragem", async () => {
+    render(<LaboratorioDeRedes slug="acl-filtrando-trafego" />);
+    const usuario = userEvent.setup();
+    expect(screen.getByText("1 de 2")).toBeInTheDocument();
+
+    await usuario.click(screen.getByRole("button", { name: "Selecionar Roteador1" }));
+    await usuario.click(screen.getAllByRole("button", { name: "Adicionar regra" })[0]);
+    await usuario.selectOptions(screen.getByLabelText("Ação da regra 1 de Gi0/0"), "negar");
+    await usuario.selectOptions(screen.getByLabelText("Protocolo da regra 1 de Gi0/0"), "icmp");
+    await usuario.clear(screen.getByLabelText("Origem"));
+    await usuario.type(screen.getByLabelText("Origem"), "10.0.1.20");
+    await usuario.clear(screen.getByLabelText("Destino"));
+    await usuario.type(screen.getByLabelText("Destino"), "10.0.2.10");
+    expect(screen.getByText("1 de 2")).toBeInTheDocument();
+    expect(screen.getAllByText(/negar implícito/).length).toBeGreaterThan(0);
+
+    await usuario.click(screen.getAllByRole("button", { name: "Adicionar regra" })[0]);
+    expect(screen.getByText("2 de 2")).toBeInTheDocument();
+    await usuario.click(screen.getByRole("button", { name: "Remover a regra 2 de Gi0/0" }));
+    expect(screen.getByText("1 de 2")).toBeInTheDocument();
   });
 
   it("recomeça o laboratório do zero", async () => {

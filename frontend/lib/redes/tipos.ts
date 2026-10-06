@@ -33,6 +33,13 @@ export type ServicoDns = {
   registros: RegistroDns[];
 };
 
+export type RegraDeAcl = {
+  acao: "permitir" | "negar";
+  protocolo: "qualquer" | "icmp" | "dns";
+  origem: string;
+  destino: string;
+};
+
 export type Servicos = {
   dhcp: ServicoDhcp;
   dns: ServicoDns;
@@ -50,6 +57,7 @@ export type Dispositivo = {
   usaDhcp?: boolean;
   dnsServidor?: string;
   servicos?: Servicos;
+  aclDeEntrada?: Record<string, RegraDeAcl[]>;
 };
 
 export type Ponta = {

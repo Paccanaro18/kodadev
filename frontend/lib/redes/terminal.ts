@@ -1,5 +1,5 @@
 import { ipValido, prefixoDaMascara, redeDe } from "./ip";
-import { Simulador } from "./simulador";
+import { descreverRegra, Simulador } from "./simulador";
 import { ehHost, type Dispositivo, type Passo, type Rede, type ResultadoDoPing } from "./tipos";
 
 export type SaidaDoTerminal = {
@@ -23,6 +23,7 @@ const AJUDA_DE_ROTEADOR = [
   "Comandos disponíveis:",
   "  show ip interface brief   interfaces, endereços e estado",
   "  show ip route             tabela de roteamento",
+  "  show access-lists         regras de filtragem (ACL) de cada interface",
   "  show arp                  tabela ARP",
   "  ping <ip>                 envia quatro pedidos de eco (ICMP)",
   "  traceroute <ip>           mostra os roteadores no caminho",
@@ -171,6 +172,14 @@ function comandosDeRoteador(rede: Rede, simulador: Simulador, roteador: Disposit
     }
     if (linhas.length === 2) linhas.push("(tabela vazia: configure o IP de uma interface)");
     return { linhas, passos: [] };
+  }
+  if (texto === "show access-lists") {
+    const linhas: string[] = [];
+    for (const [porta, regras] of Object.entries(roteador.aclDeEntrada ?? {})) {
+      if (regras.length === 0) continue;
+      linhas.push(`ACL de entrada em ${porta}:`, ...regras.map((r, i) => `  ${i + 1}  ${descreverRegra(r)}`), "  (fim)  negar tudo o que não casou (implícito)", "");
+    }
+    return { linhas: linhas.length === 0 ? ["Nenhuma ACL configurada: todo o tráfego é permitido."] : linhas, passos: [] };
   }
   if (texto === "show arp") {
     const entradas = simulador.tabelaArp(roteador.id);

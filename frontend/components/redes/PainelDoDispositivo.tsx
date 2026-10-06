@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { ipValido, mascaraValida } from "@/lib/redes/ip";
-import { ehHost, type ConfiguracaoEfetiva, type Dispositivo, type Interface, type Rede, type RegistroDns, type Rota, type Servicos } from "@/lib/redes/tipos";
+import { cidrValido, ipValido, mascaraValida } from "@/lib/redes/ip";
+import { ehHost, type ConfiguracaoEfetiva, type Dispositivo, type Interface, type Rede, type RegistroDns, type RegraDeAcl, type Rota, type Servicos } from "@/lib/redes/tipos";
 
 const campo = "h-9 w-full rounded-xl border border-line-2 bg-cream px-3 font-mono text-[13px] text-ink outline-none transition duration-200 focus:border-koda";
 const rotulo = "grid gap-1 text-xs font-semibold text-ink-2";
@@ -92,6 +92,53 @@ function VlanDaPorta({ porta, aoMudar }: { porta: Interface; aoMudar: (vlan: num
   );
 }
 
+const seletor = "h-9 rounded-xl border border-line-2 bg-cream px-2 text-[13px] text-ink outline-none focus:border-koda";
+
+function AclDaInterface({ porta, regras, aoMudar }: { porta: string; regras: RegraDeAcl[]; aoMudar: (regras: RegraDeAcl[]) => void }) {
+  const mudar = (indice: number, mudanca: Partial<RegraDeAcl>) => aoMudar(regras.map((r, i) => (i === indice ? { ...r, ...mudanca } : r)));
+  return (
+    <div className="grid gap-2 rounded-xl bg-tint p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-bold tracking-wide text-ink-2 uppercase">ACL de entrada</span>
+        <button type="button" onClick={() => aoMudar([...regras, { acao: "permitir", protocolo: "qualquer", origem: "qualquer", destino: "qualquer" }])}
+          className="inline-flex h-8 items-center gap-1 rounded-lg bg-surface px-2.5 text-xs font-bold text-koda-texto transition duration-200 hover:-translate-y-0.5 active:scale-95">
+          <Plus className="size-3.5" aria-hidden="true" />Adicionar regra
+        </button>
+      </div>
+      {regras.length === 0
+        ? <p className="text-xs text-ink-2">Sem regras: todo o tráfego que entra por {porta} é permitido. Com ao menos uma regra, o que não casar é negado.</p>
+        : (
+          <ol className="grid gap-2">
+            {regras.map((regra, indice) => (
+              <li key={indice} className="grid gap-2 rounded-lg bg-surface p-2">
+                <div className="flex items-center gap-2">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-koda-soft text-[11px] font-bold text-koda-texto">{indice + 1}</span>
+                  <select aria-label={`Ação da regra ${indice + 1} de ${porta}`} value={regra.acao} onChange={(e) => mudar(indice, { acao: e.target.value as RegraDeAcl["acao"] })} className={seletor}>
+                    <option value="permitir">permitir</option>
+                    <option value="negar">negar</option>
+                  </select>
+                  <select aria-label={`Protocolo da regra ${indice + 1} de ${porta}`} value={regra.protocolo} onChange={(e) => mudar(indice, { protocolo: e.target.value as RegraDeAcl["protocolo"] })} className={seletor}>
+                    <option value="qualquer">qualquer</option>
+                    <option value="icmp">icmp (ping)</option>
+                    <option value="dns">dns</option>
+                  </select>
+                  <button type="button" aria-label={`Remover a regra ${indice + 1} de ${porta}`} onClick={() => aoMudar(regras.filter((_, i) => i !== indice))}
+                    className="ml-auto grid size-8 place-items-center rounded-lg text-bad transition duration-200 hover:bg-bad-soft active:scale-95">
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <CampoDeTexto nome="Origem" valor={regra.origem} placeholder="qualquer ou 10.0.1.0/24" valido={cidrValido(regra.origem)} aoMudar={(origem) => mudar(indice, { origem })} />
+                  <CampoDeTexto nome="Destino" valor={regra.destino} placeholder="qualquer ou 10.0.2.10" valido={cidrValido(regra.destino)} aoMudar={(destino) => mudar(indice, { destino })} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+    </div>
+  );
+}
+
 function Alternador({ rotulo: texto, ligado, aoMudar }: { rotulo: string; ligado: boolean; aoMudar: (ligado: boolean) => void }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-tint px-3 py-2.5 text-sm font-semibold text-ink">
@@ -170,6 +217,7 @@ export type PropriedadesDoPainel = {
   aoMudarDhcp: (usa: boolean) => void;
   aoMudarDns: (servidor: string) => void;
   aoMudarServicos: (servicos: Servicos) => void;
+  aoMudarAcl: (interfaceNome: string, regras: RegraDeAcl[]) => void;
   rede: Rede;
   aoMudarNome: (nome: string) => void;
   aoMudarGateway: (gateway: string) => void;
@@ -191,7 +239,7 @@ function vizinhoDa(rede: Rede, dispositivo: Dispositivo, porta: string): string 
 }
 
 export default function PainelDoDispositivo({
-  dispositivo, configuracao, aoMudarDhcp, aoMudarDns, aoMudarServicos, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover,
+  dispositivo, configuracao, aoMudarDhcp, aoMudarDns, aoMudarServicos, aoMudarAcl, rede, aoMudarNome, aoMudarGateway, aoMudarInterface, aoMudarRotas, aoRemover,
 }: PropriedadesDoPainel) {
   const host = ehHost(dispositivo.tipo);
   return (
@@ -224,6 +272,7 @@ export default function PainelDoDispositivo({
             <fieldset key={porta.nome} className="grid gap-2 rounded-xl border border-line p-3">
               <legend className="px-1 font-mono text-[13px] font-bold text-ink">{porta.nome}</legend>
               <CamposDeEndereco interfaceDoDispositivo={porta} aoMudar={(mudanca) => aoMudarInterface(porta.nome, mudanca)} />
+              <AclDaInterface porta={porta.nome} regras={dispositivo.aclDeEntrada?.[porta.nome] ?? []} aoMudar={(regras) => aoMudarAcl(porta.nome, regras)} />
             </fieldset>
           ))}
           <Rotas rotas={dispositivo.rotas} aoMudar={aoMudarRotas} />

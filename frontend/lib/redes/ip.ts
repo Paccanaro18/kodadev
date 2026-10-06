@@ -68,6 +68,21 @@ export function mesmaRede(ipA: string, ipB: string, mascara: string): boolean {
   return pertenceARede(ipA, ipB, mascara);
 }
 
+export function cidrValido(texto: string): boolean {
+  if (texto === "qualquer") return true;
+  const [ip, prefixo, ...resto] = texto.trim().split("/");
+  if (resto.length > 0 || !ipValido(ip)) return false;
+  if (prefixo === undefined) return true;
+  return /^\d{1,2}$/.test(prefixo) && Number(prefixo) >= 0 && Number(prefixo) <= 32;
+}
+
+export function pertenceACidr(ip: string, cidr: string): boolean {
+  if (cidr === "qualquer") return true;
+  if (!cidrValido(cidr)) return false;
+  const [base, prefixo] = cidr.trim().split("/");
+  return pertenceARede(ip, base, mascaraDoPrefixo(prefixo === undefined ? 32 : Number(prefixo)));
+}
+
 export function enderecoDeRedeOuTransmissao(ip: string, mascara: string): "rede" | "transmissao" | null {
   const valor = analisarIp(ip);
   const prefixo = prefixoDaMascara(mascara);

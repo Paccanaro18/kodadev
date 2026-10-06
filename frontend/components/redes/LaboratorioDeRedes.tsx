@@ -291,6 +291,7 @@ export function AreaDoLaboratorio({ lab }: { lab: Laboratorio }) {
                     configuracao={simulador.configuracaoDe(dispositivo.id)}
                     aoMudarDhcp={(usaDhcp) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, usaDhcp })))}
                     aoMudarDns={(dnsServidor) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, dnsServidor })))}
+                    aoMudarAcl={(porta, regras) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, aclDeEntrada: { ...d.aclDeEntrada, [porta]: regras } })))}
                     aoMudarServicos={(servicos) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, servicos })))}
                     rede={rede}
                     aoMudarNome={(nome) => mudarRede(atualizarDispositivo(rede, dispositivo.id, (d) => ({ ...d, nome })))}
