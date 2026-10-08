@@ -2,9 +2,19 @@ import type { LimiteDoPlano, NomeDoPlano, SituacaoDoPlano } from "./api";
 
 export type ValorDaLinha = string | { texto: string; emBreve?: boolean };
 
+export type GrupoDaComparacao = "aprender" | "ia" | "turmas";
+
+export const ROTULO_DO_GRUPO: Record<GrupoDaComparacao, string> = {
+  aprender: "Para aprender",
+  ia: "Tickets com IA",
+  turmas: "Para turmas e mentores",
+};
+
 export type LinhaDaComparacao = {
   id: string;
+  grupo: GrupoDaComparacao;
   rotulo: string;
+  dica?: string;
   gratis: ValorDaLinha;
   pro: ValorDaLinha;
   equipe: ValorDaLinha;
@@ -50,16 +60,50 @@ export function linhasDaComparacao(planos: LimiteDoPlano[] | undefined): LinhaDa
   const emBreve = { texto: "Em breve", emBreve: true };
 
   return [
-    { id: "trilhas", rotulo: "Trilhas, aulas e desafios de segurança", gratis: incluido, pro: incluido, equipe: incluido },
-    { id: "redes", rotulo: "Simulador de redes, ferramentas e ideias de projetos", gratis: incluido, pro: incluido, equipe: incluido },
-    { id: "conquistas", rotulo: "Conquistas", gratis: incluido, pro: incluido, equipe: incluido },
-    { id: "tickets", rotulo: "Tickets gerados por IA", gratis: tickets(gratis), pro: tickets(pro), equipe: emBreve },
-    { id: "repositorios", rotulo: "Repositórios analisados", gratis: repositorios(gratis), pro: repositorios(pro), equipe: emBreve },
-    { id: "revisao", rotulo: "Revisão de projeto por IA", gratis: "—", pro: emBreve, equipe: emBreve },
-    { id: "certificado", rotulo: "Certificado de conclusão verificável", gratis: "—", pro: emBreve, equipe: emBreve },
-    { id: "painel", rotulo: "Painel para mentor ou professor", gratis: "—", pro: "—", equipe: emBreve },
+    { id: "trilhas", grupo: "aprender", rotulo: "Trilhas, aulas e desafios de segurança", gratis: incluido, pro: incluido, equipe: incluido },
+    { id: "redes", grupo: "aprender", rotulo: "Simulador de redes, ferramentas e ideias de projetos", gratis: incluido, pro: incluido, equipe: incluido },
+    { id: "conquistas", grupo: "aprender", rotulo: "Conquistas e progresso salvo na conta", gratis: incluido, pro: incluido, equipe: incluido },
+    { id: "tickets", grupo: "ia", rotulo: "Tickets gerados por IA", dica: "Um ticket é um desafio técnico gerado a partir do código do seu repositório.", gratis: tickets(gratis), pro: tickets(pro), equipe: emBreve },
+    { id: "repositorios", grupo: "ia", rotulo: "Repositórios analisados", dica: "Hoje só repositórios públicos da sua própria conta.", gratis: repositorios(gratis), pro: repositorios(pro), equipe: emBreve },
+    { id: "revisao", grupo: "ia", rotulo: "Revisão de projeto por IA", gratis: "—", pro: emBreve, equipe: emBreve },
+    { id: "certificado", grupo: "turmas", rotulo: "Certificado de conclusão verificável", gratis: "—", pro: emBreve, equipe: emBreve },
+    { id: "painel", grupo: "turmas", rotulo: "Painel para mentor ou professor", gratis: "—", pro: "—", equipe: emBreve },
   ];
 }
+
+export function agruparLinhas(linhas: LinhaDaComparacao[]): { grupo: GrupoDaComparacao; linhas: LinhaDaComparacao[] }[] {
+  const ordem: GrupoDaComparacao[] = ["aprender", "ia", "turmas"];
+  return ordem
+    .map((grupo) => ({ grupo, linhas: linhas.filter((l) => l.grupo === grupo) }))
+    .filter((g) => g.linhas.length > 0);
+}
+
+export const PERGUNTAS: { pergunta: string; resposta: string }[] = [
+  {
+    pergunta: "Posso assinar agora?",
+    resposta: "Ainda não. O pagamento está em preparação, e o que aparece como \"Em breve\" ainda não existe. Hoje, a diferença real do Pro é a cota maior. Quando o pagamento abrir, os preços serão divulgados aqui antes de qualquer cobrança.",
+  },
+  {
+    pergunta: "O que conta como um ticket?",
+    resposta: "Cada desafio que o Koda gera a partir do código do seu repositório. Ele entra na cota assim que a geração começa. Se a geração falhar, o ticket não é descontado.",
+  },
+  {
+    pergunta: "O que acontece quando a cota acaba?",
+    resposta: "Você continua com acesso a tudo o que já gerou, às trilhas, ao simulador de redes, às ferramentas, às ideias de projetos e às conquistas. Só a geração de novos tickets espera a renovação, que acontece no primeiro dia do mês, no horário de Brasília.",
+  },
+  {
+    pergunta: "Por que existe um limite diário também?",
+    resposta: "Para evitar abuso e proteger o custo da IA. Ele vale para todos os planos.",
+  },
+  {
+    pergunta: "Posso analisar repositórios privados?",
+    resposta: "Hoje não. O Koda analisa apenas repositórios públicos da sua própria conta do GitHub.",
+  },
+  {
+    pergunta: "O plano Grátis expira?",
+    resposta: "Não. O Grátis não tem prazo e não pede cartão.",
+  },
+];
 
 export function resumoDoUso(situacao: SituacaoDoPlano) {
   return {

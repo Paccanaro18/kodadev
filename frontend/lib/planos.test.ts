@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LimiteDoPlano, SituacaoDoPlano } from "./api";
-import { dataDeRenovacao, limiteDe, linhasDaComparacao, nivelDeUso, percentualDeUso, plural, restantes, resumoDoUso } from "./planos";
+import { agruparLinhas, dataDeRenovacao, limiteDe, linhasDaComparacao, PERGUNTAS, nivelDeUso, percentualDeUso, plural, restantes, resumoDoUso } from "./planos";
 
 const PLANOS: LimiteDoPlano[] = [
   { plano: "GRATIS", nome: "Grátis", ticketsPorMes: 3, repositorios: 1 },
@@ -83,5 +83,19 @@ describe("comparação de planos", () => {
       const linha = linhasDaComparacao(PLANOS).find((l) => l.id === id);
       expect([linha?.gratis, linha?.pro, linha?.equipe]).toEqual(["Incluído", "Incluído", "Incluído"]);
     }
+  });
+
+  it("agrupa as linhas na ordem aprender, IA e turmas, sem perder nenhuma", () => {
+    const linhas = linhasDaComparacao(PLANOS);
+    const grupos = agruparLinhas(linhas);
+    expect(grupos.map((g) => g.grupo)).toEqual(["aprender", "ia", "turmas"]);
+    expect(grupos.flatMap((g) => g.linhas)).toHaveLength(linhas.length);
+    expect(grupos.find((g) => g.grupo === "ia")?.linhas.map((l) => l.id)).toEqual(["tickets", "repositorios", "revisao"]);
+  });
+
+  it("tem perguntas com resposta e sem repetição", () => {
+    expect(PERGUNTAS.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(PERGUNTAS.map((p) => p.pergunta)).size).toBe(PERGUNTAS.length);
+    for (const p of PERGUNTAS) expect(p.resposta.length).toBeGreaterThan(20);
   });
 });
