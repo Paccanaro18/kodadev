@@ -34,6 +34,16 @@ public class ConsultaAnalise {
     }
 
     @Transactional(readOnly = true)
+    public long contarRepositorios(UUID usuarioId) {
+        return repositorioRepository.countByUsuarioId(usuarioId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean repositorioRegistrado(UUID usuarioId, Long githubIdRepositorio) {
+        return repositorioRepository.existsByUsuarioIdAndGithubIdRepositorio(usuarioId, githubIdRepositorio);
+    }
+
+    @Transactional(readOnly = true)
     public AnaliseDetalhe buscarDoUsuario(UUID usuarioId, UUID analiseId) {
         AnaliseProjeto analise = analiseRepository.findById(analiseId)
                 .orElseThrow(() -> new AnaliseNaoEncontradaException(analiseId));

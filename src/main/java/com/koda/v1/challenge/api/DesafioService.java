@@ -17,6 +17,8 @@ import com.koda.v1.challenge.persistence.StatusGeracao;
 import com.koda.v1.challenge.prompt.Perspectivas;
 import com.koda.v1.challenge.selecao.SelecaoDeDesafio;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
+import com.koda.v1.plano.CicloMensal;
+import com.koda.v1.plano.PlanoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +44,7 @@ public class DesafioService {
     private final Perspectivas perspectivas;
     private final IniciadorDesafio iniciador;
     private final SerializadorConteudo serializadorConteudo;
+    private final PlanoService planos;
     private final int limiteDiario;
     private final Clock relogio;
 
@@ -54,9 +57,10 @@ public class DesafioService {
                           Perspectivas perspectivas,
                           IniciadorDesafio iniciador,
                           SerializadorConteudo serializadorConteudo,
+                          PlanoService planos,
                           @Value("${koda.desafio.limite-diario:5}") int limiteDiario) {
         this(consultaAnalise, serializadorContexto, consulta, registro, seletor, perspectivas, iniciador,
-                serializadorConteudo, limiteDiario, Clock.systemUTC());
+                serializadorConteudo, planos, limiteDiario, Clock.systemUTC());
     }
 
     DesafioService(ConsultaAnalise consultaAnalise,
@@ -67,6 +71,7 @@ public class DesafioService {
                    Perspectivas perspectivas,
                    IniciadorDesafio iniciador,
                    SerializadorConteudo serializadorConteudo,
+                   PlanoService planos,
                    int limiteDiario,
                    Clock relogio) {
         if (limiteDiario <= 0) {
@@ -80,6 +85,7 @@ public class DesafioService {
         this.perspectivas = perspectivas;
         this.iniciador = iniciador;
         this.serializadorConteudo = serializadorConteudo;
+        this.planos = planos;
         this.limiteDiario = limiteDiario;
         this.relogio = relogio;
     }
@@ -87,6 +93,7 @@ public class DesafioService {
     public DesafioResposta iniciar(UUID usuarioId, UUID analiseId, TipoPedido pedido) {
         ContextoProjeto contexto = carregarContextoPronto(usuarioId, analiseId);
         exigirCota(usuarioId);
+        exigirCotaMensal(usuarioId);
 
         SelecaoDeDesafio selecao = seletor.selecionar(
                 contexto, pedido.tipo(), consulta.historicoDeUso(usuarioId, analiseId));
@@ -166,6 +173,11 @@ public class DesafioService {
         if (consulta.contarQueGastaramCotaDesde(usuarioId, desde) >= limiteDiario) {
             throw new LimiteDiarioExcedidoException(limiteDiario);
         }
+    }
+
+    private void exigirCotaMensal(UUID usuarioId) {
+        CicloMensal ciclo = CicloMensal.contendo(relogio.instant());
+        planos.exigirTicket(usuarioId, consulta.contarQueGastaramCotaDesde(usuarioId, ciclo.inicio()), ciclo);
     }
 
     private UUID registrar(UUID usuarioId, UUID analiseId, SelecaoDeDesafio selecao, String perspectiva) {

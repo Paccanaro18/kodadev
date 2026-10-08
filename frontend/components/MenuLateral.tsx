@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, type ComponentType } from "react";
-import { BookOpen, ChevronDown, GitBranch, Home, Settings, Users } from "lucide-react";
+import { BookOpen, ChevronDown, GitBranch, Home, Settings, Sparkles, Users } from "lucide-react";
 import { CHAVE_DO_MENU, grupoAtivo, itemAtivo, lerGruposAbertos, MENU, type IconeDoMenu } from "@/lib/menu";
 
 const ICONES: Record<IconeDoMenu, ComponentType<{ className?: string }>> = {
-  home: Home, desafios: GitBranch, aprender: BookOpen, comunidade: Users, configuracoes: Settings,
+  home: Home, desafios: GitBranch, aprender: BookOpen, comunidade: Users, planos: Sparkles, configuracoes: Settings,
 };
 
 function lerSalvos(): string[] {

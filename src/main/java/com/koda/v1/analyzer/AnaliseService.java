@@ -9,6 +9,7 @@ import com.koda.v1.analyzer.persistence.RegistroAnalise;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 import com.koda.v1.github.GithubService;
 import com.koda.v1.github.dto.RepositorioResposta;
+import com.koda.v1.plano.PlanoService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +25,16 @@ public class AnaliseService {
     private final IniciadorAnalise iniciador;
     private final SerializadorResultado serializador;
     private final SerializadorContexto serializadorContexto;
+    private final PlanoService planos;
 
     public AnaliseService(GithubService githubService,
                           RegistroAnalise registro,
                           ConsultaAnalise consulta,
                           IniciadorAnalise iniciador,
                           SerializadorResultado serializador,
-                          SerializadorContexto serializadorContexto) {
+                          SerializadorContexto serializadorContexto,
+                          PlanoService planos) {
+        this.planos = planos;
         this.githubService = githubService;
         this.registro = registro;
         this.consulta = consulta;
@@ -42,6 +46,7 @@ public class AnaliseService {
     public AnaliseResposta iniciar(UUID usuarioId, String loginDoUsuario, String dono, String nome) {
         RepositorioResposta repositorio = githubService.buscarRepositorio(usuarioId, dono, nome);
         String donoReal = exigirRepositorioPublicoDoUsuario(repositorio, loginDoUsuario);
+        exigirEspacoParaRepositorio(usuarioId, repositorio.id());
 
         UUID analiseId = registrar(usuarioId, repositorio, donoReal);
 
@@ -108,6 +113,12 @@ public class AnaliseService {
                     usuarioId, repositorio.id(), donoReal, repositorio.nome(), repositorio.branchPadrao());
         } catch (DataIntegrityViolationException e) {
             throw new AnaliseEmAndamentoException();
+        }
+    }
+
+    private void exigirEspacoParaRepositorio(UUID usuarioId, Long githubIdRepositorio) {
+        if (!consulta.repositorioRegistrado(usuarioId, githubIdRepositorio)) {
+            planos.exigirRepositorio(usuarioId, consulta.contarRepositorios(usuarioId));
         }
     }
 

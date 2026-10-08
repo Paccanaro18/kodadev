@@ -14,6 +14,7 @@ describe("regras do menu", () => {
     expect(itemAtivo("/repositorios/adicionar")?.rotulo).toBe("Repositórios");
     expect(itemAtivo("/aprenda/redes-de-computadores/dhcp-e-dns")?.rotulo).toBe("Aprenda aqui");
     expect(itemAtivo("/redes/vlan-trocada")?.rotulo).toBe("Redes");
+    expect(itemAtivo("/planos")?.rotulo).toBe("Planos");
     expect(itemAtivo("/dashboard")?.rotulo).toBe("Home");
     expect(itemAtivo("/rota-desconhecida")).toBeNull();
   });
@@ -69,6 +70,12 @@ describe("MenuLateral", () => {
     window.localStorage.setItem(CHAVE_DO_MENU, JSON.stringify(["comunidade"]));
     render(<MenuLateral caminho="/dashboard" aoNavegar={vi.fn()} />);
     expect(screen.getByRole("button", { name: "Comunidade" })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("mantém Planos como link direto e fora dos grupos", () => {
+    render(<MenuLateral caminho="/planos" aoNavegar={vi.fn()} />);
+    expect(screen.getByRole("link", { name: "Planos" })).toHaveAttribute("aria-current", "page");
+    expect(grupoAtivo("/planos")).toBeNull();
   });
 
   it("mantém Home e Configurações como links diretos e avisa ao navegar", async () => {

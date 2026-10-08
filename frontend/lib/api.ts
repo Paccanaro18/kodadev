@@ -178,10 +178,33 @@ export type DesafiosRecentes = {
   recentes: DesafioRecente[];
 };
 
+export type NomeDoPlano = "GRATIS" | "PRO";
+
+export type LimiteDoPlano = {
+  plano: NomeDoPlano;
+  nome: string;
+  ticketsPorMes: number;
+  repositorios: number;
+};
+
+export type SituacaoDoPlano = {
+  plano: NomeDoPlano;
+  nome: string;
+  ticketsPorMes: number;
+  ticketsUsados: number;
+  renovaEm: string;
+  repositorios: number;
+  repositoriosUsados: number;
+  planos: LimiteDoPlano[];
+};
+
+export type CodigoDeLimite = "COTA_MENSAL" | "LIMITE_DE_REPOSITORIOS";
+
 export class ErroApi extends Error {
   constructor(
     public readonly status: number,
     mensagem: string,
+    public readonly codigo?: string,
   ) {
     super(mensagem);
   }
@@ -198,6 +221,7 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
     throw new ErroApi(
       resposta.status,
       problema?.detail ?? "Não foi possível concluir a requisição.",
+      typeof problema?.codigo === "string" ? problema.codigo : undefined,
     );
   }
 
@@ -225,6 +249,14 @@ export async function buscarPerfil(): Promise<Perfil | null> {
     if (erro instanceof ErroApi && erro.status === 401) return null;
     throw erro;
   }
+}
+
+export function buscarPlano(): Promise<SituacaoDoPlano> {
+  return requisitar<SituacaoDoPlano>("/api/plano");
+}
+
+export function limiteDoPlanoAtingido(erro: unknown): erro is ErroApi {
+  return erro instanceof ErroApi && erro.status === 402;
 }
 
 export function listarRepositorios(): Promise<Repositorio[]> {

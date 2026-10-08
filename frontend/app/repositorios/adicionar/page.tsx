@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lightbulb, Search } from "lucide-react";
 import AppShell from "@/components/AppShell";
+import AvisoDeLimite from "@/components/planos/AvisoDeLimite";
 import { BackLink, PageHeader } from "@/components/ui";
-import { ErroApi, iniciarAnalise, listarRepositorios, type Repositorio } from "@/lib/api";
+import { ErroApi, iniciarAnalise, limiteDoPlanoAtingido, listarRepositorios, type Repositorio } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 
 export default function AddRepo() {
@@ -15,6 +16,7 @@ export default function AddRepo() {
   const [erro, setErro] = useState<string | null>(null);
   const [conectando, setConectando] = useState<number | null>(null);
   const [erroConexao, setErroConexao] = useState<string | null>(null);
+  const [noLimite, setNoLimite] = useState(false);
 
   const carregar = useCallback(() => {
     setErro(null);
@@ -37,6 +39,7 @@ export default function AddRepo() {
 
   async function conectar(r: Repositorio) {
     setErroConexao(null);
+    setNoLimite(false);
     setConectando(r.id);
     try {
       const dono = r.nomeCompleto.split("/")[0];
@@ -47,6 +50,7 @@ export default function AddRepo() {
         router.replace("/");
         return;
       }
+      setNoLimite(limiteDoPlanoAtingido(e));
       setErroConexao(e instanceof Error ? e.message : "Erro inesperado.");
       setConectando(null);
     }
@@ -81,7 +85,7 @@ export default function AddRepo() {
         )}
 
         {erroConexao && (
-          <div role="alert" className="rounded-[22px] bg-bad-soft px-6 py-4 text-sm text-bad">{erroConexao}</div>
+          <AvisoDeLimite mensagem={erroConexao} noLimite={noLimite} />
         )}
 
         {lista.map((r) => (

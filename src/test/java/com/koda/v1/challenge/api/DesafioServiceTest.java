@@ -32,6 +32,10 @@ import com.koda.v1.challenge.persistence.StatusProgresso;
 import com.koda.v1.challenge.prompt.Perspectivas;
 import com.koda.v1.challenge.selecao.SeletorDeDesafio;
 import com.koda.v1.challenge.selecao.UsoAnterior;
+import com.koda.v1.plano.CicloMensal;
+import com.koda.v1.plano.CotaMensalExcedidaException;
+import com.koda.v1.plano.Plano;
+import com.koda.v1.plano.PlanoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,6 +75,7 @@ class DesafioServiceTest {
     private ConsultaDesafio consulta;
     private RegistroDesafio registro;
     private IniciadorDesafio iniciador;
+    private PlanoService planos;
     private DesafioService service;
 
     @BeforeEach
@@ -79,6 +84,7 @@ class DesafioServiceTest {
         consulta = mock(ConsultaDesafio.class);
         registro = mock(RegistroDesafio.class);
         iniciador = mock(IniciadorDesafio.class);
+        planos = mock(PlanoService.class);
         service = criarServico(5);
 
         when(consultaAnalise.buscarDoUsuario(usuarioId, analiseId)).thenReturn(analise(StatusAnalise.CONCLUIDA, contextoRico()));
@@ -156,8 +162,8 @@ class DesafioServiceTest {
         service.iniciar(usuarioId, analiseId, TipoPedido.FEATURE);
 
         ArgumentCaptor<Instant> desde = ArgumentCaptor.forClass(Instant.class);
-        verify(consulta).contarQueGastaramCotaDesde(eq(usuarioId), desde.capture());
-        assertThat(desde.getValue()).isEqualTo(AGORA.minus(Duration.ofHours(24)));
+        verify(consulta, org.mockito.Mockito.times(2)).contarQueGastaramCotaDesde(eq(usuarioId), desde.capture());
+        assertThat(desde.getAllValues().get(0)).isEqualTo(AGORA.minus(Duration.ofHours(24)));
         verify(iniciador).disparar(any());
     }
 
@@ -272,9 +278,38 @@ class DesafioServiceTest {
         verify(consulta, never()).listarDaAnalise(any(), any());
     }
 
+    @Test
+    void deveContarACotaMensalDesdeOInicioDoMesEmSaoPaulo() {
+        service.iniciar(usuarioId, analiseId, TipoPedido.BUG);
+
+        CicloMensal ciclo = CicloMensal.contendo(AGORA);
+        verify(consulta).contarQueGastaramCotaDesde(usuarioId, ciclo.inicio());
+        verify(planos).exigirTicket(usuarioId, 0L, ciclo);
+    }
+
+    @Test
+    void naoDeveRegistrarNemDispararQuandoAPlanoRecusarACotaMensal() {
+        doThrow(new CotaMensalExcedidaException(Plano.GRATIS, CicloMensal.contendo(AGORA).fim()))
+                .when(planos).exigirTicket(any(), org.mockito.ArgumentMatchers.anyLong(), any());
+
+        assertThatThrownBy(() -> service.iniciar(usuarioId, analiseId, TipoPedido.BUG))
+                .isInstanceOf(CotaMensalExcedidaException.class);
+        verify(registro, never()).registrarNovo(any(), any(), any(), anyString(), anyString(), anyString());
+        verify(iniciador, never()).disparar(any());
+    }
+
+    @Test
+    void deveAplicarOLimiteDiarioAntesDaCotaMensal() {
+        when(consulta.contarQueGastaramCotaDesde(any(), any())).thenReturn(5L);
+
+        assertThatThrownBy(() -> service.iniciar(usuarioId, analiseId, TipoPedido.BUG))
+                .isInstanceOf(LimiteDiarioExcedidoException.class);
+        verify(planos, never()).exigirTicket(any(), org.mockito.ArgumentMatchers.anyLong(), any());
+    }
+
     private DesafioService criarServico(int limite) {
         return new DesafioService(consultaAnalise, serializadorContexto, consulta, registro,
-                new SeletorDeDesafio(catalogo), perspectivas, iniciador, serializadorConteudo, limite,
+                new SeletorDeDesafio(catalogo), perspectivas, iniciador, serializadorConteudo, planos, limite,
                 Clock.fixed(AGORA, ZoneOffset.UTC));
     }
 

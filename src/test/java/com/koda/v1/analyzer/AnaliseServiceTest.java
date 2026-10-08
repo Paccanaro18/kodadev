@@ -16,6 +16,9 @@ import com.koda.v1.analyzer.persistence.RegistroAnalise;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 import com.koda.v1.github.GithubService;
 import com.koda.v1.github.dto.RepositorioResposta;
+import com.koda.v1.plano.LimiteDeRepositoriosExcedidoException;
+import com.koda.v1.plano.Plano;
+import com.koda.v1.plano.PlanoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,6 +47,7 @@ class AnaliseServiceTest {
     private RegistroAnalise registro;
     private ConsultaAnalise consulta;
     private IniciadorAnalise iniciador;
+    private PlanoService planos;
     private AnaliseService service;
 
     @BeforeEach
@@ -52,8 +56,9 @@ class AnaliseServiceTest {
         registro = mock(RegistroAnalise.class);
         consulta = mock(ConsultaAnalise.class);
         iniciador = mock(IniciadorAnalise.class);
+        planos = mock(PlanoService.class);
         service = new AnaliseService(
-                github, registro, consulta, iniciador, new SerializadorResultado(), new SerializadorContexto());
+                github, registro, consulta, iniciador, new SerializadorResultado(), new SerializadorContexto(), planos);
     }
 
     @Test
@@ -66,6 +71,40 @@ class AnaliseServiceTest {
         assertThat(resposta.id()).isEqualTo(analiseId);
         assertThat(resposta.status()).isEqualTo(StatusAnalise.PENDENTE);
         verify(iniciador).disparar(analiseId);
+    }
+
+    @Test
+    void deveConferirOLimiteDoPlanoQuandoORepositorioForNovo() {
+        when(github.buscarRepositorio(usuarioId, "artur", "koda")).thenReturn(repositorio("Artur/koda", false));
+        when(consulta.repositorioRegistrado(usuarioId, 42L)).thenReturn(false);
+        when(consulta.contarRepositorios(usuarioId)).thenReturn(1L);
+        when(registro.registrarNovaAnalise(usuarioId, 42L, "Artur", "koda", "main")).thenReturn(analiseId);
+
+        service.iniciar(usuarioId, "artur", "artur", "koda");
+
+        verify(planos).exigirRepositorio(usuarioId, 1L);
+    }
+
+    @Test
+    void naoDeveCobrarLimiteDeNovoRepositorioQuandoJaEstaRegistrado() {
+        when(github.buscarRepositorio(usuarioId, "artur", "koda")).thenReturn(repositorio("Artur/koda", false));
+        when(consulta.repositorioRegistrado(usuarioId, 42L)).thenReturn(true);
+        when(registro.registrarNovaAnalise(usuarioId, 42L, "Artur", "koda", "main")).thenReturn(analiseId);
+
+        service.iniciar(usuarioId, "artur", "artur", "koda");
+
+        verify(planos, never()).exigirRepositorio(any(), anyLong());
+    }
+
+    @Test
+    void naoDeveRegistrarNemDispararQuandoOPlanoRecusarONovoRepositorio() {
+        when(github.buscarRepositorio(usuarioId, "artur", "koda")).thenReturn(repositorio("Artur/koda", false));
+        doThrow(new LimiteDeRepositoriosExcedidoException(Plano.GRATIS)).when(planos).exigirRepositorio(any(), anyLong());
+
+        assertThatThrownBy(() -> service.iniciar(usuarioId, "artur", "artur", "koda"))
+                .isInstanceOf(LimiteDeRepositoriosExcedidoException.class);
+        verify(registro, never()).registrarNovaAnalise(any(), anyLong(), anyString(), anyString(), anyString());
+        verify(iniciador, never()).disparar(any());
     }
 
     @Test

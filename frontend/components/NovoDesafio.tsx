@@ -3,8 +3,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AppShell from "./AppShell";
+import AvisoDeLimite from "./planos/AvisoDeLimite";
 import { BackLink, btnPrimary, Eyebrow, Mascot, PageHeader } from "./ui";
-import { ErroApi, iniciarDesafio, type TipoPedido } from "@/lib/api";
+import { ErroApi, iniciarDesafio, limiteDoPlanoAtingido, type TipoPedido } from "@/lib/api";
 import { TIPOS_DE_DESAFIO } from "@/lib/desafio";
 import { useAnalise } from "@/lib/useAnalise";
 import { useUltimaAnalise } from "@/lib/useUltimaAnalise";
@@ -28,9 +29,11 @@ function Escolha({ analiseId }: { analiseId: string }) {
   const [tipo, setTipo] = useState<TipoPedido>("FEATURE");
   const [gerando, setGerando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [noLimite, setNoLimite] = useState(false);
 
   async function gerar() {
     setErro(null);
+    setNoLimite(false);
     setGerando(true);
     try {
       const desafio = await iniciarDesafio(analiseId, tipo);
@@ -40,6 +43,7 @@ function Escolha({ analiseId }: { analiseId: string }) {
         router.replace("/");
         return;
       }
+      setNoLimite(limiteDoPlanoAtingido(e));
       setErro(e instanceof Error ? e.message : "Erro inesperado.");
       setGerando(false);
     }
@@ -79,7 +83,7 @@ function Escolha({ analiseId }: { analiseId: string }) {
       </div>
 
       {erro && (
-        <div role="alert" className="mt-6 rounded-[22px] bg-bad-soft px-6 py-4 text-sm text-bad">{erro}</div>
+        <AvisoDeLimite mensagem={erro} noLimite={noLimite} className="mt-6" />
       )}
 
       <button onClick={gerar} disabled={gerando} className={btnPrimary + " mt-9 h-15 w-full text-base disabled:cursor-not-allowed disabled:opacity-60"}>

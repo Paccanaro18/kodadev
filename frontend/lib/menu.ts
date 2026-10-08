@@ -9,7 +9,7 @@ export type EntradaDoMenu =
   | { tipo: "link"; icone: IconeDoMenu; item: ItemDoMenu }
   | { tipo: "grupo"; id: string; rotulo: string; icone: IconeDoMenu; itens: ItemDoMenu[] };
 
-export type IconeDoMenu = "home" | "desafios" | "aprender" | "comunidade" | "configuracoes";
+export type IconeDoMenu = "home" | "desafios" | "aprender" | "comunidade" | "planos" | "configuracoes";
 
 export const MENU: EntradaDoMenu[] = [
   { tipo: "link", icone: "home", item: { rotulo: "Home", href: "/dashboard", rotas: ["/dashboard"] } },
@@ -37,6 +37,7 @@ export const MENU: EntradaDoMenu[] = [
       { rotulo: "Conquistas", href: "/conquistas", rotas: ["/conquistas"] },
     ],
   },
+  { tipo: "link", icone: "planos", item: { rotulo: "Planos", href: "/planos", rotas: ["/planos"] } },
   { tipo: "link", icone: "configuracoes", item: { rotulo: "Configurações", href: "/configuracoes", rotas: ["/configuracoes"] } },
 ];
 
