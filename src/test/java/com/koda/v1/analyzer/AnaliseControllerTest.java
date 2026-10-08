@@ -46,6 +46,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -267,6 +268,58 @@ class AnaliseControllerTest {
     }
 
     @Test
+    void deveExigirSessaoETokenCsrfParaArquivar() throws Exception {
+        UUID analiseId = analiseTerminada(usuarioId);
+
+        mockMvc.perform(delete("/api/analises/" + analiseId + "/repositorio")).andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/api/analises/" + analiseId + "/repositorio").session(sessao)).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveArquivarORepositorioEDeixarDeListaloMantendoAAnalise() throws Exception {
+        UUID analiseId = analiseTerminada(usuarioId);
+
+        arquivar(sessao, analiseId).andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/analises").session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+        mockMvc.perform(get("/api/analises/" + analiseId).session(sessao))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(analiseId.toString()));
+    }
+
+    @Test
+    void deveDevolver409AoArquivarComAnaliseEmAberto() throws Exception {
+        UUID analiseId = registro.registrarNovaAnalise(usuarioId, 42L, "artur", "koda", "main");
+
+        arquivar(sessao, analiseId).andExpect(status().isConflict());
+
+        mockMvc.perform(get("/api/analises").session(sessao)).andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void naoDeveArquivarRepositorioDeOutraPessoa() throws Exception {
+        UUID analiseId = analiseTerminada(usuarioId);
+        long outroGithubId = githubIdDoUsuario == Long.MAX_VALUE ? 1 : githubIdDoUsuario + 1;
+        criarUsuario(outroGithubId, "intruso");
+
+        arquivar(sessaoDe(outroGithubId, "intruso"), analiseId).andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/analises").session(sessao)).andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void deveVoltarAListarORepositorioQuandoForConectadoDeNovo() throws Exception {
+        UUID analiseId = analiseTerminada(usuarioId);
+        arquivar(sessao, analiseId).andExpect(status().isNoContent());
+
+        iniciar(CORPO_VALIDO).andExpect(status().isAccepted());
+
+        mockMvc.perform(get("/api/analises").session(sessao)).andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
     void deveDevolver404ParaAnaliseInexistenteE400ParaIdInvalido() throws Exception {
         mockMvc.perform(get("/api/analises/" + UUID.randomUUID()).session(sessao))
                 .andExpect(status().isNotFound());
@@ -281,6 +334,24 @@ class AnaliseControllerTest {
                 new ComponentesContexto(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), false),
                 new TestesContexto(0, List.of("PedidoService"), List.of()),
                 new InfraContexto(false, false), false, false, 0);
+    }
+
+    private UUID analiseTerminada(UUID dono) {
+        UUID analiseId = registro.registrarNovaAnalise(dono, 42L, "artur", "koda", "main");
+        registro.iniciar(analiseId);
+        ResultadoAnalise resultado = new ResultadoAnalise(
+                true, true, "21", "4.1.1", List.of(), List.of(), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), true);
+        registro.concluir(analiseId, new SerializadorResultado().paraJson(resultado),
+                new SerializadorContexto().paraJson(contextoDeExemplo()), ContextoProjeto.VERSAO_ESQUEMA);
+        entityManager.flush();
+        return analiseId;
+    }
+
+    private ResultActions arquivar(MockHttpSession daSessao, UUID analiseId) throws Exception {
+        String json = mockMvc.perform(get("/api/csrf").session(daSessao)).andReturn().getResponse().getContentAsString();
+        return mockMvc.perform(delete("/api/analises/" + analiseId + "/repositorio").session(daSessao)
+                .header("X-CSRF-TOKEN", leitor.readTree(json).get("token").asString()));
     }
 
     private ResultActions iniciar(String corpo) throws Exception {

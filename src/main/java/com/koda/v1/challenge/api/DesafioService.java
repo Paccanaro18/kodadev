@@ -4,6 +4,7 @@ import com.koda.v1.analyzer.contexto.ContextoProjeto;
 import com.koda.v1.analyzer.contexto.SerializadorContexto;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
 import com.koda.v1.analyzer.persistence.ConsultaAnalise;
+import com.koda.v1.analyzer.persistence.RepositorioArquivadoException;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 import com.koda.v1.challenge.SerializadorConteudo;
 import com.koda.v1.challenge.geracao.ContextoIndisponivelException;
@@ -92,6 +93,7 @@ public class DesafioService {
 
     public DesafioResposta iniciar(UUID usuarioId, UUID analiseId, TipoPedido pedido) {
         ContextoProjeto contexto = carregarContextoPronto(usuarioId, analiseId);
+        exigirRepositorioAtivo(usuarioId, analiseId);
         exigirCota(usuarioId);
         exigirCotaMensal(usuarioId);
 
@@ -172,6 +174,12 @@ public class DesafioService {
         Instant desde = relogio.instant().minus(JANELA_DA_COTA);
         if (consulta.contarQueGastaramCotaDesde(usuarioId, desde) >= limiteDiario) {
             throw new LimiteDiarioExcedidoException(limiteDiario);
+        }
+    }
+
+    private void exigirRepositorioAtivo(UUID usuarioId, UUID analiseId) {
+        if (consultaAnalise.repositorioArquivado(usuarioId, analiseId)) {
+            throw new RepositorioArquivadoException();
         }
     }
 

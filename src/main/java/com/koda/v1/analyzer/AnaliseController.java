@@ -3,14 +3,17 @@ package com.koda.v1.analyzer;
 import com.koda.v1.user.UsuarioResposta;
 import com.koda.v1.user.UsuarioService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
@@ -47,6 +50,14 @@ public class AnaliseController {
         UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
 
         return analiseService.listar(usuario.id());
+    }
+
+    @DeleteMapping("/{id}/repositorio")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void arquivarRepositorio(@AuthenticationPrincipal OAuth2User principal, @PathVariable UUID id) {
+        UsuarioResposta usuario = usuarioService.buscarDaSessao(principal);
+
+        analiseService.arquivarRepositorio(usuario.id(), id);
     }
 
     @GetMapping("/{id}")

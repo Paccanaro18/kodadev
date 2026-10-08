@@ -40,6 +40,9 @@ public class RepositorioGithub {
     @Column(name = "atualizado_em", nullable = false)
     private Instant atualizadoEm;
 
+    @Column(name = "arquivado_em")
+    private Instant arquivadoEm;
+
     protected RepositorioGithub() {
     }
 
@@ -58,6 +61,20 @@ public class RepositorioGithub {
         this.dono = dono;
         this.nome = nome;
         this.branchPadrao = branchPadrao;
+    }
+
+    public void arquivar(Instant momento) {
+        if (arquivadoEm == null) {
+            this.arquivadoEm = momento;
+        }
+    }
+
+    public void reativar() {
+        this.arquivadoEm = null;
+    }
+
+    public boolean arquivado() {
+        return arquivadoEm != null;
     }
 
     @PreUpdate
@@ -95,5 +112,9 @@ public class RepositorioGithub {
 
     public Instant getAtualizadoEm() {
         return atualizadoEm;
+    }
+
+    public Instant getArquivadoEm() {
+        return arquivadoEm;
     }
 }

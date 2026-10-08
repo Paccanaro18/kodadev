@@ -100,6 +100,10 @@ export const PERGUNTAS: { pergunta: string; resposta: string }[] = [
     resposta: "Hoje não. O Koda analisa apenas repositórios públicos da sua própria conta do GitHub.",
   },
   {
+    pergunta: "Posso trocar de repositório?",
+    resposta: "Pode. Em Repositórios conectados, arquive o que você não quer mais e a vaga fica livre para outro. Os tickets e o histórico do repositório arquivado continuam guardados, e se você conectá-lo de novo tudo volta. A cota de tickets do mês não volta ao arquivar.",
+  },
+  {
     pergunta: "O plano Grátis expira?",
     resposta: "Não. O Grátis não tem prazo e não pede cartão.",
   },

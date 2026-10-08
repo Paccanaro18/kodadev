@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FolderGit2 } from "lucide-react";
-import { ErroApi, listarAnalises, type AnaliseResumo } from "@/lib/api";
+import { Archive, FolderGit2 } from "lucide-react";
+import { arquivarRepositorio, ErroApi, listarAnalises, type AnaliseResumo } from "@/lib/api";
 import { tempoRelativo } from "@/lib/formatar";
 import { rotuloTecnologia } from "@/lib/projeto";
 import { iconeDaTecnologia, iconeDoFramework } from "@/lib/tecnologias";
@@ -39,6 +39,9 @@ export default function RepositoriosConectados() {
   const router = useRouter();
   const [analises, setAnalises] = useState<AnaliseResumo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [confirmando, setConfirmando] = useState<string | null>(null);
+  const [arquivando, setArquivando] = useState(false);
+  const [erroAoArquivar, setErroAoArquivar] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     setErro(null);
@@ -58,6 +61,24 @@ export default function RepositoriosConectados() {
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  async function arquivar(analise: AnaliseResumo) {
+    setArquivando(true);
+    setErroAoArquivar(null);
+    try {
+      await arquivarRepositorio(analise.id);
+      setAnalises((atuais) => (atuais ?? []).filter((a) => a.id !== analise.id));
+      setConfirmando(null);
+    } catch (e: unknown) {
+      if (e instanceof ErroApi && e.status === 401) {
+        router.replace("/");
+        return;
+      }
+      setErroAoArquivar(e instanceof Error ? e.message : "Erro inesperado.");
+    } finally {
+      setArquivando(false);
+    }
+  }
 
   return (
     <section className={card + " p-6"}>
@@ -87,12 +108,17 @@ export default function RepositoriosConectados() {
         </p>
       )}
 
+      {erroAoArquivar && (
+        <div role="alert" className="mb-3.5 rounded-2xl bg-bad-soft px-5 py-3 text-sm text-bad">{erroAoArquivar}</div>
+      )}
+
       {analises !== null && analises.length > 0 && (
         <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
           {analises.map((a) => {
             const situacao = situacaoDe(a);
             return (
-              <Link key={a.id} href={destinoDe(a)} className="grid content-start gap-2.5 rounded-[18px] border border-line p-4 text-ink transition duration-200 hover:-translate-y-1 hover:text-ink hover:shadow-lift active:translate-y-0">
+              <div key={a.id} className="grid content-start gap-3 rounded-[18px] border border-line p-4 transition duration-200 hover:shadow-lift">
+              <Link href={destinoDe(a)} className="grid content-start gap-2.5 text-ink hover:text-ink">
                 <div className="flex items-center gap-2.5">
                   <div className="grid size-9.5 place-items-center rounded-xl bg-koda-soft text-koda-texto"><FolderGit2 className="size-5" /></div>
                   <div className="min-w-0 flex-1">
@@ -113,6 +139,20 @@ export default function RepositoriosConectados() {
                   <i className={`size-2 shrink-0 rounded-full ${situacao.cor}`} /><span className="line-clamp-2">{situacao.texto}</span>
                 </div>
               </Link>
+              {confirmando === a.id ? (
+                <div role="group" aria-label={`Arquivar ${a.nome}`} className="rounded-xl bg-tint p-3 text-xs text-body">
+                  <p>Arquivar <strong className="text-ink">{a.nome}</strong>? A vaga fica livre. Os tickets e o histórico continuam guardados, e a cota do mês não volta.</p>
+                  <div className="mt-2.5 flex gap-2">
+                    <button type="button" disabled={arquivando} onClick={() => arquivar(a)} className="h-8 rounded-lg bg-koda px-3 text-xs font-bold text-white transition duration-200 hover:bg-koda-dark active:scale-95 disabled:opacity-60">{arquivando ? "Arquivando..." : "Arquivar"}</button>
+                    <button type="button" disabled={arquivando} onClick={() => setConfirmando(null)} className="h-8 rounded-lg border border-line-2 px-3 text-xs font-semibold transition duration-200 hover:bg-koda-soft disabled:opacity-60">Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={() => { setErroAoArquivar(null); setConfirmando(a.id); }} aria-label={`Arquivar ${a.nome}`} className="inline-flex h-8 w-fit items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-ink-2 transition duration-200 hover:bg-tint hover:text-ink">
+                  <Archive className="size-3.5" aria-hidden="true" />Arquivar
+                </button>
+              )}
+              </div>
             );
           })}
         </div>

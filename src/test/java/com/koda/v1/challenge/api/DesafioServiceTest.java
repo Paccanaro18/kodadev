@@ -10,6 +10,7 @@ import com.koda.v1.analyzer.contexto.TestesContexto;
 import com.koda.v1.analyzer.persistence.AnaliseDetalhe;
 import com.koda.v1.analyzer.persistence.AnaliseNaoEncontradaException;
 import com.koda.v1.analyzer.persistence.ConsultaAnalise;
+import com.koda.v1.analyzer.persistence.RepositorioArquivadoException;
 import com.koda.v1.analyzer.persistence.StatusAnalise;
 import com.koda.v1.challenge.ConteudoDesafio;
 import com.koda.v1.challenge.DesafiosEsgotadosException;
@@ -276,6 +277,18 @@ class DesafioServiceTest {
 
         assertThatThrownBy(() -> service.listar(usuarioId, analiseId)).isInstanceOf(AnaliseNaoEncontradaException.class);
         verify(consulta, never()).listarDaAnalise(any(), any());
+    }
+
+    @Test
+    void naoDeveGerarTicketParaRepositorioArquivado() {
+        when(consultaAnalise.repositorioArquivado(usuarioId, analiseId)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.iniciar(usuarioId, analiseId, TipoPedido.BUG))
+                .isInstanceOf(RepositorioArquivadoException.class)
+                .hasMessage("Este repositório está arquivado. Conecte-o de novo para gerar novos tickets.");
+        verify(registro, never()).registrarNovo(any(), any(), any(), anyString(), anyString(), anyString());
+        verify(planos, never()).exigirTicket(any(), org.mockito.ArgumentMatchers.anyLong(), any());
+        verify(iniciador, never()).disparar(any());
     }
 
     @Test

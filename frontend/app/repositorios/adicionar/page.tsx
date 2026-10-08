@@ -85,7 +85,7 @@ export default function AddRepo() {
         )}
 
         {erroConexao && (
-          <AvisoDeLimite mensagem={erroConexao} noLimite={noLimite} />
+          <AvisoDeLimite mensagem={erroConexao} noLimite={noLimite} gerenciarRepositorios />
         )}
 
         {lista.map((r) => (

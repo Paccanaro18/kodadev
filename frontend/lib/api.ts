@@ -229,7 +229,7 @@ async function requisitar<T>(caminho: string, init?: RequestInit): Promise<T> {
   return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
-async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PATCH" | "PUT" = "POST"): Promise<T> {
+async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PATCH" | "PUT" | "DELETE" = "POST"): Promise<T> {
   const csrf = await requisitar<{ cabecalho: string; token: string }>("/api/csrf");
   const headers: Record<string, string> = { [csrf.cabecalho]: csrf.token };
   if (corpo !== undefined) headers["Content-Type"] = "application/json";
@@ -265,6 +265,10 @@ export function listarRepositorios(): Promise<Repositorio[]> {
 
 export function iniciarAnalise(dono: string, nome: string): Promise<{ id: string; status: StatusAnalise }> {
   return enviar("/api/analises", { dono, nome });
+}
+
+export function arquivarRepositorio(analiseId: string): Promise<void> {
+  return enviar(`/api/analises/${encodeURIComponent(analiseId)}/repositorio`, undefined, "DELETE");
 }
 
 export function buscarAnalise(id: string): Promise<AnaliseDetalhe> {

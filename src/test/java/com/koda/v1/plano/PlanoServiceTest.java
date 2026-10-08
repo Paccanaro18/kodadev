@@ -92,7 +92,7 @@ class PlanoServiceTest {
         assertThatCode(() -> service.exigirRepositorio(usuarioId, 0)).doesNotThrowAnyException();
         assertThatThrownBy(() -> service.exigirRepositorio(usuarioId, 1))
                 .isInstanceOf(LimiteDeRepositoriosExcedidoException.class)
-                .hasMessage("O plano Grátis permite 1 repositório. Para analisar outro, escolha um plano com mais espaço.");
+                .hasMessage("O plano Grátis permite 1 repositório. Arquive um repositório conectado para liberar a vaga ou escolha um plano com mais espaço.");
     }
 
     @Test

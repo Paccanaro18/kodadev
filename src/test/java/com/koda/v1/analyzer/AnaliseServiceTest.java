@@ -108,6 +108,21 @@ class AnaliseServiceTest {
     }
 
     @Test
+    void deveArquivarORepositorioDaAnaliseDoUsuario() {
+        service.arquivarRepositorio(usuarioId, analiseId);
+
+        verify(registro).arquivarRepositorio(usuarioId, analiseId);
+    }
+
+    @Test
+    void naoDeveEngolirOErroQuandoAnaliseNaoForDoUsuario() {
+        doThrow(new AnaliseNaoEncontradaException(analiseId)).when(registro).arquivarRepositorio(usuarioId, analiseId);
+
+        assertThatThrownBy(() -> service.arquivarRepositorio(usuarioId, analiseId))
+                .isInstanceOf(AnaliseNaoEncontradaException.class);
+    }
+
+    @Test
     void naoDeveAceitarRepositorioPrivado() {
         when(github.buscarRepositorio(usuarioId, "artur", "koda")).thenReturn(repositorio("artur/koda", true));
 

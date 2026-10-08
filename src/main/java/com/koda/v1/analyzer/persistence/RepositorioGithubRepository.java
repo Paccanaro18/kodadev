@@ -10,9 +10,9 @@ public interface RepositorioGithubRepository extends JpaRepository<RepositorioGi
 
     Optional<RepositorioGithub> findByUsuarioIdAndGithubIdRepositorio(UUID usuarioId, Long githubIdRepositorio);
 
-    List<RepositorioGithub> findAllByUsuarioIdOrderByCriadoEmDesc(UUID usuarioId);
+    List<RepositorioGithub> findAllByUsuarioIdAndArquivadoEmIsNullOrderByCriadoEmDesc(UUID usuarioId);
 
-    long countByUsuarioId(UUID usuarioId);
+    long countByUsuarioIdAndArquivadoEmIsNull(UUID usuarioId);
 
-    boolean existsByUsuarioIdAndGithubIdRepositorio(UUID usuarioId, Long githubIdRepositorio);
+    boolean existsByUsuarioIdAndGithubIdRepositorioAndArquivadoEmIsNull(UUID usuarioId, Long githubIdRepositorio);
 }

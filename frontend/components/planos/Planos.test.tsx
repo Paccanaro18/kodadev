@@ -113,6 +113,8 @@ describe("página de planos", () => {
     expect(screen.getByText("Posso assinar agora?")).toBeInTheDocument();
     expect(screen.getByText(/Ainda não\. O pagamento está em preparação/)).toBeInTheDocument();
     expect(screen.getByText("O que acontece quando a cota acaba?")).toBeInTheDocument();
+    expect(screen.getByText("Posso trocar de repositório?")).toBeInTheDocument();
+    expect(screen.getByText(/A cota de tickets do mês não volta ao arquivar/)).toBeInTheDocument();
     expect(screen.getByText(/apenas repositórios públicos da sua própria conta/)).toBeInTheDocument();
   });
 
@@ -132,6 +134,12 @@ describe("aviso de limite", () => {
   it("leva para os planos quando o erro é de limite", () => {
     render(<AvisoDeLimite mensagem="Você usou os 3 tickets do plano Grátis neste mês." noLimite />);
     expect(screen.getByRole("alert")).toHaveTextContent("Você usou os 3 tickets do plano Grátis neste mês.");
+    expect(screen.getByRole("link", { name: "Ver os planos e o seu uso" })).toHaveAttribute("href", "/planos");
+  });
+
+  it("oferece arquivar um repositório quando o limite é de repositórios", () => {
+    render(<AvisoDeLimite mensagem="O plano Grátis permite 1 repositório." noLimite gerenciarRepositorios />);
+    expect(screen.getByRole("link", { name: "Arquivar um repositório conectado" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Ver os planos e o seu uso" })).toHaveAttribute("href", "/planos");
   });
 

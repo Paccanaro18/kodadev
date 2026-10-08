@@ -23,7 +23,7 @@ public class ConsultaAnalise {
 
     @Transactional(readOnly = true)
     public List<AnaliseDetalhe> listarUltimasDoUsuario(UUID usuarioId) {
-        return repositorioRepository.findAllByUsuarioIdOrderByCriadoEmDesc(usuarioId).stream()
+        return repositorioRepository.findAllByUsuarioIdAndArquivadoEmIsNullOrderByCriadoEmDesc(usuarioId).stream()
                 .flatMap(repositorio -> analiseRepository
                         .findFirstByRepositorioIdOrderByCriadoEmDesc(repositorio.getId())
                         .map(analise -> paraDetalhe(analise, repositorio))
@@ -35,12 +35,22 @@ public class ConsultaAnalise {
 
     @Transactional(readOnly = true)
     public long contarRepositorios(UUID usuarioId) {
-        return repositorioRepository.countByUsuarioId(usuarioId);
+        return repositorioRepository.countByUsuarioIdAndArquivadoEmIsNull(usuarioId);
     }
 
     @Transactional(readOnly = true)
     public boolean repositorioRegistrado(UUID usuarioId, Long githubIdRepositorio) {
-        return repositorioRepository.existsByUsuarioIdAndGithubIdRepositorio(usuarioId, githubIdRepositorio);
+        return repositorioRepository.existsByUsuarioIdAndGithubIdRepositorioAndArquivadoEmIsNull(usuarioId, githubIdRepositorio);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean repositorioArquivado(UUID usuarioId, UUID analiseId) {
+        AnaliseProjeto analise = analiseRepository.findById(analiseId)
+                .orElseThrow(() -> new AnaliseNaoEncontradaException(analiseId));
+        return repositorioRepository.findById(analise.getRepositorioId())
+                .filter(encontrado -> encontrado.getUsuarioId().equals(usuarioId))
+                .orElseThrow(() -> new AnaliseNaoEncontradaException(analiseId))
+                .arquivado();
     }
 
     @Transactional(readOnly = true)

@@ -3,6 +3,7 @@ package com.koda.v1.analyzer.persistence;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ public class RegistroAnalise {
                 .findByUsuarioIdAndGithubIdRepositorio(usuarioId, githubIdRepositorio)
                 .map(existente -> {
                     existente.atualizarDados(dono, nome, branchPadrao);
+                    existente.reativar();
                     return existente;
                 })
                 .orElseGet(() -> repositorioRepository.saveAndFlush(
@@ -38,6 +40,19 @@ public class RegistroAnalise {
         }
 
         return analiseRepository.saveAndFlush(new AnaliseProjeto(repositorio.getId())).getId();
+    }
+
+    @Transactional
+    public void arquivarRepositorio(UUID usuarioId, UUID analiseId) {
+        AnaliseProjeto analise = buscar(analiseId);
+        RepositorioGithub repositorio = repositorioRepository.findById(analise.getRepositorioId())
+                .filter(encontrado -> encontrado.getUsuarioId().equals(usuarioId))
+                .orElseThrow(() -> new AnaliseNaoEncontradaException(analiseId));
+
+        if (analiseRepository.existsByRepositorioIdAndStatusIn(repositorio.getId(), STATUS_EM_ABERTO)) {
+            throw new AnaliseEmAndamentoException();
+        }
+        repositorio.arquivar(Instant.now());
     }
 
     @Transactional

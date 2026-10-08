@@ -59,6 +59,10 @@ public class AnaliseService {
         return new AnaliseResposta(analiseId, StatusAnalise.PENDENTE);
     }
 
+    public void arquivarRepositorio(UUID usuarioId, UUID analiseId) {
+        registro.arquivarRepositorio(usuarioId, analiseId);
+    }
+
     public List<AnaliseResumoResposta> listar(UUID usuarioId) {
         return consulta.listarUltimasDoUsuario(usuarioId).stream()
                 .map(this::resumir)

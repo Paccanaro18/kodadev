@@ -190,6 +190,16 @@ class DesafioControllerTest {
     }
 
     @Test
+    void deveDevolver409AoGerarTicketParaRepositorioArquivado() throws Exception {
+        jdbc.update("UPDATE repositorios SET arquivado_em = now() WHERE usuario_id = ?", usuarioId);
+
+        iniciar(analiseId, CORPO_FEATURE)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Este repositório está arquivado. Conecte-o de novo para gerar novos tickets."));
+        verify(iniciador, never()).disparar(any());
+    }
+
+    @Test
     void deveDevolver429QuandoACotaDiariaAcabar() throws Exception {
         for (int i = 0; i < 3; i++) {
             criarPronto(analiseId, "ANGULO_" + i, "CLASSE:" + i, "Título " + i);

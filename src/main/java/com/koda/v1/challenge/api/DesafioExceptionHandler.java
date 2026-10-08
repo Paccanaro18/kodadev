@@ -1,6 +1,7 @@
 package com.koda.v1.challenge.api;
 
 import com.koda.v1.analyzer.persistence.AnaliseNaoEncontradaException;
+import com.koda.v1.analyzer.persistence.RepositorioArquivadoException;
 import com.koda.v1.challenge.DesafiosEsgotadosException;
 import com.koda.v1.challenge.SemAnguloAplicavelException;
 import com.koda.v1.challenge.geracao.ContextoIndisponivelException;
@@ -26,7 +27,7 @@ class DesafioExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Desafio não encontrado.");
     }
 
-    @ExceptionHandler({GeracaoEmAndamentoException.class, ContextoIndisponivelException.class})
+    @ExceptionHandler({GeracaoEmAndamentoException.class, ContextoIndisponivelException.class, RepositorioArquivadoException.class})
     ProblemDetail tratarConflito(RuntimeException excecao) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, excecao.getMessage());
     }
