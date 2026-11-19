@@ -116,10 +116,6 @@ frontend/      Next.js 15, React 19 e Tailwind 4
 docker-compose.yml, .github/   banco local e CI
 ```
 
-## Segurança
-
-Só a máquina local alcança o backend e o banco; sem sessão a API devolve 401; tudo que vem da IA é validado e nunca
-entra em log; prompts e chaves nunca são registrados. Os detalhes e as decisões estão no [CLAUDE.md](CLAUDE.md).
 
 ## Créditos
 
